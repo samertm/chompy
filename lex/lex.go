@@ -35,9 +35,8 @@ const (
 	tokenError tokenType = iota
 	tokenEOF
 	tokenIdentifier
-	tokenPackage
-	tokenPackageName
 	tokenSemicolon
+	tokenString
 )
 
 const (
@@ -46,10 +45,13 @@ const (
 	space      = " "
 	tab        = "\t"
 	whitespace = " \n\t"
+	quote = "\""
+	backslash = "\\"
 	alphaLower = "abcdefghijklmnopqrstuvwxyz"
 	alphaUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	alpha      = alphaLower + alphaUpper
-	num        = "123456789"
+	numSansZero = "123456789"
+	num        = numSansZero + "0"
 	alphaNum   = alpha + num
 )
 
@@ -64,7 +66,7 @@ func Lex(name, input string) (*lexer, chan token) {
 }
 
 func (l *lexer) run() {
-	for state := lexPackage; state != nil; {
+	for state := lexStart; state != nil; {
 		state = state(l)
 	}
 	close(l.tokens)
@@ -87,19 +89,33 @@ func (l *lexer) backup() {
 }
 
 // accepts single rune in accepted
-func (l *lexer) accept(accepted string) bool {
-	if strings.IndexRune(accepted, l.next()) != -1 {
+func (l *lexer) accept(valid string) bool {
+	if strings.IndexRune(valid, l.next()) != -1 {
 		return true
 	}
 	l.backup()
 	return false
 }
 
-// accepts all runes in accepted
-func (l *lexer) acceptRun(accepted string) {
-	for strings.IndexRune(accepted, l.next()) != -1 {
+// accepts all runes in valid
+func (l *lexer) acceptRun(valid string) {
+	for strings.IndexRune(valid, l.next()) != -1 {
 	}
 	l.backup()
+}
+
+func (l *lexer) acceptAllBut(invalid string) bool {
+	for strings.IndexRune(invalid, l.next()) == -1 {
+		return true
+	}
+	l.backup()
+	return false
+}
+
+func (l *lexer) acceptRunAllBut(invalid string) {
+	for strings.IndexRune(invalid, l.next()) == -1 {
+	}
+	l.backup()	
 }
 
 func (l *lexer) peek() rune {
@@ -131,37 +147,66 @@ func (l *lexer) emitSemicolon() {
 	l.tokens <- token{typ: tokenSemicolon}
 }
 
-func lexPackage(l *lexer) stateFn {
+func lexStart(l *lexer) stateFn {
 	l.acceptRun(whitespace)
 	l.ignore()
-	if strings.HasPrefix(l.input[l.pos:], "package") {
-		l.pos += len("package")
-		l.emit(tokenPackage)
-		return lexPackageName
+	if l.accept(alpha) {
+		l.backup()
+		return lexAlpha
 	}
-	l.emitError("package statement not found")
+	// if l.accept(numSansZero) {
+	// 	l.backup()
+	// 	return lexDecimal
+	// }
+	// TODO rune literal
+	if l.accept(quote) {
+		l.backup()
+		return lexString
+	}
+
 	return nil
 }
 
-func lexPackageName(l *lexer) stateFn {
+func lexAlpha(l *lexer) stateFn {
 	l.acceptRun(whitespace)
 	l.ignore()
 	if l.accept(alphaNum) {
 		l.acceptRun(alphaNum)
-		l.emit(tokenPackageName)
-		return lexSemicolon
+		l.emit(tokenIdentifier)
+		return lexStart
 	}
 	l.emitError("package name not found")
 	return nil
 }
 
-func lexSemicolon(l *lexer) stateFn {
-	l.acceptRun(space + tab)
-	l.ignore()
-	if l.accept(newline + semicolon) {
-		l.emitSemicolon()
-		return nil // TODO lexImport
+func lexString(l *lexer) stateFn {
+	if l.accept(quote) {
+		// token.val does not contain the quote char
+		l.ignore()
+		return lexStringIn
 	}
-	l.emitError("expected semicolon or newline")
+	l.emitError("expected '\"'")
 	return nil
+}
+
+func lexStringIn(l *lexer) stateFn {
+	l.acceptRunAllBut(quote + backslash)
+	if l.peek() == '\\' {
+		return lexStringBackslash
+	}
+	if l.peek() == '"' {
+		return lexStringOut
+	}
+	return nil
+}
+
+func lexStringBackslash(l *lexer) stateFn {
+	l.next() // eat backslash
+	l.next() // eat next rune
+	return lexStringIn
+}
+
+func lexStringOut(l *lexer) stateFn {
+	l.emit(tokenString)
+	return lexStart
 }

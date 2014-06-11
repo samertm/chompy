@@ -23,36 +23,46 @@ func (t token) String() string {
 type stateFn func(*lexer) stateFn
 
 type lexer struct {
-	name   string     // used for errors
-	input  string     // string being scanned
-	start  int        // start position of token
-	pos    int        // current position of input
-	width  int        // width of last rune read
-	tokens chan token // channel of scanned tokens
+	name  string // used for errors
+	input string // string being scanned
+	start int    // start position of token
+	pos   int    // current position of input
+	width int    // width of last rune read
+	// the last token processed for newline insertion
+	// Error tokens are not stored.
+	lastToken *token
+	tokens        chan token // channel of scanned tokens
 }
+
+const eof = -1
 
 const (
 	tokenError tokenType = iota
 	tokenEOF
+	tokenKeyword
+	tokenOperator
+	tokenDelimiter
 	tokenIdentifier
 	tokenSemicolon
 	tokenString
+	tokenInt
 )
 
 const (
-	semicolon  = ";"
-	newline    = "\n"
-	space      = " "
-	tab        = "\t"
-	whitespace = " \n\t"
-	quote = "\""
-	backslash = "\\"
-	alphaLower = "abcdefghijklmnopqrstuvwxyz"
-	alphaUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	alpha      = alphaLower + alphaUpper
-	numSansZero = "123456789"
-	num        = numSansZero + "0"
-	alphaNum   = alpha + num
+	semicolon             = ";"
+	newline               = "\n"
+	space                 = " "
+	tab                   = "\t"
+	whitespaceSansNewline = space + tab
+	whitespace            = whitespaceSansNewline + newline
+	quote                 = "\""
+	backslash             = "\\"
+	alphaLower            = "abcdefghijklmnopqrstuvwxyz"
+	alphaUpper            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	alpha                 = alphaLower + alphaUpper
+	numSansZero           = "123456789"
+	num                   = numSansZero + "0"
+	alphaNum              = alpha + num
 )
 
 func Lex(name, input string) (*lexer, chan token) {
@@ -74,6 +84,10 @@ func (l *lexer) run() {
 
 // reads & returns the next rune, steps width forward
 func (l *lexer) next() rune {
+	if l.pos >= len(l.input) {
+		l.width = 0
+		return eof
+	}
 	r, s := utf8.DecodeRuneInString(l.input[l.pos:])
 	if r == utf8.RuneError && s == 1 {
 		log.Fatal("input error")
@@ -115,7 +129,7 @@ func (l *lexer) acceptAllBut(invalid string) bool {
 func (l *lexer) acceptRunAllBut(invalid string) {
 	for strings.IndexRune(invalid, l.next()) == -1 {
 	}
-	l.backup()	
+	l.backup()
 }
 
 func (l *lexer) peek() rune {
@@ -131,7 +145,8 @@ func (l *lexer) ignore() {
 func (l *lexer) emit(t tokenType) {
 	v := l.input[l.start:l.pos]
 	l.start = l.pos
-	l.tokens <- token{typ: t, val: v}
+	l.lastToken = &token{typ: t, val: v}
+	l.tokens <- *l.lastToken
 }
 
 func (l *lexer) emitErrorf(format string, a ...interface{}) {
@@ -148,33 +163,86 @@ func (l *lexer) emitSemicolon() {
 }
 
 func lexStart(l *lexer) stateFn {
-	l.acceptRun(whitespace)
+	l.acceptRun(whitespaceSansNewline)
 	l.ignore()
 	if l.accept(alpha) {
 		l.backup()
 		return lexAlpha
 	}
-	// if l.accept(numSansZero) {
-	// 	l.backup()
-	// 	return lexDecimal
-	// }
+	if l.accept(numSansZero) {
+		l.backup()
+		return lexDecimal
+	}
 	// TODO rune literal
 	if l.accept(quote) {
 		l.backup()
 		return lexString
 	}
+	if l.accept(newline) {
+		l.backup()
+		return lexNewline
+	}
 	return nil
 }
 
-func lexAlpha(l *lexer) stateFn {
-	l.acceptRun(whitespace)
+// TODO get this to not emit semicolons on blank lines
+func lexNewline(l *lexer) stateFn {
+	l.accept(newline)
 	l.ignore()
+	if l.lastToken == nil {
+		return lexStart
+	}
+	validSemicolonInsert := false
+	switch l.lastToken.typ {
+	case tokenOperator:
+		if l.lastToken.val != "++" &&
+			l.lastToken.val != "--" {
+			break
+		}
+		validSemicolonInsert = true
+	case tokenDelimiter:
+		if l.lastToken.val != ")" &&
+			l.lastToken.val != "]" &&
+			l.lastToken.val != "}" {
+			break
+		}
+		validSemicolonInsert = true
+	case tokenKeyword:
+		if l.lastToken.val != "break" &&
+			l.lastToken.val != "continue" &&
+			l.lastToken.val != "fallthrough" &&
+			l.lastToken.val != "return" {
+			break
+		}
+		validSemicolonInsert = true
+	case tokenIdentifier: validSemicolonInsert = true
+	case tokenInt: validSemicolonInsert = true
+	case tokenSemicolon: validSemicolonInsert = true
+	case tokenString: validSemicolonInsert = true
+	}
+	if validSemicolonInsert {
+		l.emitSemicolon()
+	}
+	return lexStart
+}
+
+func lexAlpha(l *lexer) stateFn {
 	if l.accept(alphaNum) {
 		l.acceptRun(alphaNum)
 		l.emit(tokenIdentifier)
 		return lexStart
 	}
-	l.emitError("package name not found")
+	l.emitError("whoops")
+	return nil
+}
+
+func lexDecimal(l *lexer) stateFn {
+	if l.accept(num) {
+		l.acceptRun(num)
+		l.emit(tokenInt)
+		return lexStart
+	}
+	l.emitError("expected integer")
 	return nil
 }
 
@@ -199,6 +267,7 @@ func lexStringIn(l *lexer) stateFn {
 	return nil
 }
 
+// TODO turn \[A-Z] into char code
 func lexStringBackslash(l *lexer) stateFn {
 	l.next() // eat backslash
 	l.next() // eat next rune

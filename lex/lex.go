@@ -163,7 +163,6 @@ func lexStart(l *lexer) stateFn {
 		l.backup()
 		return lexString
 	}
-
 	return nil
 }
 
@@ -208,5 +207,7 @@ func lexStringBackslash(l *lexer) stateFn {
 
 func lexStringOut(l *lexer) stateFn {
 	l.emit(tokenString)
+	l.next() // eat quote
+	l.ignore()
 	return lexStart
 }

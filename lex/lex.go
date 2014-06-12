@@ -1,5 +1,13 @@
 package lex
 
+/* tasks remaining (ordered by significance):
+ * - emit semicolon in all valid spots
+ * - dance
+ * - handle raw strings
+ * - other stuff probably
+ * - refactor lex.go into more than one file
+ */
+
 import (
 	"fmt"
 	"log"

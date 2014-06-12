@@ -2,6 +2,7 @@ package lex
 
 /* tasks remaining (ordered by significance):
  * - handle raw strings
+ * - handle non-line comments
  * - other stuff probably
  */
 
@@ -21,8 +22,20 @@ type token struct {
 	val string
 }
 
+// for debugging purposes
 func (t token) String() string {
-	return fmt.Sprintf("(%d %s)", t.typ, t.val)
+	return fmt.Sprintf("(%s %s)\n", typeName[t.typ], t.val)
+}
+
+// for debugging purposes
+var typeName = map[tokenType]string{
+	tokenError:      "Error",
+	tokenEOF:        "EOF",
+	tokenKeyword:    "Keyword",
+	tokenOpOrDelim:  "OpOrDelim",
+	tokenIdentifier: "Identifier",
+	tokenString:     "String",
+	tokenInt:        "Int",
 }
 
 type lexer struct {

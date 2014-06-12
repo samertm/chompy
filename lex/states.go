@@ -27,6 +27,7 @@ const (
 	whitespace            = whitespaceSansNewline + newline
 	quote                 = "\""
 	backslash             = "\\"
+	comment               = "//"
 	alphaLower            = "abcdefghijklmnopqrstuvwxyz"
 	alphaUpper            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	alpha                 = alphaLower + alphaUpper
@@ -45,6 +46,9 @@ var keywords = [...]string{"break", "default", "func", "interface", "select", "c
 func lexStart(l *lexer) stateFn {
 	l.acceptRun(whitespaceSansNewline)
 	l.ignore()
+	if strings.HasPrefix(l.input[l.pos:], comment) {
+		return lexComment
+	}
 	if l.accept(letter) {
 		l.backup()
 		return lexLetter
@@ -194,5 +198,15 @@ func lexEof(l *lexer) stateFn {
 		return nil
 	}
 	l.emitError("expected eof")
+	return nil
+}
+
+func lexComment(l *lexer) stateFn {
+	if strings.HasPrefix(l.input[l.pos:], comment) {
+		l.acceptRunAllBut(newline)
+		l.ignore()
+		return lexNewline
+	}
+	l.emitError("error handling comment")
 	return nil
 }

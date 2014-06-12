@@ -2,7 +2,6 @@ package lex
 
 /* tasks remaining (ordered by significance):
  * - emit semicolon in all valid spots
- * - dance
  * - handle raw strings
  * - other stuff probably
  * - refactor lex.go into more than one file
@@ -28,8 +27,6 @@ func (t token) String() string {
 	return fmt.Sprintf("(%d %s)", t.typ, t.val)
 }
 
-type stateFn func(*lexer) stateFn
-
 type lexer struct {
 	name  string // used for errors
 	input string // string being scanned
@@ -42,38 +39,14 @@ type lexer struct {
 	tokens    chan token // channel of scanned tokens
 }
 
-const eof = -1
-
-const (
-	tokenError tokenType = iota
-	tokenEOF
-	tokenKeyword
-	tokenOperator
-	tokenDelimiter
-	tokenIdentifier
-	tokenSemicolon
-	tokenString
-	tokenInt
-)
-
-const (
-	semicolon             = ";"
-	newline               = "\n"
-	space                 = " "
-	tab                   = "\t"
-	whitespaceSansNewline = space + tab
-	whitespace            = whitespaceSansNewline + newline
-	quote                 = "\""
-	backslash             = "\\"
-	alphaLower            = "abcdefghijklmnopqrstuvwxyz"
-	alphaUpper            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	alpha                 = alphaLower + alphaUpper
-	letter = alpha + "_"
-	numSansZero           = "123456789"
-	num                   = numSansZero + "0"
-	alphaNum              = alpha + num
-	letterNum = letter + num
-)
+func isKeyword(val string) bool {
+	for _, k := range keywords {
+		if val == k {
+			return true
+		}
+	}
+	return false
+}
 
 func Lex(name, input string) (*lexer, chan token) {
 	l := &lexer{
@@ -176,205 +149,4 @@ func (l *lexer) emitSemicolon() {
 // the position.
 func (l *lexer) val() string {
 	return l.input[l.start:l.pos]
-}
-
-func lexStart(l *lexer) stateFn {
-	l.acceptRun(whitespaceSansNewline)
-	l.ignore()
-	if l.accept(letter) {
-		l.backup()
-		return lexLetter
-	}
-	if l.accept(numSansZero) {
-		l.backup()
-		return lexDecimal
-	}
-	// TODO rune literal
-	if l.accept(quote) {
-		l.backup()
-		return lexString
-	}
-	if l.accept(newline) {
-		l.backup()
-		return lexNewline
-	}
-	// idea: group every 1 char operator together.
-	if l.accept("+&=!()-|<[]*^<>{}/:,;%>.") {
-		l.backup()
-		return lexOpOrDelim
-	}
-
-	return nil
-}
-
-func lexNewline(l *lexer) stateFn {
-	l.accept(newline)
-	l.ignore()
-	if l.lastToken == nil {
-		return lexStart
-	}
-	validSemicolonInsert := false
-	switch l.lastToken.typ {
-	case tokenOperator:
-		if l.lastToken.val != "++" &&
-			l.lastToken.val != "--" {
-			break
-		}
-		validSemicolonInsert = true
-	case tokenDelimiter:
-		if l.lastToken.val != ")" &&
-			l.lastToken.val != "]" &&
-			l.lastToken.val != "}" {
-			break
-		}
-		validSemicolonInsert = true
-	case tokenKeyword:
-		if l.lastToken.val != "break" &&
-			l.lastToken.val != "continue" &&
-			l.lastToken.val != "fallthrough" &&
-			l.lastToken.val != "return" {
-			break
-		}
-		validSemicolonInsert = true
-	case tokenIdentifier:
-		validSemicolonInsert = true
-	case tokenInt:
-		validSemicolonInsert = true
-	case tokenSemicolon:
-		validSemicolonInsert = true
-	case tokenString:
-		validSemicolonInsert = true
-	}
-	if validSemicolonInsert {
-		l.emitSemicolon()
-	}
-	l.lastToken = nil
-	return lexStart
-}
-
-func lexLetter(l *lexer) stateFn {
-	if l.accept(letter) {
-		l.acceptRun(letterNum)
-		isKeyword := false
-		// this turned out jankier than I thought it would..
-		switch l.val() {
-		case "break":
-			isKeyword = true
-		case "default":
-			isKeyword = true
-		case "func":
-			isKeyword = true
-		case "interface":
-			isKeyword = true
-		case "select":
-			isKeyword = true
-		case "case":
-			isKeyword = true
-		case "defer":
-			isKeyword = true
-		case "go":
-			isKeyword = true
-		case "map":
-			isKeyword = true
-		case "struct":
-			isKeyword = true
-		case "chan":
-			isKeyword = true
-		case "else":
-			isKeyword = true
-		case "goto":
-			isKeyword = true
-		case "package":
-			isKeyword = true
-		case "switch":
-			isKeyword = true
-		case "const":
-			isKeyword = true
-		case "fallthrough":
-			isKeyword = true
-		case "if":
-			isKeyword = true
-		case "range":
-			isKeyword = true
-		case "type":
-			isKeyword = true
-		case "continue":
-			isKeyword = true
-		case "for":
-			isKeyword = true
-		case "import":
-			isKeyword = true
-		case "return":
-			isKeyword = true
-		case "var":
-			isKeyword = true
-		}
-		if isKeyword {
-			l.emit(tokenKeyword)
-		} else {
-			l.emit(tokenIdentifier)
-		}
-		return lexStart
-	}
-	l.emitError("whoops")
-	return nil
-}
-
-func lexDecimal(l *lexer) stateFn {
-	if l.accept(num) {
-		l.acceptRun(num)
-		l.emit(tokenInt)
-		return lexStart
-	}
-	l.emitError("expected integer")
-	return nil
-}
-
-func lexString(l *lexer) stateFn {
-	if l.accept(quote) {
-		// token.val does not contain the quote char
-		l.ignore()
-		return lexStringIn
-	}
-	l.emitError("expected '\"'")
-	return nil
-}
-
-func lexStringIn(l *lexer) stateFn {
-	l.acceptRunAllBut(quote + backslash)
-	if l.peek() == '\\' {
-		return lexStringBackslash
-	}
-	if l.peek() == '"' {
-		return lexStringOut
-	}
-	return nil
-}
-
-// TODO turn \[A-Z] into char code
-func lexStringBackslash(l *lexer) stateFn {
-	l.next() // eat backslash
-	l.next() // eat next rune
-	return lexStringIn
-}
-
-func lexStringOut(l *lexer) stateFn {
-	l.emit(tokenString)
-	l.next() // eat quote
-	l.ignore()
-	return lexStart
-}
-
-func lexOpOrDelim(l *lexer) stateFn {
-	// cover your eyes
-	// sorted by length
-	OpDelims := [...]string{"&^=", "...", "<<=", ">>=", "+=", "&^", "&=", "--", "&&", "%=", "==", ">>", "!=", ":=", "-=", "++", "|=", "/=", "||", "<<", "<=", ">=", "*=", "<-", "^=", "+", ":", "&", ".", "(", "!", ")", "%", "-", ";", "|", ",", "<", "=", "[", "/", "]", "}", "*", "{", "^", ">"}
-	for _, od := range OpDelims {
-		if strings.HasPrefix(l.input[l.pos:], od) {
-			l.pos += len(od)
-			l.emit(tokenDelimiter)
-			return lexStart
-		}
-	}
-	return nil
 }

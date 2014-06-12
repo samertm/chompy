@@ -28,10 +28,10 @@ type lexer struct {
 	start int    // start position of token
 	pos   int    // current position of input
 	width int    // width of last rune read
-	// the last token processed for newline insertion
+	// The last token processed on the line for newline insertion.
 	// Error tokens are not stored.
 	lastToken *token
-	tokens        chan token // channel of scanned tokens
+	tokens    chan token // channel of scanned tokens
 }
 
 const eof = -1
@@ -162,6 +162,12 @@ func (l *lexer) emitSemicolon() {
 	l.tokens <- token{typ: tokenSemicolon}
 }
 
+// peeks at the lexer's current value, without emitting it or changing
+// the position.
+func (l *lexer) val() string {
+	return l.input[l.start:l.pos]
+}
+
 func lexStart(l *lexer) stateFn {
 	l.acceptRun(whitespaceSansNewline)
 	l.ignore()
@@ -215,21 +221,84 @@ func lexNewline(l *lexer) stateFn {
 			break
 		}
 		validSemicolonInsert = true
-	case tokenIdentifier: validSemicolonInsert = true
-	case tokenInt: validSemicolonInsert = true
-	case tokenSemicolon: validSemicolonInsert = true
-	case tokenString: validSemicolonInsert = true
+	case tokenIdentifier:
+		validSemicolonInsert = true
+	case tokenInt:
+		validSemicolonInsert = true
+	case tokenSemicolon:
+		validSemicolonInsert = true
+	case tokenString:
+		validSemicolonInsert = true
 	}
 	if validSemicolonInsert {
 		l.emitSemicolon()
 	}
+	l.lastToken = nil
 	return lexStart
 }
 
 func lexAlpha(l *lexer) stateFn {
 	if l.accept(alphaNum) {
 		l.acceptRun(alphaNum)
-		l.emit(tokenIdentifier)
+		isKeyword := false
+		// this turned out jankier than I thought it would..
+		switch l.val() {
+		case "break":
+			isKeyword = true
+		case "default":
+			isKeyword = true
+		case "func":
+			isKeyword = true
+		case "interface":
+			isKeyword = true
+		case "select":
+			isKeyword = true
+		case "case":
+			isKeyword = true
+		case "defer":
+			isKeyword = true
+		case "go":
+			isKeyword = true
+		case "map":
+			isKeyword = true
+		case "struct":
+			isKeyword = true
+		case "chan":
+			isKeyword = true
+		case "else":
+			isKeyword = true
+		case "goto":
+			isKeyword = true
+		case "package":
+			isKeyword = true
+		case "switch":
+			isKeyword = true
+		case "const":
+			isKeyword = true
+		case "fallthrough":
+			isKeyword = true
+		case "if":
+			isKeyword = true
+		case "range":
+			isKeyword = true
+		case "type":
+			isKeyword = true
+		case "continue":
+			isKeyword = true
+		case "for":
+			isKeyword = true
+		case "import":
+			isKeyword = true
+		case "return":
+			isKeyword = true
+		case "var":
+			isKeyword = true
+		}
+		if isKeyword {
+			l.emit(tokenKeyword)
+		} else {
+			l.emit(tokenIdentifier)
+		}
 		return lexStart
 	}
 	l.emitError("whoops")

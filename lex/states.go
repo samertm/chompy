@@ -12,10 +12,8 @@ const (
 	tokenError tokenType = iota
 	tokenEOF
 	tokenKeyword
-	tokenOperator
-	tokenDelimiter
+	tokenOpOrDelim
 	tokenIdentifier
-	tokenSemicolon
 	tokenString
 	tokenInt
 )
@@ -69,26 +67,23 @@ func lexStart(l *lexer) stateFn {
 		l.backup()
 		return lexOpOrDelim
 	}
-
+	if l.next() == eof {
+		l.backup()
+		return lexEof
+	}
 	return nil
 }
 
-func lexNewline(l *lexer) stateFn {
-	l.accept(newline)
-	l.ignore()
+func semicolonRule(l *lexer) bool {
 	if l.lastToken == nil {
-		return lexStart
+		return false
 	}
 	validSemicolonInsert := false
 	switch l.lastToken.typ {
-	case tokenOperator:
+	case tokenOpOrDelim:
 		if l.lastToken.val != "++" &&
-			l.lastToken.val != "--" {
-			break
-		}
-		validSemicolonInsert = true
-	case tokenDelimiter:
-		if l.lastToken.val != ")" &&
+			l.lastToken.val != "--" &&
+			l.lastToken.val != ")" &&
 			l.lastToken.val != "]" &&
 			l.lastToken.val != "}" {
 			break
@@ -106,14 +101,19 @@ func lexNewline(l *lexer) stateFn {
 		validSemicolonInsert = true
 	case tokenInt:
 		validSemicolonInsert = true
-	case tokenSemicolon:
-		validSemicolonInsert = true
 	case tokenString:
 		validSemicolonInsert = true
 	}
 	if validSemicolonInsert {
 		l.emitSemicolon()
 	}
+	return validSemicolonInsert
+}
+
+func lexNewline(l *lexer) stateFn {
+	l.accept(newline)
+	l.ignore()
+	semicolonRule(l)
 	l.lastToken = nil
 	return lexStart
 }
@@ -181,9 +181,18 @@ func lexOpOrDelim(l *lexer) stateFn {
 	for _, od := range opDelims {
 		if strings.HasPrefix(l.input[l.pos:], od) {
 			l.pos += len(od)
-			l.emit(tokenDelimiter)
+			l.emit(tokenOpOrDelim)
 			return lexStart
 		}
 	}
+	return nil
+}
+
+func lexEof(l *lexer) stateFn {
+	if l.next() == eof {
+		semicolonRule(l)
+		return nil
+	}
+	l.emitError("expected eof")
 	return nil
 }

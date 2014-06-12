@@ -140,7 +140,8 @@ func (l *lexer) emitError(a ...interface{}) {
 
 func (l *lexer) emitSemicolon() {
 	l.start = l.pos
-	l.tokens <- token{typ: tokenSemicolon}
+	l.lastToken = &token{typ: tokenOpOrDelim, val: ";"}
+	l.tokens <- token{typ: tokenOpOrDelim, val: ";"}
 }
 
 // peeks at the lexer's current value, without emitting it or changing

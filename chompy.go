@@ -31,11 +31,9 @@ import "yo"
 
 func bro() {
 	brotato := myManShawn{}
-}
-`)
-	for t, ok := <-tokens; ok; t, ok = <-tokens{
+}`)
+	for t, ok := <-tokens; ok; t, ok = <-tokens {
 		fmt.Print(t)
 	}
 	fmt.Println()
 }
-

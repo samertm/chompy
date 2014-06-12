@@ -60,9 +60,11 @@ const (
 	alphaLower            = "abcdefghijklmnopqrstuvwxyz"
 	alphaUpper            = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	alpha                 = alphaLower + alphaUpper
+	letter = alpha + "_"
 	numSansZero           = "123456789"
 	num                   = numSansZero + "0"
 	alphaNum              = alpha + num
+	letterNum = letter + num
 )
 
 func Lex(name, input string) (*lexer, chan token) {
@@ -171,9 +173,9 @@ func (l *lexer) val() string {
 func lexStart(l *lexer) stateFn {
 	l.acceptRun(whitespaceSansNewline)
 	l.ignore()
-	if l.accept(alpha) {
+	if l.accept(letter) {
 		l.backup()
-		return lexAlpha
+		return lexLetter
 	}
 	if l.accept(numSansZero) {
 		l.backup()
@@ -188,10 +190,15 @@ func lexStart(l *lexer) stateFn {
 		l.backup()
 		return lexNewline
 	}
+	// idea: group every 1 char operator together.
+	if l.accept("+&=!()-|<[]*^<>{}/:,;%>.") {
+		l.backup()
+		return lexOpOrDelim
+	}
+
 	return nil
 }
 
-// TODO get this to not emit semicolons on blank lines
 func lexNewline(l *lexer) stateFn {
 	l.accept(newline)
 	l.ignore()
@@ -237,9 +244,9 @@ func lexNewline(l *lexer) stateFn {
 	return lexStart
 }
 
-func lexAlpha(l *lexer) stateFn {
-	if l.accept(alphaNum) {
-		l.acceptRun(alphaNum)
+func lexLetter(l *lexer) stateFn {
+	if l.accept(letter) {
+		l.acceptRun(letterNum)
 		isKeyword := false
 		// this turned out jankier than I thought it would..
 		switch l.val() {
@@ -348,4 +355,18 @@ func lexStringOut(l *lexer) stateFn {
 	l.next() // eat quote
 	l.ignore()
 	return lexStart
+}
+
+func lexOpOrDelim(l *lexer) stateFn {
+	// cover your eyes
+	// sorted by length
+	OpDelims := [...]string{"&^=", "...", "<<=", ">>=", "+=", "&^", "&=", "--", "&&", "%=", "==", ">>", "!=", ":=", "-=", "++", "|=", "/=", "||", "<<", "<=", ">=", "*=", "<-", "^=", "+", ":", "&", ".", "(", "!", ")", "%", "-", ";", "|", ",", "<", "=", "[", "/", "]", "}", "*", "{", "^", ">"}
+	for _, od := range OpDelims {
+		if strings.HasPrefix(l.input[l.pos:], od) {
+			l.pos += len(od)
+			l.emit(tokenDelimiter)
+			return lexStart
+		}
+	}
+	return nil
 }

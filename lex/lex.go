@@ -1,10 +1,8 @@
 package lex
 
 /* tasks remaining (ordered by significance):
- * - emit semicolon in all valid spots
  * - handle raw strings
  * - other stuff probably
- * - refactor lex.go into more than one file
  */
 
 import (

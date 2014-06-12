@@ -39,6 +39,7 @@ const (
 	letterNum             = letter + num
 )
 
+// sorted by length
 var opDelims = [...]string{"&^=", "...", "<<=", ">>=", "+=", "&^", "&=", "--", "&&", "%=", "==", ">>", "!=", ":=", "-=", "++", "|=", "/=", "||", "<<", "<=", ">=", "*=", "<-", "^=", "+", ":", "&", ".", "(", "!", ")", "%", "-", ";", "|", ",", "<", "=", "[", "/", "]", "}", "*", "{", "^", ">"}
 
 var keywords = [...]string{"break", "default", "func", "interface", "select", "case", "defer", "go", "map", "struct", "chan", "else", "goto", "package", "switch", "const", "fallthrough", "if", "range", "type", "continue", "for", "import", "return", "var"}
@@ -177,8 +178,6 @@ func lexStringOut(l *lexer) stateFn {
 }
 
 func lexOpOrDelim(l *lexer) stateFn {
-	// cover your eyes
-	// sorted by length
 	for _, od := range opDelims {
 		if strings.HasPrefix(l.input[l.pos:], od) {
 			l.pos += len(od)

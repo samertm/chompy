@@ -32,7 +32,7 @@ import "yo"
 func bro() {
 	brotato := myManShawn{}
 }
- `)
+`)
 	for t, ok := <-tokens; ok; t, ok = <-tokens{
 		fmt.Print(t)
 	}

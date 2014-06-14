@@ -9,13 +9,13 @@ type stateFn func(*lexer) stateFn
 const eof = -1
 
 const (
-	tokenError tokenType = iota
-	tokenEOF
-	tokenKeyword
-	tokenOpOrDelim
-	tokenIdentifier
-	tokenString
-	tokenInt
+	Error TokenType = iota
+	EOF
+	Keyword
+	OpOrDelim
+	Identifier
+	String
+	Int
 )
 
 const (
@@ -83,29 +83,29 @@ func semicolonRule(l *lexer) bool {
 		return false
 	}
 	validSemicolonInsert := false
-	switch l.lastToken.typ {
-	case tokenOpOrDelim:
-		if l.lastToken.val != "++" &&
-			l.lastToken.val != "--" &&
-			l.lastToken.val != ")" &&
-			l.lastToken.val != "]" &&
-			l.lastToken.val != "}" {
+	switch l.lastToken.Typ {
+	case OpOrDelim:
+		if l.lastToken.Val != "++" &&
+			l.lastToken.Val != "--" &&
+			l.lastToken.Val != ")" &&
+			l.lastToken.Val != "]" &&
+			l.lastToken.Val != "}" {
 			break
 		}
 		validSemicolonInsert = true
-	case tokenKeyword:
-		if l.lastToken.val != "break" &&
-			l.lastToken.val != "continue" &&
-			l.lastToken.val != "fallthrough" &&
-			l.lastToken.val != "return" {
+	case Keyword:
+		if l.lastToken.Val != "break" &&
+			l.lastToken.Val != "continue" &&
+			l.lastToken.Val != "fallthrough" &&
+			l.lastToken.Val != "return" {
 			break
 		}
 		validSemicolonInsert = true
-	case tokenIdentifier:
+	case Identifier:
 		validSemicolonInsert = true
-	case tokenInt:
+	case Int:
 		validSemicolonInsert = true
-	case tokenString:
+	case String:
 		validSemicolonInsert = true
 	}
 	if validSemicolonInsert {
@@ -126,9 +126,9 @@ func lexLetter(l *lexer) stateFn {
 	if l.accept(letter) {
 		l.acceptRun(letterNum)
 		if isKeyword(l.val()) {
-			l.emit(tokenKeyword)
+			l.emit(Keyword)
 		} else {
-			l.emit(tokenIdentifier)
+			l.emit(Identifier)
 		}
 		return lexStart
 	}
@@ -139,7 +139,7 @@ func lexLetter(l *lexer) stateFn {
 func lexDecimal(l *lexer) stateFn {
 	if l.accept(num) {
 		l.acceptRun(num)
-		l.emit(tokenInt)
+		l.emit(Int)
 		return lexStart
 	}
 	l.emitError("expected integer")
@@ -148,7 +148,7 @@ func lexDecimal(l *lexer) stateFn {
 
 func lexString(l *lexer) stateFn {
 	if l.accept(quote) {
-		// token.val does not contain the quote char
+		// token.Val does not contain the quote char
 		l.ignore()
 		return lexStringIn
 	}
@@ -175,7 +175,7 @@ func lexStringBackslash(l *lexer) stateFn {
 }
 
 func lexStringOut(l *lexer) stateFn {
-	l.emit(tokenString)
+	l.emit(String)
 	l.next() // eat quote
 	l.ignore()
 	return lexStart
@@ -185,7 +185,7 @@ func lexOpOrDelim(l *lexer) stateFn {
 	for _, od := range opDelims {
 		if strings.HasPrefix(l.input[l.pos:], od) {
 			l.pos += len(od)
-			l.emit(tokenOpOrDelim)
+			l.emit(OpOrDelim)
 			return lexStart
 		}
 	}

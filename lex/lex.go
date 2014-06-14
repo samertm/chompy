@@ -15,27 +15,27 @@ import (
 
 type state int
 
-type tokenType int
+type TokenType int
 
-type token struct {
-	typ tokenType
-	val string
+type Token struct {
+	Typ TokenType
+	Val string
 }
 
 // for debugging purposes
-func (t token) String() string {
-	return fmt.Sprintf("(%s %s)\n", typeName[t.typ], t.val)
+func (t Token) String() string {
+	return fmt.Sprintf("(%s %s)", typeName[t.Typ], t.Val)
 }
 
 // for debugging purposes
-var typeName = map[tokenType]string{
-	tokenError:      "Error",
-	tokenEOF:        "EOF",
-	tokenKeyword:    "Keyword",
-	tokenOpOrDelim:  "OpOrDelim",
-	tokenIdentifier: "Identifier",
-	tokenString:     "String",
-	tokenInt:        "Int",
+var typeName = map[TokenType]string{
+	Error:      "Error",
+	EOF:        "EOF",
+	Keyword:    "Keyword",
+	OpOrDelim:  "OpOrDelim",
+	Identifier: "Identifier",
+	String:     "String",
+	Int:        "Int",
 }
 
 type lexer struct {
@@ -46,8 +46,8 @@ type lexer struct {
 	width int    // width of last rune read
 	// The last token processed on the line for newline insertion.
 	// Error tokens are not stored.
-	lastToken *token
-	tokens    chan token // channel of scanned tokens
+	lastToken *Token
+	Tokens    chan Token // channel of scanned Tokens
 }
 
 func isKeyword(val string) bool {
@@ -59,21 +59,21 @@ func isKeyword(val string) bool {
 	return false
 }
 
-func Lex(name, input string) (*lexer, chan token) {
+func Lex(name, input string) (*lexer, chan Token) {
 	l := &lexer{
 		name:   name,
 		input:  input,
-		tokens: make(chan token),
+		Tokens: make(chan Token),
 	}
 	go l.run()
-	return l, l.tokens
+	return l, l.Tokens
 }
 
 func (l *lexer) run() {
 	for state := lexStart; state != nil; {
 		state = state(l)
 	}
-	close(l.tokens)
+	close(l.Tokens)
 }
 
 // reads & returns the next rune, steps width forward
@@ -136,25 +136,25 @@ func (l *lexer) ignore() {
 	l.start = l.pos
 }
 
-func (l *lexer) emit(t tokenType) {
+func (l *lexer) emit(t TokenType) {
 	v := l.input[l.start:l.pos]
 	l.start = l.pos
-	l.lastToken = &token{typ: t, val: v}
-	l.tokens <- *l.lastToken
+	l.lastToken = &Token{Typ: t, Val: v}
+	l.Tokens <- *l.lastToken
 }
 
 func (l *lexer) emitErrorf(format string, a ...interface{}) {
-	l.tokens <- token{typ: tokenError, val: fmt.Sprintf(format, a)}
+	l.Tokens <- Token{Typ: Error, Val: fmt.Sprintf(format, a)}
 }
 
 func (l *lexer) emitError(a ...interface{}) {
-	l.tokens <- token{typ: tokenError, val: fmt.Sprint(a)}
+	l.Tokens <- Token{Typ: Error, Val: fmt.Sprint(a)}
 }
 
 func (l *lexer) emitSemicolon() {
 	l.start = l.pos
-	l.lastToken = &token{typ: tokenOpOrDelim, val: ";"}
-	l.tokens <- token{typ: tokenOpOrDelim, val: ";"}
+	l.lastToken = &Token{Typ: OpOrDelim, Val: ";"}
+	l.Tokens <- Token{Typ: OpOrDelim, Val: ";"}
 }
 
 // peeks at the lexer's current value, without emitting it or changing

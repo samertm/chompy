@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/samertm/chompy/lex"
+	"github.com/samertm/chompy/parse"
 )
 
 var _ = fmt.Print // debugging
@@ -11,20 +12,9 @@ func main() {
 	_, tokens := lex.Lex("bro", `
 package main
 
-import (
-	"fmt"
-	"github.com/samertm/chompy/lex"
-)
-
-var _ = fmt.Print // debugging
-
-func main() {
-	_, tokens := lex.Lex("bro", "string plz")
-	for t, ok := <-tokens; ok; t, ok = <-tokens{
-		fmt.Print(t)
-	}
-}`)
-	for t, ok := <-tokens; ok; t, ok = <-tokens {
-		fmt.Print(t)
+import "fmt"`)
+	nodes := parse.Start(tokens)
+	for n, ok := <-nodes; ok; n, ok = <-nodes {
+		n.Eval()
 	}
 }

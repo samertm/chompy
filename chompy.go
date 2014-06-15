@@ -12,7 +12,11 @@ func main() {
 	_, tokens := lex.Lex("bro", `
 package main
 
-import "fmt"
+import (
+	_ "fmt"
+	f "meow"
+	. "cat"
+)
 `)
 	tree := parse.Start(tokens)
 	tree.Eval()

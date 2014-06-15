@@ -11,7 +11,7 @@ import (
 )
 
 var _ = log.Fatal // debugging
-var _ = errors.New
+var _ = errors.New // debugging
 
 type parser struct {
 	// THOUGHT: might remove curr
@@ -30,7 +30,7 @@ func (p *parser) next() *lex.Token {
 	if len(p.oldToks) != 0 {
 		curr := p.oldToks[0]
 		p.oldToks = p.oldToks[1:]
-		fmt.Println("oldToks:", curr)
+		// fmt.Println("oldToks:", curr)
 		return curr
 	}
 	if t, ok := <-p.toks; ok {
@@ -38,11 +38,8 @@ func (p *parser) next() *lex.Token {
 		if curr.Typ == lex.Error {
 			log.Fatal("error lexing: ", curr)
 			return nil
-		} else if curr.Typ == lex.EOF {
-			log.Fatal("hit eof")
-			return nil
 		}
-		fmt.Println("chan:   ", curr)
+		//fmt.Println("chan:   ", curr)
 		return curr
 	}
 	log.Fatal("token stream closed")
@@ -105,11 +102,15 @@ func (p *pkg) Eval() {
 }
 
 type impts struct {
-	imports []string
+	imports []Node
 }
 
 func (i *impts) Eval() {
-	fmt.Println("imports: ", i.imports)
+	fmt.Println("start imports")
+	for _, im := range i.imports {
+		im.Eval()
+	}
+	fmt.Println("end imports")
 }
 
 type impt struct {
@@ -155,7 +156,7 @@ func sourceFile(p *parser) *tree {
 		return tr
 	}
 	p.next()
-	if p.accept(topImportDecl) {
+	for p.accept(topImportDecl) {
 		impts := importDecl(p)
 		tr.kids = append(tr.kids, impts)
 		if err := p.expect(tokSemicolon); err != nil {
@@ -183,28 +184,28 @@ func packageName(p *parser) Node {
 
 func importDecl(p *parser) Node {
 	p.next() // eat "import"
-	var n Node
+	i := &impts{imports: make([]Node, 0)}
 	if p.accept(tokOpenParen) {
 		p.next() // eat "("
-		// TEMP: only grabs one importSpec
-		if p.accept(topImportSpec...) {
-			n = importSpec(p)
+		for p.accept(topImportSpec...) {
+			i.imports = append(i.imports, importSpec(p))
+			if err := p.expect(tokSemicolon); err != nil {
+				return err
+			}
+			p.next() // eat ";"
 		}
-		if err := p.expect(tokSemicolon); err != nil {
-			return err
-		}
-		p.next() // eat ";"
 		if err := p.expect(tokCloseParen); err != nil {
 			return err
 		}
 		p.next() // eat ")"
-		return n
+		return i
 	}
 	// a single importSpec
 	if !p.accept(topImportSpec...) {
 		return &erro{"expected importSpec"}
 	}
-	return importSpec(p)
+	i.imports = append(i.imports, importSpec(p))
+	return i
 }
 
 func importSpec(p *parser) Node {

@@ -6,24 +6,42 @@ import (
 	"fmt"
 )
 
+type Node interface {
+	Eval() string
+}
+
+type grammarFn func(*parser) Node
+
+type tree struct {
+	kids []Node
+}
+
+func (t *tree) Eval() (s string) {
+	for _, k := range t.kids {
+		s += k.Eval()
+	}
+	return
+}
+
 type pkg struct {
 	name string
 }
 
-func (p *pkg) Eval() {
-	fmt.Println("in package ", p.name)
+func (p *pkg) Eval() string {
+	return fmt.Sprintln("in package ", p.name)
 }
 
 type impts struct {
 	imports []Node
 }
 
-func (i *impts) Eval() {
-	fmt.Println("start imports")
+func (i *impts) Eval() (s string) {
+	s += fmt.Sprintln("start imports")
 	for _, im := range i.imports {
-		im.Eval()
+		s += im.Eval()
 	}
-	fmt.Println("end imports")
+	s += fmt.Sprintln("end imports")
+	return
 }
 
 type impt struct {
@@ -31,16 +49,16 @@ type impt struct {
 	imptName string
 }
 
-func (i *impt) Eval() {
-	fmt.Println("import: pkgName: " + i.pkgName + " imptName: " + i.imptName)
+func (i *impt) Eval() string {
+	return fmt.Sprintln("import: pkgName: " + i.pkgName + " imptName: " + i.imptName)
 }
 
 type erro struct {
 	desc string
 }
 
-func (e *erro) Eval() {
-	fmt.Println("error: ", e.desc)
+func (e *erro) Eval() string {
+	return fmt.Sprintln("error: ", e.desc)
 }
 
 func Start(toks chan lex.Token) Node {
@@ -76,6 +94,9 @@ func sourceFile(p *parser) *tree {
 			tr.kids = append(tr.kids, err)
 		}
 		p.next()
+	}
+	for p.accept(topTopLevelDecl...) {
+		// things
 	}
 	close(p.nodes)
 	return tr

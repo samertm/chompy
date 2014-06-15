@@ -72,19 +72,3 @@ func (p *parser) expect(tok lex.Token) *erro {
 	return &erro{"expected " + tok.String()}
 }
 
-type Node interface {
-	Eval()
-}
-
-type grammarFn func(*parser) Node
-
-type tree struct {
-	kids []Node
-}
-
-func (t *tree) Eval() {
-	for _, k := range t.kids {
-		k.Eval()
-	}
-}
-

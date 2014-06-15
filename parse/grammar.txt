@@ -4,3 +4,40 @@ PackageName    = identifier .
 ImportDecl       = "import" ( ImportSpec | "(" { ImportSpec ";" } ")" ) .
 ImportSpec       = [ "." | PackageName ] ImportPath .
 ImportPath       = string_lit .
+
+--- implementing ---
+
+TopLevelDecl  = Declaration .
+Declaration   = ConstDecl . 
+ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
+ConstSpec      = IdentifierList .
+
+--- not implemented ---
+
+TopLevelDecl  = Declaration | FunctionDecl | MethodDecl .
+Declaration   = ConstDecl | TypeDecl | VarDecl .
+ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
+ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
+
+IdentifierList = identifier { "," identifier } .
+ExpressionList = Expression { "," Expression } .
+
+Type      = TypeName | TypeLit | "(" Type ")" .
+TypeName  = identifier | QualifiedIdent .
+TypeLit   = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
+	    SliceType | MapType | ChannelType .
+
+Type      = TypeName | TypeLit | "(" Type ")" .
+TypeName  = identifier | QualifiedIdent .
+TypeLit   = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
+	    SliceType | MapType | ChannelType .
+
+Expression = UnaryExpr | Expression binary_op UnaryExpr .
+UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
+
+binary_op  = "||" | "&&" | rel_op | add_op | mul_op .
+rel_op     = "==" | "!=" | "<" | "<=" | ">" | ">=" .
+add_op     = "+" | "-" | "|" | "^" .
+mul_op     = "*" | "/" | "%" | "<<" | ">>" | "&" | "&^" .
+
+unary_op   = "+" | "-" | "!" | "^" | "*" | "&" | "<-" .

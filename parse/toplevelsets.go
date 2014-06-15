@@ -23,4 +23,11 @@ var (
 		topImportPath,
 	}
 	topImportPath = tokString
+	topTopLevelDecl = append([]lex.Token{}, topDeclaration...)
+	topDeclaration = []lex.Token{
+		topConstDecl,
+	}
+	topConstDecl = lex.Token{Typ: lex.Keyword, Val: "const"}
+	topConstSpec = topIdentifierList
+	topIdentifierList = tokIdentifier
 )

@@ -12,9 +12,8 @@ func main() {
 	_, tokens := lex.Lex("bro", `
 package main
 
-import "fmt"`)
-	nodes := parse.Start(tokens)
-	for n, ok := <-nodes; ok; n, ok = <-nodes {
-		n.Eval()
-	}
+import "fmt"
+`)
+	tree := parse.Start(tokens)
+	tree.Eval()
 }

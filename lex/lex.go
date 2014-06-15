@@ -27,6 +27,17 @@ func (t Token) String() string {
 	return fmt.Sprintf("(%s %s)", typeName[t.Typ], t.Val)
 }
 
+// equivalence, not equality.
+func TokenEquiv(t1 Token, t2 Token) bool {
+	if t1.Val == "" || t2.Val == "" {
+		return t1.Typ == t2.Typ
+	}
+	if t1.Typ == t2.Typ {
+		return t1.Val == t2.Val
+	}
+	return false
+}
+
 // for debugging purposes
 var typeName = map[TokenType]string{
 	Error:      "Error",
@@ -149,6 +160,10 @@ func (l *lexer) emitErrorf(format string, a ...interface{}) {
 
 func (l *lexer) emitError(a ...interface{}) {
 	l.Tokens <- Token{Typ: Error, Val: fmt.Sprint(a)}
+}
+
+func (l *lexer) emitEof() {
+	l.Tokens <- Token{Typ: EOF}
 }
 
 func (l *lexer) emitSemicolon() {

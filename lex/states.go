@@ -195,6 +195,7 @@ func lexOpOrDelim(l *lexer) stateFn {
 func lexEof(l *lexer) stateFn {
 	if l.next() == eof {
 		semicolonRule(l)
+		l.emitEof()
 		return nil
 	}
 	l.emitError("expected eof")

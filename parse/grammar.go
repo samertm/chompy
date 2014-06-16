@@ -2,7 +2,10 @@ package parse
 
 import (
 	"github.com/samertm/chompy/lex"
+	"fmt"
 )
+
+var _ = fmt.Println // debugging
 
 func Start(toks chan lex.Token) Node {
 	p := &parser{
@@ -156,11 +159,12 @@ func constDecl(p *parser) Node {
 
 func constSpec(p *parser) Node {
 	c := &cnst{}
-	if p.accept(topIdentifierList) {
-		c.is = identifierList(p)
-		return c
+	c.is = identifierList(p)
+	if p.accept(tokEqual) {
+		p.next() // eat "="
+		c.es = expressionList(p)
 	}
-	return &erro{"expected IdentifierList"}
+	return c
 }
 
 func identifierList(p *parser) Node {
@@ -177,4 +181,66 @@ func identifierList(p *parser) Node {
 		idnts.is = append(idnts.is, id.Val)
 	}
 	return idnts
+}
+
+func expressionList(p *parser) Node {
+	exs := &exprs{}
+	exs.es = append(exs.es, expression(p))
+	for p.accept(tokComma) {
+		p.next() // eat comma
+		exs.es = append(exs.es, expression(p))
+	}
+	return exs
+}
+
+func expression(p *parser) Node {
+	if p.accept(topUnaryExpr...) {
+		return unaryExpr(p)
+	}
+	return &erro{"expected unary expr"}
+}
+
+func unaryExpr(p *parser) Node {
+	un := &unaryE{}
+	if p.accept(topPrimaryExpr...) {
+		un.expr = primaryExpr(p)
+		return un
+	}
+	if p.accept(tokUnaryOp...) {
+		uOp := p.next() // grab unary operator
+		un.op = uOp.Val
+		un.expr = unaryExpr(p)
+		return un
+	}
+	return &erro{"expected primary exp or unary_op"}
+}
+
+func primaryExpr(p *parser) Node {
+	if p.accept(topOperand...) {
+		return operand(p)
+	}
+	return &erro{"expected operand"}
+}
+
+func operand(p *parser) Node {
+	if p.accept(topLiteral...) {
+		return literal(p)
+	}
+	if p.accept(topOperandName) {
+		return operandName(p)
+	}
+	return &erro{"Expected literal or operand name"}
+}
+
+func literal(p *parser) Node {
+	if p.accept(topBasicLit...) {
+		l := p.next() // int_lit or string_lit
+		return &lit{typ: l.Typ.String(), val: l.Val}
+	}
+	return &erro{"Expected basic literal"}
+}
+
+func operandName(p *parser) Node {
+	id := p.next() // get identifier
+	return &opName{id: id.String()}
 }

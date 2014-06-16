@@ -1,4 +1,4 @@
---- implemented ---
+--- implemented complete ---
 
 SourceFile       = PackageClause ";" { ImportDecl ";" } { TopLevelDecl ";" } .
 PackageClause  = "package" PackageName .
@@ -6,14 +6,37 @@ PackageName    = identifier .
 ImportDecl       = "import" ( ImportSpec | "(" { ImportSpec ";" } ")" ) .
 ImportSpec       = [ "." | PackageName ] ImportPath .
 ImportPath       = string_lit .
+ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
+IdentifierList = identifier { "," identifier } .
 
---- implementing ---
+binary_op  = "||" | "&&" | rel_op | add_op | mul_op .
+rel_op     = "==" | "!=" | "<" | "<=" | ">" | ">=" .
+add_op     = "+" | "-" | "|" | "^" .
+mul_op     = "*" | "/" | "%" | "<<" | ">>" | "&" | "&^" .
+
+unary_op   = "+" | "-" | "!" | "^" | "*" | "&" | "<-" .
+
+OperandName = identifier .
+--- implemented incomplete ---
 
 TopLevelDecl  = Declaration .
+Declaration   = ConstDecl .
+ConstSpec      = IdentifierList [ "=" ExpressionList ] .
 Declaration   = ConstDecl . 
-ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
-ConstSpec      = IdentifierList .
-IdentifierList = identifier { "," identifier } .
+
+ExpressionList = Expression { "," Expression } .
+
+Expression = UnaryExpr .
+UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
+
+PrimaryExpr =
+	Operand .
+
+Operand    = Literal | OperandName .
+Literal    = BasicLit .
+BasicLit   = int_lit | string_lit .
+
+--- implementing ---
 
 
 --- not implemented ---
@@ -23,7 +46,6 @@ Declaration   = ConstDecl | TypeDecl | VarDecl .
 ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
 ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
 
-IdentifierList = identifier { "," identifier } .
 ExpressionList = Expression { "," Expression } .
 
 TypeDecl     = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .

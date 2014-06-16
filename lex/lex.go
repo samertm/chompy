@@ -24,7 +24,7 @@ type Token struct {
 
 // for debugging purposes
 func (t Token) String() string {
-	return fmt.Sprintf("(%s %s)", typeName[t.Typ], t.Val)
+	return fmt.Sprintf("(%s %s)", t.Typ.String(), t.Val)
 }
 
 // equivalence, not equality.
@@ -38,15 +38,17 @@ func TokenEquiv(t1 Token, t2 Token) bool {
 	return false
 }
 
-// for debugging purposes
-var typeName = map[TokenType]string{
-	Error:      "Error",
-	EOF:        "EOF",
-	Keyword:    "Keyword",
-	OpOrDelim:  "OpOrDelim",
-	Identifier: "Identifier",
-	String:     "String",
-	Int:        "Int",
+func (i TokenType) String() string {
+	switch i {
+	case Error: return     "Error"
+	case EOF:       return "EOF"
+	case Keyword:    return "Keyword"
+	case OpOrDelim: return "OpOrDelim"
+	case Identifier: return "Identifier"
+	case String:    return "String"
+	case Int:       return  "Int"
+	}
+	return "Whoops"
 }
 
 type lexer struct {

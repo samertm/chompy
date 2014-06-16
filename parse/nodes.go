@@ -76,7 +76,7 @@ func (c *consts) Eval() (s string) {
 type cnst struct {
 	is Node // idents
 	t  string
-	es []Node // expressions
+	es Node // expressions
 }
 
 func (c *cnst) Eval() (s string) {
@@ -84,8 +84,8 @@ func (c *cnst) Eval() (s string) {
 	// subtle cisgendering
 	s += c.is.Eval()
 	s += "type: " + c.t + "\n"
-	for _, e := range c.es {
-		s += e.Eval()
+	if c.es != nil {
+		s += c.es.Eval()
 	}
 	s += "end const spec\n"
 	return
@@ -98,6 +98,46 @@ type idents struct {
 func (i *idents) Eval() (s string) {
 	for _, ident := range i.is {
 		s += "ident: " + ident + "\n"
+	}
+	return
+}
+
+type lit struct {
+	typ string
+	val string
+}
+
+func (l *lit) Eval() string {
+	return "lit: type: " + l.typ + " val: " + l.val + "\n"
+}
+
+type opName struct {
+	id string
+}
+
+func (o *opName) Eval() string {
+	return "opname: " + o.id + "\n"
+}
+
+type unaryE struct {
+	op string
+	expr Node
+}
+
+func (u *unaryE) Eval() (s string) {
+	s += "op: " + u.op + "\n"
+	s += u.expr.Eval()
+	return
+}
+
+// expression list
+type exprs struct {
+	es []Node
+}
+
+func (e *exprs) Eval() (s string) {
+	for _, ex := range e.es {
+		s += ex.Eval()
 	}
 	return
 }

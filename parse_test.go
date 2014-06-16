@@ -43,6 +43,12 @@ const (
 	tibs
 )
 `,
+	`package main
+
+import "fmt"
+
+const ribs = 4
+`,
 }
 
 var outputs = []string{
@@ -92,6 +98,19 @@ type:
 end const spec
 end const decl
 `,
+		`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start const decl
+start const spec
+ident: ribs
+type: 
+op: 
+lit: type: Int val: 4
+end const spec
+end const decl
+`,
 }
 
 func TestParse(t *testing.T) {
@@ -104,7 +123,7 @@ func TestParse(t *testing.T) {
 		tree := parse.Start(tokens)
 		result := tree.Eval()
 		if outputs[i] != result {
-			t.Errorf("\n---expected---\n%s\n---recieved---\n%s", outputs[i], result)
+			t.Errorf("\n---expected---\n%s---recieved---\n%s---end---", outputs[i], result)
 		}
 	}
 }

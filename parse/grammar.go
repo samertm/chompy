@@ -18,6 +18,7 @@ func Start(toks chan lex.Token) Node {
 // every nonterminal function assumes that it is in the correct starting state,
 // except for sourceFile
 func sourceFile(p *parser) *tree {
+	defer close(p.nodes)
 	tr := &tree{kids: make([]Node, 0)}
 	if !p.accept(topPackageClause) {
 		tr.kids = append(tr.kids, &erro{"PackageClause not found"})
@@ -46,7 +47,6 @@ func sourceFile(p *parser) *tree {
 		}
 		p.next() // eat semicolon
 	}
-	close(p.nodes)
 	return tr
 }
 
@@ -134,6 +134,21 @@ func constDecl(p *parser) Node {
 	cs := &consts{}
 	if p.accept(topConstSpec) {
 		cs.cs = append(cs.cs, constSpec(p))
+		return cs
+	}
+	if p.accept(tokOpenParen) {
+		p.next() // eat "("
+		for p.accept(topConstSpec) {
+			cs.cs = append(cs.cs, constSpec(p))
+			if err := p.expect(tokSemicolon); err != nil {
+				return err
+			}
+			p.next() // eat ";"
+		}
+		if err := p.expect(tokCloseParen); err != nil {
+			return err
+		}
+		p.next() // eat ")"
 		return cs
 	}
 	return &erro{"expected ConstSpec"}

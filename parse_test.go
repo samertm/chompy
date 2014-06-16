@@ -32,6 +32,17 @@ import (
 
 const ribs, mibs
 `,
+	`package main
+
+import (
+	"fmt"
+)
+
+const (
+	ribs, mibs
+	tibs
+)
+`,
 }
 
 var outputs = []string{
@@ -61,6 +72,22 @@ start const decl
 start const spec
 ident: ribs
 ident: mibs
+type: 
+end const spec
+end const decl
+`,
+		`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start const decl
+start const spec
+ident: ribs
+ident: mibs
+type: 
+end const spec
+start const spec
+ident: tibs
 type: 
 end const spec
 end const decl

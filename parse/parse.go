@@ -69,6 +69,5 @@ func (p *parser) expect(tok lex.Token) *erro {
 	if p.accept(tok) {
 		return nil
 	}
-	return &erro{"expected " + tok.String()}
+	return &erro{"expected " + tok.String() + " recieved " + p.peek().String()}
 }
-

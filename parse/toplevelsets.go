@@ -11,6 +11,7 @@ var (
 	tokString     = lex.Token{Typ: lex.String}
 	tokOpenParen  = lex.Token{Typ: lex.OpOrDelim, Val: "("}
 	tokCloseParen = lex.Token{Typ: lex.OpOrDelim, Val: ")"}
+	tokComma      = lex.Token{Typ: lex.OpOrDelim, Val: ","}
 )
 
 var (
@@ -22,12 +23,12 @@ var (
 		topPackageName,
 		topImportPath,
 	}
-	topImportPath = tokString
+	topImportPath   = tokString
 	topTopLevelDecl = append([]lex.Token{}, topDeclaration...)
-	topDeclaration = []lex.Token{
+	topDeclaration  = []lex.Token{
 		topConstDecl,
 	}
-	topConstDecl = lex.Token{Typ: lex.Keyword, Val: "const"}
-	topConstSpec = topIdentifierList
+	topConstDecl      = lex.Token{Typ: lex.Keyword, Val: "const"}
+	topConstSpec      = topIdentifierList
 	topIdentifierList = tokIdentifier
 )

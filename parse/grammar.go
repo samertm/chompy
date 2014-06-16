@@ -2,64 +2,7 @@ package parse
 
 import (
 	"github.com/samertm/chompy/lex"
-
-	"fmt"
 )
-
-type Node interface {
-	Eval() string
-}
-
-type grammarFn func(*parser) Node
-
-type tree struct {
-	kids []Node
-}
-
-func (t *tree) Eval() (s string) {
-	for _, k := range t.kids {
-		s += k.Eval()
-	}
-	return
-}
-
-type pkg struct {
-	name string
-}
-
-func (p *pkg) Eval() string {
-	return fmt.Sprintln("in package ", p.name)
-}
-
-type impts struct {
-	imports []Node
-}
-
-func (i *impts) Eval() (s string) {
-	s += fmt.Sprintln("start imports")
-	for _, im := range i.imports {
-		s += im.Eval()
-	}
-	s += fmt.Sprintln("end imports")
-	return
-}
-
-type impt struct {
-	pkgName  string
-	imptName string
-}
-
-func (i *impt) Eval() string {
-	return fmt.Sprintln("import: pkgName: " + i.pkgName + " imptName: " + i.imptName)
-}
-
-type erro struct {
-	desc string
-}
-
-func (e *erro) Eval() string {
-	return fmt.Sprintln("error: ", e.desc)
-}
 
 func Start(toks chan lex.Token) Node {
 	p := &parser{
@@ -86,17 +29,22 @@ func sourceFile(p *parser) *tree {
 		tr.kids = append(tr.kids, err)
 		return tr
 	}
-	p.next()
+	p.next() // eat semicolon
 	for p.accept(topImportDecl) {
 		impts := importDecl(p)
 		tr.kids = append(tr.kids, impts)
 		if err := p.expect(tokSemicolon); err != nil {
 			tr.kids = append(tr.kids, err)
 		}
-		p.next()
+		p.next() // eat semicolon
 	}
 	for p.accept(topTopLevelDecl...) {
-		// things
+		topDecl := topLevelDecl(p)
+		tr.kids = append(tr.kids, topDecl)
+		if err := p.expect(tokSemicolon); err != nil {
+			tr.kids = append(tr.kids, err)
+		}
+		p.next() // eat semicolon
 	}
 	close(p.nodes)
 	return tr
@@ -163,4 +111,55 @@ func importSpec(p *parser) Node {
 	t := p.next()
 	i.imptName = t.Val
 	return i
+}
+
+func topLevelDecl(p *parser) Node {
+	if p.accept(topDeclaration...) {
+		decl := declaration(p)
+		return decl
+	}
+	return &erro{"expected const"}
+}
+
+func declaration(p *parser) Node {
+	if p.accept(topConstDecl) {
+		consts := constDecl(p)
+		return consts
+	}
+	return &erro{"expected const"}
+}
+
+func constDecl(p *parser) Node {
+	p.next() // eat "const"
+	cs := &consts{}
+	if p.accept(topConstSpec) {
+		cs.cs = append(cs.cs, constSpec(p))
+		return cs
+	}
+	return &erro{"expected ConstSpec"}
+}
+
+func constSpec(p *parser) Node {
+	c := &cnst{}
+	if p.accept(topIdentifierList) {
+		c.is = identifierList(p)
+		return c
+	}
+	return &erro{"expected IdentifierList"}
+}
+
+func identifierList(p *parser) Node {
+	idnts := &idents{}
+	id := p.next() // first identifier
+	idnts.is = append(idnts.is, id.Val)
+	// look for form: "," identifier
+	for p.accept(tokComma) {
+		p.next() // throw away ","
+		if !p.accept(tokIdentifier) {
+			return &erro{"expected identifier"}
+		}
+		id = p.next() // identifier
+		idnts.is = append(idnts.is, id.Val)
+	}
+	return idnts
 }

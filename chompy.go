@@ -13,11 +13,11 @@ func main() {
 package main
 
 import (
-	_ "fmt"
-	f "meow"
-	. "cat"
+	"fmt"
 )
+
+const ribs
 `)
 	tree := parse.Start(tokens)
-	tree.Eval()
+	fmt.Print(tree.Eval())
 }

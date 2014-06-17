@@ -82,6 +82,18 @@ import "fmt"
 
 type thangs int
 `,
+	`package main
+
+import "fmt"
+
+var meow int
+`,
+	`package main
+
+import "fmt"
+
+var meow int = 4 + 4
+`,
 }
 
 var outputs = []string{
@@ -213,6 +225,33 @@ ident: thangs
 type: int
 end typespec
 end typedecl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start vardecl
+start varspec
+ident: meow
+type: int
+end varspec
+end vardecl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start vardecl
+start varspec
+ident: meow
+type: int
+binary_op: +
+op: 
+lit: type: Int val: 4
+op: 
+lit: type: Int val: 4
+end varspec
+end vardecl
 `,
 }
 

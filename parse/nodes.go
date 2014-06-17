@@ -94,12 +94,12 @@ func (c *cnst) Eval() (s string) {
 }
 
 type idents struct {
-	is []string
+	is []Node
 }
 
 func (i *idents) Eval() (s string) {
 	for _, ident := range i.is {
-		s += "ident: " + ident + "\n"
+		s += "ident: " + ident.Eval() + "\n"
 	}
 	return
 }
@@ -216,5 +216,39 @@ func (t *typespec) Eval() (s string) {
 		s += t.typ.Eval()
 	}
 	s += "end typespec\n"
+	return
+}
+
+type vars struct {
+	vs []Node
+}
+
+func (v *vars) Eval() (s string) {
+	s += "start vardecl\n"
+	for _, va := range v.vs {
+		s += va.Eval()
+	}
+	s += "end vardecl\n"
+	return
+}
+
+type varspec struct {
+	idents Node 
+	t Node // type
+	exprs Node
+}
+
+func (v *varspec) Eval() (s string) {
+	s += "start varspec\n"
+	if v.idents != nil {
+		s += v.idents.Eval()
+	}
+	if v.t != nil {
+		s += v.t.Eval()
+	}
+	if v.exprs != nil {
+		s += v.exprs.Eval()
+	}
+	s += "end varspec\n"
 	return
 }

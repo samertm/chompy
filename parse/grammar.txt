@@ -26,10 +26,17 @@ Expression = UnaryExpr | Expression binary_op UnaryExpr .
 ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
 QualifiedIdent = PackageName "." identifier .
 
+TypeDecl     = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .
+TypeSpec     = identifier Type .
+TypeName  = identifier | QualifiedIdent .
+
+Declaration   = ConstDecl | TypeDecl | VarDecl .
+
+VarDecl     = "var" ( VarSpec | "(" { VarSpec ";" } ")" ) .
+VarSpec     = IdentifierList ( Type [ "=" ExpressionList ] | "=" ExpressionList ) .
 --- implemented incomplete ---
 
 TopLevelDecl  = Declaration .
-Declaration   = ConstDecl | TypeDecl .
 
 PrimaryExpr =
 	Operand .
@@ -38,28 +45,15 @@ Operand    = Literal | OperandName .
 Literal    = BasicLit .
 BasicLit   = int_lit | string_lit .
 
-
 Type      = TypeName | "(" Type ")" .
-TypeName  = identifier | QualifiedIdent .
-
-
-
-TypeDecl     = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .
-TypeSpec     = identifier Type .
 
 --- implementing ---
-
 
 --- not implemented ---
 
 TopLevelDecl  = Declaration | FunctionDecl | MethodDecl .
-Declaration   = ConstDecl | TypeDecl | VarDecl .
-
-TypeDecl     = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .
-TypeSpec     = identifier Type .
 
 Type      = TypeName | TypeLit | "(" Type ")" .
-TypeName  = identifier | QualifiedIdent .
 TypeLit   = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
 	    SliceType | MapType | ChannelType .
 
@@ -106,8 +100,6 @@ ChannelType = ( "chan" [ "<-" ] | "<-" "chan" ) ElementType .
 Block = "{" StatementList "}" .
 StatementList = { Statement ";" } .
 
-VarDecl     = "var" ( VarSpec | "(" { VarSpec ";" } ")" ) .
-VarSpec     = IdentifierList ( Type [ "=" ExpressionList ] | "=" ExpressionList ) .
 
 ShortVarDecl = IdentifierList ":=" ExpressionList .
 

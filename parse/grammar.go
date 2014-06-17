@@ -133,6 +133,10 @@ func declaration(p *parser) Node {
 		types := typeDecl(p)
 		return types
 	}
+	if p.accept(topVarDecl) {
+		vars := varDecl(p)
+		return vars
+	}
 	return &erro{"expected const"}
 }
 
@@ -185,7 +189,7 @@ func constSpec(p *parser) Node {
 func identifierList(p *parser) Node {
 	idnts := &idents{}
 	id := p.next() // first identifier
-	idnts.is = append(idnts.is, id.Val)
+	idnts.is = append(idnts.is, &ident{name: id.Val})
 	// look for form: "," identifier
 	for p.accept(tokComma) {
 		p.next() // throw away ","
@@ -193,7 +197,7 @@ func identifierList(p *parser) Node {
 			return &erro{"expected identifier"}
 		}
 		id = p.next() // identifier
-		idnts.is = append(idnts.is, id.Val)
+		idnts.is = append(idnts.is, &ident{name: id.Val})
 	}
 	return idnts
 }
@@ -333,4 +337,54 @@ func typeSpec(p *parser) Node {
 	}
 	spec.typ = typeGrammar(p)
 	return spec
+}
+
+func varDecl(p *parser) Node {
+	p.next() // eat "var"
+	vs := &vars{}
+	if p.accept(topVarSpec) {
+		vs.vs = append(vs.vs, varSpec(p))
+		return vs
+	}
+	if err := p.expect(tokOpenParen); err != nil {
+		return err
+	}
+	p.next() // eat "("
+	for p.accept(topVarSpec) {
+		vs.vs = append(vs.vs, varSpec(p))
+		if err := p.expect(tokSemicolon); err != nil {
+			return err
+		}
+		p.next() // eat ";"
+	}
+	if err := p.expect(tokCloseParen); err != nil {
+		return err
+	}
+	p.next() // eat ")"
+	return vs
+}
+
+func varSpec(p *parser) Node {
+	spec := &varspec{}
+	spec.idents = identifierList(p)
+	if p.accept(topType...) {
+		spec.t = typeGrammar(p)
+		if p.accept(tokEqual) {
+			p.next() // eat "="
+			if !p.accept(topExpressionList...) {
+				return &erro{"Expected expression list"}
+			}
+			spec.exprs = expressionList(p)
+		}
+		return spec
+	}
+	if p.accept(tokEqual) {
+		p.next() // eat "="
+		if !p.accept(topExpressionList...) {
+			return &erro{"Expected expression list"}
+		}
+		spec.exprs = expressionList(p)
+		return spec
+	}
+	return &erro{"Expected type or expression list"}
 }

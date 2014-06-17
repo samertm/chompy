@@ -1,8 +1,8 @@
 package parse
 
 import (
-	"github.com/samertm/chompy/lex"
 	"fmt"
+	"github.com/samertm/chompy/lex"
 )
 
 var _ = fmt.Println // debugging
@@ -194,10 +194,24 @@ func expressionList(p *parser) Node {
 }
 
 func expression(p *parser) Node {
-	if p.accept(topUnaryExpr...) {
-		return unaryExpr(p)
+	e := &expr{}
+	firstE := e
+	if !p.accept(topUnaryExpr...) {
+		return &erro{"Expected unary expression"}
 	}
-	return &erro{"expected unary expr"}
+	e.firstN = unaryExpr(p)
+	for p.accept(tokBinaryOp...) {
+		bOp := p.next() // grab binary operator
+		e.binOp = bOp.Val
+		if !p.accept(topUnaryExpr...) {
+			fmt.Println(p.peek())
+			return &erro{"Expected unary expression recursed"}
+		}
+		nextE := &expr{firstN: unaryExpr(p)}
+		e.secondN = nextE
+		e = nextE
+	}
+	return firstE
 }
 
 func unaryExpr(p *parser) Node {

@@ -17,6 +17,8 @@ mul_op     = "*" | "/" | "%" | "<<" | ">>" | "&" | "&^" .
 unary_op   = "+" | "-" | "!" | "^" | "*" | "&" | "<-" .
 
 OperandName = identifier .
+ExpressionList = Expression { "," Expression } .
+UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
 --- implemented incomplete ---
 
 TopLevelDecl  = Declaration .
@@ -24,10 +26,8 @@ Declaration   = ConstDecl .
 ConstSpec      = IdentifierList [ "=" ExpressionList ] .
 Declaration   = ConstDecl . 
 
-ExpressionList = Expression { "," Expression } .
-
-Expression = UnaryExpr .
-UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
+Expression = UnaryExpr | Expression binary_op UnaryExpr .
+(equvialent to: Expression = UnaryExpr {binary_op UnaryExpr})
 
 PrimaryExpr =
 	Operand .
@@ -46,8 +46,6 @@ Declaration   = ConstDecl | TypeDecl | VarDecl .
 ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
 ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
 
-ExpressionList = Expression { "," Expression } .
-
 TypeDecl     = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .
 TypeSpec     = identifier Type .
 
@@ -56,7 +54,7 @@ TypeName  = identifier | QualifiedIdent .
 TypeLit   = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
 	    SliceType | MapType | ChannelType .
 
-Expression = UnaryExpr | Expression binary_op UnaryExpr .
+Expression = UnaryExpr {binary_op UnaryExpr} .
 UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
 
 binary_op  = "||" | "&&" | rel_op | add_op | mul_op .

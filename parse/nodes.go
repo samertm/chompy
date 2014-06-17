@@ -119,8 +119,10 @@ func (o *opName) Eval() string {
 	return "opname: " + o.id + "\n"
 }
 
+
+
 type unaryE struct {
-	op string
+	op string // Operand
 	expr Node
 }
 
@@ -138,6 +140,26 @@ type exprs struct {
 func (e *exprs) Eval() (s string) {
 	for _, ex := range e.es {
 		s += ex.Eval()
+	}
+	return
+}
+
+// expression list
+type expr struct {
+	binOp string
+	firstN Node
+	secondN Node
+}
+
+func (e *expr) Eval() (s string) {
+	if e.binOp != "" {
+		s += "binary_op: " + e.binOp + "\n"
+	}
+	if e.firstN != nil {
+		s += e.firstN.Eval()
+	}
+	if e.secondN != nil {
+		s += e.secondN.Eval()
 	}
 	return
 }

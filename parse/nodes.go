@@ -75,7 +75,7 @@ func (c *consts) Eval() (s string) {
 // const
 type cnst struct {
 	is Node // idents
-	t  string
+	t  Node
 	es Node // expressions
 }
 
@@ -83,7 +83,9 @@ func (c *cnst) Eval() (s string) {
 	s += "start const spec\n"
 	// subtle cisgendering
 	s += c.is.Eval()
-	s += "type: " + c.t + "\n"
+	if c.t != nil {
+		s += c.t.Eval()
+	}
 	if c.es != nil {
 		s += c.es.Eval()
 	}
@@ -162,4 +164,29 @@ func (e *expr) Eval() (s string) {
 		s += e.secondN.Eval()
 	}
 	return
+}
+
+type typ struct {
+	t Node
+}
+
+func (t *typ) Eval() string {
+	return "type: " + t.t.Eval() + "\n"
+}
+
+type ident struct {
+	name string
+}
+
+func (i *ident) Eval() string {
+	return i.name
+}	
+	
+type qualifiedIdent struct {
+	pkg string
+	ident string
+}
+
+func (q *qualifiedIdent) Eval() string {
+	return "pkg: " + q.pkg + " ident: " + q.ident
 }

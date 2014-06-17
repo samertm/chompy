@@ -81,4 +81,6 @@ var (
 		tokString,
 	}
 	topOperandName = tokIdentifier
+	topType = []lex.Token{tokIdentifier, tokOpenParen}
+	topTypeName = tokIdentifier
 )

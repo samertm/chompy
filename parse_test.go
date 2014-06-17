@@ -64,7 +64,20 @@ import "fmt"
 
 const ribs = 4 + 4
 `,
+	`package main
+
+import "fmt"
+
+const ribs int = 4 + 4
+`,	
+	`package main
+
+import "fmt"
+
+const ribs fmt.Int = 4 + 4
+`,
 }
+
 
 var outputs = []string{
 	`in package  main
@@ -81,7 +94,6 @@ end imports
 start const decl
 start const spec
 ident: ribs
-type: 
 end const spec
 end const decl
 `,
@@ -93,7 +105,6 @@ start const decl
 start const spec
 ident: ribs
 ident: mibs
-type: 
 end const spec
 end const decl
 `,
@@ -105,11 +116,9 @@ start const decl
 start const spec
 ident: ribs
 ident: mibs
-type: 
 end const spec
 start const spec
 ident: tibs
-type: 
 end const spec
 end const decl
 `,
@@ -120,7 +129,6 @@ end imports
 start const decl
 start const spec
 ident: ribs
-type: 
 op: 
 lit: type: Int val: 4
 end const spec
@@ -133,13 +141,11 @@ end imports
 start const decl
 start const spec
 ident: ribs
-type: 
 op: 
 lit: type: Int val: 4
 end const spec
 start const spec
 ident: mibs
-type: 
 op: 
 lit: type: String val: hi there
 end const spec
@@ -152,7 +158,38 @@ end imports
 start const decl
 start const spec
 ident: ribs
-type: 
+binary_op: +
+op: 
+lit: type: Int val: 4
+op: 
+lit: type: Int val: 4
+end const spec
+end const decl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start const decl
+start const spec
+ident: ribs
+type: int
+binary_op: +
+op: 
+lit: type: Int val: 4
+op: 
+lit: type: Int val: 4
+end const spec
+end const decl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start const decl
+start const spec
+ident: ribs
+type: pkg: fmt ident: Int
 binary_op: +
 op: 
 lit: type: Int val: 4

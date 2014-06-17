@@ -19,15 +19,16 @@ unary_op   = "+" | "-" | "!" | "^" | "*" | "&" | "<-" .
 OperandName = identifier .
 ExpressionList = Expression { "," Expression } .
 UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
+
+Expression = UnaryExpr | Expression binary_op UnaryExpr .
+(equvialent to: Expression = UnaryExpr {binary_op UnaryExpr})
+
 --- implemented incomplete ---
 
 TopLevelDecl  = Declaration .
 Declaration   = ConstDecl .
 ConstSpec      = IdentifierList [ "=" ExpressionList ] .
 Declaration   = ConstDecl . 
-
-Expression = UnaryExpr | Expression binary_op UnaryExpr .
-(equvialent to: Expression = UnaryExpr {binary_op UnaryExpr})
 
 PrimaryExpr =
 	Operand .
@@ -38,6 +39,11 @@ BasicLit   = int_lit | string_lit .
 
 --- implementing ---
 
+ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
+Type      = TypeName | "(" Type ")" .
+TypeName  = identifier | QualifiedIdent .
+
+QualifiedIdent = PackageName "." identifier .
 
 --- not implemented ---
 

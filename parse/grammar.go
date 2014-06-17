@@ -160,9 +160,20 @@ func constDecl(p *parser) Node {
 func constSpec(p *parser) Node {
 	c := &cnst{}
 	c.is = identifierList(p)
+	// type is allowed only if the statement has an expression list
+	typeAccepted := false
+	if p.accept(topType...) {
+		typeAccepted = true
+		c.t = typeGrammar(p)
+	}
+	exprAccepted := false
 	if p.accept(tokEqual) {
+		exprAccepted = true
 		p.next() // eat "="
 		c.es = expressionList(p)
+	}
+	if typeAccepted == true && exprAccepted == false {
+		return &erro{"Type allowed only if followed by expression"}
 	}
 	return c
 }
@@ -257,4 +268,30 @@ func literal(p *parser) Node {
 func operandName(p *parser) Node {
 	id := p.next() // get identifier
 	return &opName{id: id.String()}
+}
+
+func typeGrammar(p *parser) Node {
+	if p.accept(topTypeName) {
+		t := &typ{}
+		t.t = typeName(p)
+		return t
+	}
+	if p.accept(tokOpenParen) {
+		p.next() // eat "("
+		t := typeGrammar(p)
+		p.next() // eat ")"
+		return t
+	}
+	return &erro{"Expected type"}
+}
+
+func typeName(p *parser) Node {
+	i := p.next() // ident
+	if p.accept(tokDot) {
+		// is qualified ident
+		p.next() // eat "."
+		nexti := p.next()
+		return &qualifiedIdent{pkg: i.Val, ident: nexti.Val}
+	}
+	return &ident{name: i.Val}
 }

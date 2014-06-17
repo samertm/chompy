@@ -129,6 +129,10 @@ func declaration(p *parser) Node {
 		consts := constDecl(p)
 		return consts
 	}
+	if p.accept(topTypeDecl) {
+		types := typeDecl(p)
+		return types
+	}
 	return &erro{"expected const"}
 }
 
@@ -294,4 +298,39 @@ func typeName(p *parser) Node {
 		return &qualifiedIdent{pkg: i.Val, ident: nexti.Val}
 	}
 	return &ident{name: i.Val}
+}
+
+func typeDecl(p *parser) Node {
+	p.next() // eat "type"
+	types := &types{}
+	if p.accept(topTypeSpec) {
+		types.typspecs = append(types.typspecs, typeSpec(p))
+		return types
+	}
+	if err := p.expect(tokOpenParen); err != nil {
+		return err
+	}
+	p.next() // eat "("
+	for p.accept(topTypeSpec) {
+		types.typspecs = append(types.typspecs, typeSpec(p))
+		if err := p.expect(tokSemicolon); err != nil {
+			return err
+		}
+		p.next() // eat ";"
+	}
+	if err := p.expect(tokCloseParen); err != nil {
+		return err
+	}
+	p.next() // eat ")"
+	return types
+}
+
+func typeSpec(p *parser) Node {
+	spec := &typespec{}
+	spec.i = &ident{name: p.next().Val} // ident
+	if !p.accept(topType...) {
+		return &erro{"Expected type"}
+	}
+	spec.typ = typeGrammar(p)
+	return spec
 }

@@ -65,6 +65,7 @@ var (
 	topTopLevelDecl = append([]lex.Token{}, topDeclaration...)
 	topDeclaration  = []lex.Token{
 		topConstDecl,
+		topTypeDecl,
 	}
 	topConstDecl      = lex.Token{Typ: lex.Keyword, Val: "const"}
 	topConstSpec      = topIdentifierList
@@ -81,6 +82,8 @@ var (
 		tokString,
 	}
 	topOperandName = tokIdentifier
-	topType = []lex.Token{tokIdentifier, tokOpenParen}
-	topTypeName = tokIdentifier
+	topType        = []lex.Token{tokIdentifier, tokOpenParen}
+	topTypeName    = tokIdentifier
+	topTypeDecl    = lex.Token{Typ: lex.Keyword, Val: "type"}
+	topTypeSpec    = tokIdentifier
 )

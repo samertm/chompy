@@ -23,12 +23,13 @@ UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
 Expression = UnaryExpr | Expression binary_op UnaryExpr .
 (equvialent to: Expression = UnaryExpr {binary_op UnaryExpr})
 
+ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
+QualifiedIdent = PackageName "." identifier .
+
 --- implemented incomplete ---
 
 TopLevelDecl  = Declaration .
-Declaration   = ConstDecl .
-ConstSpec      = IdentifierList [ "=" ExpressionList ] .
-Declaration   = ConstDecl . 
+Declaration   = ConstDecl | TypeDecl .
 
 PrimaryExpr =
 	Operand .
@@ -37,20 +38,22 @@ Operand    = Literal | OperandName .
 Literal    = BasicLit .
 BasicLit   = int_lit | string_lit .
 
---- implementing ---
 
-ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
 Type      = TypeName | "(" Type ")" .
 TypeName  = identifier | QualifiedIdent .
 
-QualifiedIdent = PackageName "." identifier .
+
+
+TypeDecl     = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .
+TypeSpec     = identifier Type .
+
+--- implementing ---
+
 
 --- not implemented ---
 
 TopLevelDecl  = Declaration | FunctionDecl | MethodDecl .
 Declaration   = ConstDecl | TypeDecl | VarDecl .
-ConstDecl      = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
-ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
 
 TypeDecl     = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .
 TypeSpec     = identifier Type .
@@ -60,7 +63,6 @@ TypeName  = identifier | QualifiedIdent .
 TypeLit   = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
 	    SliceType | MapType | ChannelType .
 
-Expression = UnaryExpr {binary_op UnaryExpr} .
 UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
 
 binary_op  = "||" | "&&" | rel_op | add_op | mul_op .
@@ -122,8 +124,6 @@ Operand    = Literal | OperandName | MethodExpr | "(" Expression ")" .
 Literal    = BasicLit | CompositeLit | FunctionLit .
 BasicLit   = int_lit | float_lit | imaginary_lit | rune_lit | string_lit .
 OperandName = identifier | QualifiedIdent.
-
-QualifiedIdent = PackageName "." identifier .
 
 CompositeLit  = LiteralType LiteralValue .
 LiteralType   = StructType | ArrayType | "[" "..." "]" ElementType |

@@ -121,10 +121,8 @@ func (o *opName) Eval() string {
 	return "opname: " + o.id + "\n"
 }
 
-
-
 type unaryE struct {
-	op string // Operand
+	op   string // Operand
 	expr Node
 }
 
@@ -148,8 +146,8 @@ func (e *exprs) Eval() (s string) {
 
 // expression list
 type expr struct {
-	binOp string
-	firstN Node
+	binOp   string
+	firstN  Node
 	secondN Node
 }
 
@@ -180,13 +178,43 @@ type ident struct {
 
 func (i *ident) Eval() string {
 	return i.name
-}	
-	
+}
+
 type qualifiedIdent struct {
-	pkg string
+	pkg   string
 	ident string
 }
 
 func (q *qualifiedIdent) Eval() string {
 	return "pkg: " + q.pkg + " ident: " + q.ident
+}
+
+type types struct {
+	typspecs []Node
+}
+
+func (t *types) Eval() (s string) {
+	s += "start typedecl\n"
+	for _, ty := range t.typspecs {
+		s += ty.Eval()
+	}
+	s += "end typedecl\n"
+	return
+}
+
+type typespec struct {
+	i   Node //ident
+	typ Node //type
+}
+
+func (t *typespec) Eval() (s string) {
+	s += "start typespec\n"
+	if t.i != nil {
+		s += "ident: " + t.i.Eval() + "\n"
+	}
+	if t.typ != nil {
+		s += t.typ.Eval()
+	}
+	s += "end typespec\n"
+	return
 }

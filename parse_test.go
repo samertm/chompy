@@ -69,15 +69,20 @@ const ribs = 4 + 4
 import "fmt"
 
 const ribs int = 4 + 4
-`,	
+`,
 	`package main
 
 import "fmt"
 
 const ribs fmt.Int = 4 + 4
 `,
-}
+	`package main
 
+import "fmt"
+
+type thangs int
+`,
+}
 
 var outputs = []string{
 	`in package  main
@@ -197,6 +202,17 @@ op:
 lit: type: Int val: 4
 end const spec
 end const decl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start typedecl
+start typespec
+ident: thangs
+type: int
+end typespec
+end typedecl
 `,
 }
 

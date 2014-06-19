@@ -94,6 +94,22 @@ import "fmt"
 
 var meow int = 4 + 4
 `,
+	`package main
+
+import "fmt"
+
+func meow() {
+	var meow int = 4 + 4
+}
+`,
+	`package main
+
+import "fmt"
+
+func meow(a thing, b otherthing) string {
+	var meow int = 4 + 4
+}
+`,
 }
 
 var outputs = []string{
@@ -252,6 +268,61 @@ op:
 lit: type: Int val: 4
 end varspec
 end vardecl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start funcdecl
+ident: meow
+start block
+start vardecl
+start varspec
+ident: meow
+type: int
+binary_op: +
+op: 
+lit: type: Int val: 4
+op: 
+lit: type: Int val: 4
+end varspec
+end vardecl
+end block
+end funcdecl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start funcdecl
+ident: meow
+start parameters
+start parameterdecl
+ident: a
+type: thing
+end parameterdecl
+start parameterdecl
+ident: b
+type: otherthing
+end parameterdecl
+end parameters
+start result
+type: string
+end result
+start block
+start vardecl
+start varspec
+ident: meow
+type: int
+binary_op: +
+op: 
+lit: type: Int val: 4
+op: 
+lit: type: Int val: 4
+end varspec
+end vardecl
+end block
+end funcdecl
 `,
 }
 

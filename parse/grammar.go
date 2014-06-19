@@ -20,33 +20,33 @@ func Start(toks chan lex.Token) Node {
 // should the states return their list?... probably but not rn
 // every nonterminal function assumes that it is in the correct starting state,
 // except for sourceFile
-func sourceFile(p *parser) *tree {
+func sourceFile(p *parser) *Tree {
 	defer close(p.nodes)
-	tr := &tree{kids: make([]Node, 0)}
+	tr := &Tree{Kids: make([]Node, 0)}
 	if !p.accept(topPackageClause) {
-		tr.kids = append(tr.kids, &erro{"PackageClause not found"})
+		tr.Kids = append(tr.Kids, &Erro{"PackageClause not found"})
 		return tr
 	}
 	pkg := packageClause(p)
-	tr.kids = append(tr.kids, pkg)
+	tr.Kids = append(tr.Kids, pkg)
 	if err := p.expect(tokSemicolon); err != nil {
-		tr.kids = append(tr.kids, err)
+		tr.Kids = append(tr.Kids, err)
 		return tr
 	}
 	p.next() // eat semicolon
 	for p.accept(topImportDecl) {
 		impts := importDecl(p)
-		tr.kids = append(tr.kids, impts)
+		tr.Kids = append(tr.Kids, impts)
 		if err := p.expect(tokSemicolon); err != nil {
-			tr.kids = append(tr.kids, err)
+			tr.Kids = append(tr.Kids, err)
 		}
 		p.next() // eat semicolon
 	}
 	for p.accept(topTopLevelDecl...) {
 		topDecl := topLevelDecl(p)
-		tr.kids = append(tr.kids, topDecl)
+		tr.Kids = append(tr.Kids, topDecl)
 		if err := p.expect(tokSemicolon); err != nil {
-			tr.kids = append(tr.kids, err)
+			tr.Kids = append(tr.Kids, err)
 		}
 		p.next() // eat semicolon
 	}
@@ -64,16 +64,16 @@ func packageClause(p *parser) Node {
 func packageName(p *parser) Node {
 	t := p.next()
 	// should I sanity-check t?
-	return &pkg{name: t.Val}
+	return &Pkg{Name: t.Val}
 }
 
 func importDecl(p *parser) Node {
 	p.next() // eat "import"
-	i := &impts{imports: make([]Node, 0)}
+	i := &Impts{Imports: make([]Node, 0)}
 	if p.accept(tokOpenParen) {
 		p.next() // eat "("
 		for p.accept(topImportSpec...) {
-			i.imports = append(i.imports, importSpec(p))
+			i.Imports = append(i.Imports, importSpec(p))
 			if err := p.expect(tokSemicolon); err != nil {
 				return err
 			}
@@ -87,41 +87,46 @@ func importDecl(p *parser) Node {
 	}
 	// a single importSpec
 	if !p.accept(topImportSpec...) {
-		return &erro{"expected importSpec"}
+		return &Erro{"expected importSpec"}
 	}
-	i.imports = append(i.imports, importSpec(p))
+	i.Imports = append(i.Imports, importSpec(p))
 	return i
 }
 
 func importSpec(p *parser) Node {
-	i := &impt{}
+	i := &Impt{}
 	if p.accept(tokDot) {
 		p.next() // eat dot
-		i.pkgName = "."
+		i.PkgName = "."
 	}
 	if p.accept(topPackageName) {
 		t := p.next() // t is the package name
-		if i.pkgName == "." {
+		if i.PkgName == "." {
 			// a dot was already processed
-			return &erro{"expected tokString"}
+			return &Erro{"expected tokString"}
 		}
-		i.pkgName = t.Val
+		i.PkgName = t.Val
 	}
 	if !p.accept(topImportPath) {
-		return &erro{"expected tokString"}
+		return &Erro{"expected tokString"}
 	}
 	// process importPath here.
 	t := p.next()
-	i.imptName = t.Val
+	i.ImptName = t.Val
 	return i
 }
 
+// TopLevelDecl  = Declaration | FunctionDecl .
 func topLevelDecl(p *parser) Node {
 	if p.accept(topDeclaration...) {
 		decl := declaration(p)
 		return decl
 	}
-	return &erro{"expected const"}
+	if p.accept(topFunctionDecl) {
+		fun := functionDecl(p)
+		return fun
+	}
+	return &Erro{"Expected declaration or function declaration"}
 }
 
 func declaration(p *parser) Node {
@@ -137,20 +142,20 @@ func declaration(p *parser) Node {
 		vars := varDecl(p)
 		return vars
 	}
-	return &erro{"expected const"}
+	return &Erro{"expected const"}
 }
 
 func constDecl(p *parser) Node {
 	p.next() // eat "const"
-	cs := &consts{}
+	cs := &Consts{}
 	if p.accept(topConstSpec) {
-		cs.cs = append(cs.cs, constSpec(p))
+		cs.Cs = append(cs.Cs, constSpec(p))
 		return cs
 	}
 	if p.accept(tokOpenParen) {
 		p.next() // eat "("
 		for p.accept(topConstSpec) {
-			cs.cs = append(cs.cs, constSpec(p))
+			cs.Cs = append(cs.Cs, constSpec(p))
 			if err := p.expect(tokSemicolon); err != nil {
 				return err
 			}
@@ -162,97 +167,96 @@ func constDecl(p *parser) Node {
 		p.next() // eat ")"
 		return cs
 	}
-	return &erro{"expected ConstSpec"}
+	return &Erro{"expected ConstSpec"}
 }
 
 func constSpec(p *parser) Node {
-	c := &cnst{}
-	c.is = identifierList(p)
+	c := &Cnst{}
+	c.Is = identifierList(p)
 	// type is allowed only if the statement has an expression list
 	typeAccepted := false
 	if p.accept(topType...) {
 		typeAccepted = true
-		c.t = typeGrammar(p)
+		c.T = typeGrammar(p)
 	}
 	exprAccepted := false
 	if p.accept(tokEqual) {
 		exprAccepted = true
 		p.next() // eat "="
-		c.es = expressionList(p)
+		c.Es = expressionList(p)
 	}
 	if typeAccepted == true && exprAccepted == false {
-		return &erro{"Type allowed only if followed by expression"}
+		return &Erro{"Type allowed only if followed by expression"}
 	}
 	return c
 }
 
 func identifierList(p *parser) Node {
-	idnts := &idents{}
+	idnts := &Idents{}
 	id := p.next() // first identifier
-	idnts.is = append(idnts.is, &ident{name: id.Val})
+	idnts.Is = append(idnts.Is, &Ident{Name: id.Val})
 	// look for form: "," identifier
 	for p.accept(tokComma) {
 		p.next() // throw away ","
 		if !p.accept(tokIdentifier) {
-			return &erro{"expected identifier"}
+			return &Erro{"expected identifier"}
 		}
 		id = p.next() // identifier
-		idnts.is = append(idnts.is, &ident{name: id.Val})
+		idnts.Is = append(idnts.Is, &Ident{Name: id.Val})
 	}
 	return idnts
 }
 
 func expressionList(p *parser) Node {
-	exs := &exprs{}
-	exs.es = append(exs.es, expression(p))
+	exs := &Exprs{}
+	exs.Es = append(exs.Es, expression(p))
 	for p.accept(tokComma) {
 		p.next() // eat comma
-		exs.es = append(exs.es, expression(p))
+		exs.Es = append(exs.Es, expression(p))
 	}
 	return exs
 }
 
 func expression(p *parser) Node {
-	e := &expr{}
+	e := &Expr{}
 	firstE := e
 	if !p.accept(topUnaryExpr...) {
-		return &erro{"Expected unary expression"}
+		return &Erro{"Expected unary expression"}
 	}
-	e.firstN = unaryExpr(p)
+	e.FirstN = unaryExpr(p)
 	for p.accept(tokBinaryOp...) {
 		bOp := p.next() // grab binary operator
-		e.binOp = bOp.Val
+		e.BinOp = bOp.Val
 		if !p.accept(topUnaryExpr...) {
-			fmt.Println(p.peek())
-			return &erro{"Expected unary expression recursed"}
+			return &Erro{"Expected unary expression recursed"}
 		}
-		nextE := &expr{firstN: unaryExpr(p)}
-		e.secondN = nextE
+		nextE := &Expr{FirstN: unaryExpr(p)}
+		e.SecondN = nextE
 		e = nextE
 	}
 	return firstE
 }
 
 func unaryExpr(p *parser) Node {
-	un := &unaryE{}
+	un := &UnaryE{}
 	if p.accept(topPrimaryExpr...) {
-		un.expr = primaryExpr(p)
+		un.Expr = primaryExpr(p)
 		return un
 	}
 	if p.accept(tokUnaryOp...) {
 		uOp := p.next() // grab unary operator
-		un.op = uOp.Val
-		un.expr = unaryExpr(p)
+		un.Op = uOp.Val
+		un.Expr = unaryExpr(p)
 		return un
 	}
-	return &erro{"expected primary exp or unary_op"}
+	return &Erro{"expected primary exp or unary_op"}
 }
 
 func primaryExpr(p *parser) Node {
 	if p.accept(topOperand...) {
 		return operand(p)
 	}
-	return &erro{"expected operand"}
+	return &Erro{"expected operand"}
 }
 
 func operand(p *parser) Node {
@@ -262,26 +266,26 @@ func operand(p *parser) Node {
 	if p.accept(topOperandName) {
 		return operandName(p)
 	}
-	return &erro{"Expected literal or operand name"}
+	return &Erro{"Expected literal or operand name"}
 }
 
 func literal(p *parser) Node {
 	if p.accept(topBasicLit...) {
 		l := p.next() // int_lit or string_lit
-		return &lit{typ: l.Typ.String(), val: l.Val}
+		return &Lit{Typ: l.Typ.String(), Val: l.Val}
 	}
-	return &erro{"Expected basic literal"}
+	return &Erro{"Expected basic literal"}
 }
 
 func operandName(p *parser) Node {
 	id := p.next() // get identifier
-	return &opName{id: id.String()}
+	return &OpName{Id: id.String()}
 }
 
 func typeGrammar(p *parser) Node {
 	if p.accept(topTypeName) {
-		t := &typ{}
-		t.t = typeName(p)
+		t := &Typ{}
+		t.T = typeName(p)
 		return t
 	}
 	if p.accept(tokOpenParen) {
@@ -290,7 +294,7 @@ func typeGrammar(p *parser) Node {
 		p.next() // eat ")"
 		return t
 	}
-	return &erro{"Expected type"}
+	return &Erro{"Expected type"}
 }
 
 func typeName(p *parser) Node {
@@ -299,16 +303,16 @@ func typeName(p *parser) Node {
 		// is qualified ident
 		p.next() // eat "."
 		nexti := p.next()
-		return &qualifiedIdent{pkg: i.Val, ident: nexti.Val}
+		return &QualifiedIdent{Pkg: i.Val, Ident: nexti.Val}
 	}
-	return &ident{name: i.Val}
+	return &Ident{Name: i.Val}
 }
 
 func typeDecl(p *parser) Node {
 	p.next() // eat "type"
-	types := &types{}
+	types := &Types{}
 	if p.accept(topTypeSpec) {
-		types.typspecs = append(types.typspecs, typeSpec(p))
+		types.Typspecs = append(types.Typspecs, typeSpec(p))
 		return types
 	}
 	if err := p.expect(tokOpenParen); err != nil {
@@ -316,7 +320,7 @@ func typeDecl(p *parser) Node {
 	}
 	p.next() // eat "("
 	for p.accept(topTypeSpec) {
-		types.typspecs = append(types.typspecs, typeSpec(p))
+		types.Typspecs = append(types.Typspecs, typeSpec(p))
 		if err := p.expect(tokSemicolon); err != nil {
 			return err
 		}
@@ -330,20 +334,20 @@ func typeDecl(p *parser) Node {
 }
 
 func typeSpec(p *parser) Node {
-	spec := &typespec{}
-	spec.i = &ident{name: p.next().Val} // ident
+	spec := &Typespec{}
+	spec.I = &Ident{Name: p.next().Val} // ident
 	if !p.accept(topType...) {
-		return &erro{"Expected type"}
+		return &Erro{"Expected type"}
 	}
-	spec.typ = typeGrammar(p)
+	spec.Typ = typeGrammar(p)
 	return spec
 }
 
 func varDecl(p *parser) Node {
 	p.next() // eat "var"
-	vs := &vars{}
+	vs := &Vars{}
 	if p.accept(topVarSpec) {
-		vs.vs = append(vs.vs, varSpec(p))
+		vs.Vs = append(vs.Vs, varSpec(p))
 		return vs
 	}
 	if err := p.expect(tokOpenParen); err != nil {
@@ -351,7 +355,7 @@ func varDecl(p *parser) Node {
 	}
 	p.next() // eat "("
 	for p.accept(topVarSpec) {
-		vs.vs = append(vs.vs, varSpec(p))
+		vs.Vs = append(vs.Vs, varSpec(p))
 		if err := p.expect(tokSemicolon); err != nil {
 			return err
 		}
@@ -364,27 +368,193 @@ func varDecl(p *parser) Node {
 	return vs
 }
 
+
 func varSpec(p *parser) Node {
-	spec := &varspec{}
-	spec.idents = identifierList(p)
+	spec := &Varspec{}
+	spec.Idents = identifierList(p)
 	if p.accept(topType...) {
-		spec.t = typeGrammar(p)
+		spec.T = typeGrammar(p)
 		if p.accept(tokEqual) {
 			p.next() // eat "="
 			if !p.accept(topExpressionList...) {
-				return &erro{"Expected expression list"}
+				return &Erro{"Expected expression list"}
 			}
-			spec.exprs = expressionList(p)
+			spec.Exprs = expressionList(p)
 		}
 		return spec
 	}
 	if p.accept(tokEqual) {
 		p.next() // eat "="
 		if !p.accept(topExpressionList...) {
-			return &erro{"Expected expression list"}
+			return &Erro{"Expected expression list"}
 		}
-		spec.exprs = expressionList(p)
+		spec.Exprs = expressionList(p)
 		return spec
 	}
-	return &erro{"Expected type or expression list"}
+	return &Erro{"Expected type or expression list"}
+}
+
+// ParameterDecl  = [ IdentifierList ] [ "..." ] Type .
+func parameterDecl(p *parser) Node {
+	par := &Param{}
+	if p.accept(topIdentifierList) {
+		par.Idents = identifierList(p)
+	}
+	if p.accept(tokDotDotDot) {
+		par.DotDotDot = true
+	}
+	if !p.accept(topType...) {
+		return &Erro{"Expected type"}
+	}
+	par.Typ = typeGrammar(p)
+	return par
+}
+
+// ParameterList  = ParameterDecl { "," [ ParameterDecl ] } .
+// slightly modified from grammar.txt, so that it will grab a lone ","
+func parameterList(p *parser) Node {
+	ps := &Params{}
+	ps.Params = append(ps.Params, parameterDecl(p))
+	for p.accept(tokComma) {
+		p.next() // eat ","
+		// makes ParameterDecl optional
+		if !p.accept(topParameterDecl) {
+			return ps
+		}
+		ps.Params = append(ps.Params, parameterDecl(p))
+	}
+	return ps
+}
+
+// Parameters     = "(" [ ParameterList [ "," ] ] ")" .
+func parameters(p *parser) Node {
+	p.next() // eat "("
+	var ps Node
+	if p.accept(topParameterList) {
+		ps = parameterList(p)
+	}
+	if err := p.expect(tokCloseParen); err != nil {
+		return err
+	}
+	p.next() // eat ")"
+	return ps
+}
+
+// Result         = Parameters | Type .
+// Type can start with a (, so we need to check for the couple corner cases first.
+// These are checked in order:
+// () is an empty type
+// any more than one opening paren is a type
+// a single paren starts a parameter (topParameters)
+// otherwise, check to see if it satisfies topType
+func result(p *parser) Node {
+	if p.accept(tokOpenParen) {
+		save := p.next() // grab "("
+		if p.accept(tokCloseParen) || p.accept(tokOpenParen) {
+			// saw "()" or "((", assume type
+			p.push(save)
+			return &Result{typeGrammar(p)}
+		}
+		// saw something other than "(" or ")", assume parameters
+		p.push(save)
+		return &Result{parameters(p)}
+	}
+	if !p.accept(topType...) {
+		return &Erro{"Expected type or parameters"}
+	}
+	return &Result{typeGrammar(p)}
+}
+
+// Signature      = Parameters [ Result ] .
+func signature(p *parser) Node {
+	s := &Sig{}
+	s.Params = parameters(p)
+	if p.accept(topResult...) {
+		s.Result = result(p)
+	}
+	return s
+}
+
+// Statement =
+// 	Declaration .
+func statement(p *parser) Node {
+	s := &Stmt{}
+	if p.accept(topDeclaration...) {
+		s.S = declaration(p)
+		return s
+	}
+	return &Erro{"Expected declaration"}
+}
+
+// StatementList = { Statement ";" } .
+func statementList(p *parser) Node {
+	ss := &Stmts{}
+	for p.accept(topStatement...) {
+		ss.Stmts = append(ss.Stmts, statement(p))
+		if err := p.expect(tokSemicolon); err != nil {
+			return err
+		}
+		p.next() // eat ";"
+	}
+	return ss
+}
+
+// Block = "{" StatementList "}" .
+func block(p *parser) Node {
+	p.next() // eat "{"
+	b := &Block{}
+	if !p.accept(topStatementList...) {
+		return &Erro{"Expected statement list"}
+	}
+	b.Stmts = statementList(p)
+	if err := p.expect(tokCloseSquiggly); err != nil {
+		return err
+	}
+	p.next() // eat "}"
+	return b
+}
+
+// FunctionBody = Block .
+func functionBody(p *parser) Node {
+	// this error check is probably redundant
+	if err := p.expect(tokOpenSquiggly); err != nil {
+		return err
+	}
+	return block(p)
+}
+
+// Function     = Signature FunctionBody .
+func function(p *parser) Node {
+	if err := p.expect(topSignature); err != nil {
+		return err
+	}
+	f := &Func{}
+	f.Sig = signature(p)
+	if err := p.expect(topFunctionBody); err != nil {
+		return err
+	}
+	f.Body = functionBody(p)
+	return f
+}
+
+// FunctionName = identifier .
+func functionName(p *parser) Node {
+	i := p.next() // grab ident
+	return &Ident{Name: i.Val}
+}
+
+// FunctionDecl = "func" FunctionName Function .
+func functionDecl(p *parser) Node {
+	p.next() // eat "func"
+	f := &Funcdecl{}
+	if err := p.expect(topFunctionName); err != nil {
+		return err
+	}
+	f.Name = functionName(p)
+	if p.accept(topFunction) {
+		// only stores funcs for now...
+		f.FuncOrSig = function(p)
+		return f
+	}
+	return &Erro{"Expected function"}
 }

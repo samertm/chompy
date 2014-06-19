@@ -10,62 +10,62 @@ type Node interface {
 
 type grammarFn func(*parser) Node
 
-type tree struct {
-	kids []Node
+type Tree struct {
+	Kids []Node
 }
 
-func (t *tree) Eval() (s string) {
-	for _, k := range t.kids {
+func (t *Tree) Eval() (s string) {
+	for _, k := range t.Kids {
 		s += k.Eval()
 	}
 	return
 }
 
-type pkg struct {
-	name string
+type Pkg struct {
+	Name string
 }
 
-func (p *pkg) Eval() string {
-	return fmt.Sprintln("in package ", p.name)
+func (p *Pkg) Eval() string {
+	return fmt.Sprintln("in package ", p.Name)
 }
 
-type impts struct {
-	imports []Node
+type Impts struct {
+	Imports []Node
 }
 
-func (i *impts) Eval() (s string) {
+func (i *Impts) Eval() (s string) {
 	s += fmt.Sprintln("start imports")
-	for _, im := range i.imports {
+	for _, im := range i.Imports {
 		s += im.Eval()
 	}
 	s += fmt.Sprintln("end imports")
 	return
 }
 
-type impt struct {
-	pkgName  string
-	imptName string
+type Impt struct {
+	PkgName  string
+	ImptName string
 }
 
-func (i *impt) Eval() string {
-	return fmt.Sprintln("import: pkgName: " + i.pkgName + " imptName: " + i.imptName)
+func (i *Impt) Eval() string {
+	return fmt.Sprintln("import: pkgName: " + i.PkgName + " imptName: " + i.ImptName)
 }
 
-type erro struct {
-	desc string
+type Erro struct {
+	Desc string
 }
 
-func (e *erro) Eval() string {
-	return fmt.Sprintln("error: ", e.desc)
+func (e *Erro) Eval() string {
+	return fmt.Sprintln("error: ", e.Desc)
 }
 
-type consts struct {
-	cs []Node // consts
+type Consts struct {
+	Cs []Node // consts
 }
 
-func (c *consts) Eval() (s string) {
+func (c *Consts) Eval() (s string) {
 	s += "start const decl\n"
-	for _, con := range c.cs {
+	for _, con := range c.Cs {
 		s += con.Eval()
 	}
 	s += "end const decl\n"
@@ -73,182 +73,309 @@ func (c *consts) Eval() (s string) {
 }
 
 // const
-type cnst struct {
-	is Node // idents
-	t  Node
-	es Node // expressions
+type Cnst struct {
+	Is Node // idents
+	T  Node
+	Es Node // expressions
 }
 
-func (c *cnst) Eval() (s string) {
+func (c *Cnst) Eval() (s string) {
 	s += "start const spec\n"
 	// subtle cisgendering
-	s += c.is.Eval()
-	if c.t != nil {
-		s += c.t.Eval()
+	s += c.Is.Eval()
+	if c.T != nil {
+		s += c.T.Eval()
 	}
-	if c.es != nil {
-		s += c.es.Eval()
+	if c.Es != nil {
+		s += c.Es.Eval()
 	}
 	s += "end const spec\n"
 	return
 }
 
-type idents struct {
-	is []Node
+type Idents struct {
+	Is []Node
 }
 
-func (i *idents) Eval() (s string) {
-	for _, ident := range i.is {
+func (i *Idents) Eval() (s string) {
+	for _, ident := range i.Is {
 		s += "ident: " + ident.Eval() + "\n"
 	}
 	return
 }
 
-type lit struct {
-	typ string
-	val string
+type Lit struct {
+	Typ string
+	Val string
 }
 
-func (l *lit) Eval() string {
-	return "lit: type: " + l.typ + " val: " + l.val + "\n"
+func (l *Lit) Eval() string {
+	return "lit: type: " + l.Typ + " val: " + l.Val + "\n"
 }
 
-type opName struct {
-	id string
+type OpName struct {
+	Id string
 }
 
-func (o *opName) Eval() string {
-	return "opname: " + o.id + "\n"
+func (o *OpName) Eval() string {
+	return "opname: " + o.Id + "\n"
 }
 
-type unaryE struct {
-	op   string // Operand
-	expr Node
+type UnaryE struct {
+	Op   string // Operand
+	Expr Node
 }
 
-func (u *unaryE) Eval() (s string) {
-	s += "op: " + u.op + "\n"
-	s += u.expr.Eval()
+func (u *UnaryE) Eval() (s string) {
+	s += "op: " + u.Op + "\n"
+	s += u.Expr.Eval()
 	return
 }
 
 // expression list
-type exprs struct {
-	es []Node
+type Exprs struct {
+	Es []Node
 }
 
-func (e *exprs) Eval() (s string) {
-	for _, ex := range e.es {
+func (e *Exprs) Eval() (s string) {
+	for _, ex := range e.Es {
 		s += ex.Eval()
 	}
 	return
 }
 
 // expression list
-type expr struct {
-	binOp   string
-	firstN  Node
-	secondN Node
+type Expr struct {
+	BinOp   string
+	FirstN  Node
+	SecondN Node
 }
 
-func (e *expr) Eval() (s string) {
-	if e.binOp != "" {
-		s += "binary_op: " + e.binOp + "\n"
+func (e *Expr) Eval() (s string) {
+	if e.BinOp != "" {
+		s += "binary_op: " + e.BinOp + "\n"
 	}
-	if e.firstN != nil {
-		s += e.firstN.Eval()
+	if e.FirstN != nil {
+		s += e.FirstN.Eval()
 	}
-	if e.secondN != nil {
-		s += e.secondN.Eval()
+	if e.SecondN != nil {
+		s += e.SecondN.Eval()
 	}
 	return
 }
 
-type typ struct {
-	t Node
+type Typ struct {
+	T Node
 }
 
-func (t *typ) Eval() string {
-	return "type: " + t.t.Eval() + "\n"
+func (t *Typ) Eval() string {
+	return "type: " + t.T.Eval() + "\n"
 }
 
-type ident struct {
-	name string
+type Ident struct {
+	Name string
 }
 
-func (i *ident) Eval() string {
-	return i.name
+func (i *Ident) Eval() string {
+	return i.Name
 }
 
-type qualifiedIdent struct {
-	pkg   string
-	ident string
+type QualifiedIdent struct {
+	Pkg   string
+	Ident string
 }
 
-func (q *qualifiedIdent) Eval() string {
-	return "pkg: " + q.pkg + " ident: " + q.ident
+func (q *QualifiedIdent) Eval() string {
+	return "pkg: " + q.Pkg + " ident: " + q.Ident
 }
 
-type types struct {
-	typspecs []Node
+type Types struct {
+	Typspecs []Node
 }
 
-func (t *types) Eval() (s string) {
+func (t *Types) Eval() (s string) {
 	s += "start typedecl\n"
-	for _, ty := range t.typspecs {
+	for _, ty := range t.Typspecs {
 		s += ty.Eval()
 	}
 	s += "end typedecl\n"
 	return
 }
 
-type typespec struct {
-	i   Node //ident
-	typ Node //type
+type Typespec struct {
+	I   Node //ident
+	Typ Node //type
 }
 
-func (t *typespec) Eval() (s string) {
+func (t *Typespec) Eval() (s string) {
 	s += "start typespec\n"
-	if t.i != nil {
-		s += "ident: " + t.i.Eval() + "\n"
+	if t.I != nil {
+		s += "ident: " + t.I.Eval() + "\n"
 	}
-	if t.typ != nil {
-		s += t.typ.Eval()
+	if t.Typ != nil {
+		s += t.Typ.Eval()
 	}
 	s += "end typespec\n"
 	return
 }
 
-type vars struct {
-	vs []Node
+type Vars struct {
+	Vs []Node
 }
 
-func (v *vars) Eval() (s string) {
+func (v *Vars) Eval() (s string) {
 	s += "start vardecl\n"
-	for _, va := range v.vs {
+	for _, va := range v.Vs {
 		s += va.Eval()
 	}
 	s += "end vardecl\n"
 	return
 }
 
-type varspec struct {
-	idents Node 
-	t Node // type
-	exprs Node
+type Varspec struct {
+	Idents Node
+	T      Node // type
+	Exprs  Node
 }
 
-func (v *varspec) Eval() (s string) {
+func (v *Varspec) Eval() (s string) {
 	s += "start varspec\n"
-	if v.idents != nil {
-		s += v.idents.Eval()
+	if v.Idents != nil {
+		s += v.Idents.Eval()
 	}
-	if v.t != nil {
-		s += v.t.Eval()
+	if v.T != nil {
+		s += v.T.Eval()
 	}
-	if v.exprs != nil {
-		s += v.exprs.Eval()
+	if v.Exprs != nil {
+		s += v.Exprs.Eval()
 	}
 	s += "end varspec\n"
+	return
+}
+
+type Funcdecl struct {
+	Name      Node //ident
+	FuncOrSig Node
+}
+
+func (f *Funcdecl) Eval() (s string) {
+	s += "start funcdecl\n"
+	if f.Name != nil {
+		s += "ident: " + f.Name.Eval() + "\n"
+	}
+	if f.FuncOrSig != nil {
+		s += f.FuncOrSig.Eval()
+	}
+	s += "end funcdecl\n"
+	return
+}
+
+type Func struct {
+	Sig  Node
+	Body Node
+}
+
+func (f *Func) Eval() (s string) {
+	if f.Sig != nil {
+		s += f.Sig.Eval()
+	}
+	if f.Body != nil {
+		s += f.Body.Eval()
+	}
+	return
+}
+
+type Sig struct {
+	Params Node
+	Result Node
+}
+
+func (sig *Sig) Eval() (s string) {
+	if sig.Params != nil {
+		s += sig.Params.Eval()
+	}
+	if sig.Result != nil {
+		s += sig.Result.Eval()
+	}
+	return
+}
+
+type Stmts struct {
+	Stmts []Node
+}
+
+func (ss *Stmts) Eval() (s string) {
+	for _, st := range ss.Stmts {
+		s += st.Eval()
+	}
+	return
+}
+
+type Stmt struct {
+	S Node
+}
+
+func (s *Stmt) Eval() string {
+	if s.S != nil {
+		return s.S.Eval()
+	}
+	return ""
+}
+
+type Result struct {
+	ParamsOrTyp Node
+}
+
+func (r *Result) Eval() (s string) {
+	s += "start result\n"
+	if r.ParamsOrTyp != nil {
+		s += r.ParamsOrTyp.Eval()
+	}
+	s += "end result\n"
+	return s
+}
+
+type Params struct {
+	Params []Node
+}
+
+func (ps *Params) Eval() (s string) {
+	s += "start parameters\n"
+	for _, p := range ps.Params {
+		s += p.Eval()
+	}
+	s += "end parameters\n"
+	return
+}
+
+type Param struct {
+	Idents    Node
+	DotDotDot bool // if true, apply "..." to type
+	Typ       Node
+}
+
+func (p *Param) Eval() (s string) {
+	s += "start parameterdecl\n"
+	if p.Idents != nil {
+		s += p.Idents.Eval()
+	}
+	if p.DotDotDot {
+		s += "...\n"
+	}
+	if p.Typ != nil {
+		s += p.Typ.Eval()
+	}
+	s += "end parameterdecl\n"
+	return
+}
+
+type Block struct {
+	Stmts Node
+}
+
+func (b *Block) Eval() (s string) {
+	s += "start block\n"
+	s += b.Stmts.Eval()
+	s += "end block\n"
 	return
 }

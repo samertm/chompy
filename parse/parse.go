@@ -18,7 +18,7 @@ type parser struct {
 	// always emit to the channel on the top
 	// push chan when going down a level
 	nodes chan Node
-	ast   tree
+	ast   Tree
 }
 
 func (p *parser) next() *lex.Token {
@@ -65,9 +65,9 @@ func (p *parser) accept(toks ...lex.Token) bool {
 	return false
 }
 
-func (p *parser) expect(tok lex.Token) *erro {
+func (p *parser) expect(tok lex.Token) *Erro {
 	if p.accept(tok) {
 		return nil
 	}
-	return &erro{"expected " + tok.String() + " recieved " + p.peek().String()}
+	return &Erro{"expected " + tok.String() + " recieved " + p.peek().String()}
 }

@@ -18,18 +18,17 @@ type parser struct {
 
 	// set when you want to backtrack
 	// default to false
-	recordTokens   bool
-	recordedTokens []*lex.Token
-	nodes          chan Node
-	ast            Tree
+	trackers [][]*lex.Token
+	nodes    chan Node
+	ast      Tree
 }
 
 func (p *parser) next() *lex.Token {
 	if len(p.oldToks) != 0 {
 		curr := p.oldToks[len(p.oldToks)-1]
 		p.oldToks = p.oldToks[:len(p.oldToks)-1]
-		if p.recordTokens {
-			p.recordedTokens = append(p.recordedTokens, curr)
+		if len(p.trackers) > 0 {
+			p.trackers[len(p.trackers)-1] = append(p.trackers[len(p.trackers)-1], curr)
 		}
 		return curr
 	}
@@ -39,8 +38,8 @@ func (p *parser) next() *lex.Token {
 			log.Fatal("error lexing: ", curr)
 			return nil
 		}
-		if p.recordTokens {
-			p.recordedTokens = append(p.recordedTokens, curr)
+		if len(p.trackers) > 0 {
+			p.trackers[len(p.trackers)-1] = append(p.trackers[len(p.trackers)-1], curr)
 		}
 		return curr
 	}
@@ -61,16 +60,28 @@ func (p *parser) push(t *lex.Token) {
 	}
 }
 
-// turns off recording
-func (p *parser) pushRecordedTokens() {
-	if !p.recordTokens {
-		return
+// hook up a tracker for backtracking
+func (p *parser) hookTracker() {
+	p.trackers = append(p.trackers, make([]*lex.Token, 0))
+}
+
+// unhook a tracker
+func (p *parser) unhookTracker() {
+	if len(p.trackers) == 0 {
+		log.Fatal("Error: unhookTracker called with zero trackers")
+	}
+	p.trackers = p.trackers[:len(p.trackers)-1]
+}
+
+// does not unhook tracker
+func (p *parser) backtrack() {
+	if len(p.trackers) == 0 {
+		log.Fatal("Error: backtrack called with zero trackers")
 	}
 	for i := len(p.recordedTokens) - 1; i >= 0; i-- {
-		p.oldToks = append(p.oldToks, p.recordedTokens[i])
+		p.oldToks = append(p.oldToks, p.trackers[len(p.trackers)-1][i])
 	}
-	p.recordedTokens = make([]*lex.Token, 0)
-	p.recordTokens = false
+	p.trackers[len(p.trackers)-1] = make([]*lex.Token, 0)
 }
 
 func (p *parser) peek() *lex.Token {

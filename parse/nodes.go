@@ -6,12 +6,22 @@ import (
 
 type Node interface {
 	Eval() string
+	Valid() bool
 }
 
 type grammarFn func(*parser) Node
 
 type Tree struct {
 	Kids []Node
+}
+
+func (t *Tree) Valid() bool {
+	for _, k := range t.Kids {
+		if k.Valid() == false {
+			return false
+		}
+	}
+	return true
 }
 
 func (t *Tree) Eval() (s string) {
@@ -25,12 +35,25 @@ type Pkg struct {
 	Name string
 }
 
+func (p *Pkg) Valid() bool {
+	return true
+}
+
 func (p *Pkg) Eval() string {
 	return fmt.Sprintln("in package ", p.Name)
 }
 
 type Impts struct {
 	Imports []Node
+}
+
+func (i *Impts) Valid() bool {
+	for _, im := range i.Imports {
+		if im.Valid() == false {
+			return false
+		}
+	}
+	return true
 }
 
 func (i *Impts) Eval() (s string) {
@@ -47,6 +70,10 @@ type Impt struct {
 	ImptName string
 }
 
+func (i *Impt) Valid() bool {
+	return true
+}
+
 func (i *Impt) Eval() string {
 	return fmt.Sprintln("import: pkgName: " + i.PkgName + " imptName: " + i.ImptName)
 }
@@ -55,12 +82,25 @@ type Erro struct {
 	Desc string
 }
 
+func (e *Erro) Valid() bool {
+	return false
+}
+
 func (e *Erro) Eval() string {
 	return fmt.Sprintln("error: ", e.Desc)
 }
 
 type Consts struct {
 	Cs []Node // consts
+}
+
+func (c *Consts) Valid() bool {
+	for _, cn := range c.Cs {
+		if cn.Valid() == false {
+			return false
+		}
+	}
+	return false
 }
 
 func (c *Consts) Eval() (s string) {
@@ -77,6 +117,10 @@ type Cnst struct {
 	Is Node // idents
 	T  Node
 	Es Node // expressions
+}
+
+func (c *Cnst) Valid() bool {
+	return c.Is.Valid() && c.T.Valid() && c.Es.Valid()
 }
 
 func (c *Cnst) Eval() (s string) {
@@ -97,6 +141,15 @@ type Idents struct {
 	Is []Node
 }
 
+func (i *Idents) Valid() bool {
+	for _, id := range i.Is {
+		if id.Valid() == false {
+			return false
+		}
+	}
+	return true
+}
+
 func (i *Idents) Eval() (s string) {
 	for _, ident := range i.Is {
 		s += "ident: " + ident.Eval() + "\n"
@@ -109,12 +162,20 @@ type Lit struct {
 	Val string
 }
 
+func (l *Lit) Valid() bool {
+	return true
+}
+
 func (l *Lit) Eval() string {
 	return "lit: type: " + l.Typ + " val: " + l.Val + "\n"
 }
 
 type OpName struct {
 	Id string
+}
+
+func (o *OpName) Valid() bool {
+	return true
 }
 
 func (o *OpName) Eval() string {
@@ -126,6 +187,10 @@ type UnaryE struct {
 	Expr Node
 }
 
+func (u *UnaryE) Valid() bool {
+	return u.Expr.Valid()
+}
+
 func (u *UnaryE) Eval() (s string) {
 	s += "op: " + u.Op + "\n"
 	s += u.Expr.Eval()
@@ -135,6 +200,15 @@ func (u *UnaryE) Eval() (s string) {
 // expression list
 type Exprs struct {
 	Es []Node
+}
+
+func (e *Exprs) Valid() bool {
+	for _, ex := range e.Es {
+		if ex.Valid() == false {
+			return false
+		}
+	}
+	return true
 }
 
 func (e *Exprs) Eval() (s string) {
@@ -149,6 +223,10 @@ type Expr struct {
 	BinOp   string
 	FirstN  Node
 	SecondN Node
+}
+
+func (e *Expr) Valid() bool {
+	return e.FirstN.Valid() && e.SecondN.Valid()
 }
 
 func (e *Expr) Eval() (s string) {
@@ -168,12 +246,20 @@ type Typ struct {
 	T Node
 }
 
+func (t *Typ) Valid() bool {
+	return t.T.Valid()
+}
+
 func (t *Typ) Eval() string {
 	return "type: " + t.T.Eval() + "\n"
 }
 
 type Ident struct {
 	Name string
+}
+
+func (i *Ident) Valid() bool {
+	return true
 }
 
 func (i *Ident) Eval() string {
@@ -185,12 +271,25 @@ type QualifiedIdent struct {
 	Ident string
 }
 
+func (q *QualifiedIdent) Valid() bool {
+	return true
+}
+
 func (q *QualifiedIdent) Eval() string {
 	return "pkg: " + q.Pkg + " ident: " + q.Ident
 }
 
 type Types struct {
 	Typspecs []Node
+}
+
+func (t *Types) Valid() bool {
+	for _, ty := range t.Typspecs {
+		if ty.Valid() == false {
+			return false
+		}
+	}
+	return true
 }
 
 func (t *Types) Eval() (s string) {
@@ -205,6 +304,10 @@ func (t *Types) Eval() (s string) {
 type Typespec struct {
 	I   Node //ident
 	Typ Node //type
+}
+
+func (t *Typespec) Valid() bool {
+	return t.I.Valid() && t.Typ.Valid()
 }
 
 func (t *Typespec) Eval() (s string) {
@@ -223,6 +326,15 @@ type Vars struct {
 	Vs []Node
 }
 
+func (v *Vars) Valid() bool {
+	for _, va := range v.Vs {
+		if va.Valid() == false {
+			return false
+		}
+	}
+	return true
+}
+
 func (v *Vars) Eval() (s string) {
 	s += "start vardecl\n"
 	for _, va := range v.Vs {
@@ -236,6 +348,10 @@ type Varspec struct {
 	Idents Node
 	T      Node // type
 	Exprs  Node
+}
+
+func (v *Varspec) Valid() bool {
+	return v.Idents.Valid() && v.T.Valid() && v.Exprs.Valid()
 }
 
 func (v *Varspec) Eval() (s string) {
@@ -258,6 +374,10 @@ type Funcdecl struct {
 	FuncOrSig Node
 }
 
+func (f *Funcdecl) Valid() bool {
+	return f.Name.Valid() && f.FuncOrSig.Valid()
+}
+
 func (f *Funcdecl) Eval() (s string) {
 	s += "start funcdecl\n"
 	if f.Name != nil {
@@ -275,6 +395,10 @@ type Func struct {
 	Body Node
 }
 
+func (f *Func) Valid() bool {
+	return f.Sig.Valid() && f.Body.Valid()
+}
+
 func (f *Func) Eval() (s string) {
 	if f.Sig != nil {
 		s += f.Sig.Eval()
@@ -288,6 +412,10 @@ func (f *Func) Eval() (s string) {
 type Sig struct {
 	Params Node
 	Result Node
+}
+
+func (sig *Sig) Valid() bool {
+	return sig.Params.Valid() && sig.Result.Valid()
 }
 
 func (sig *Sig) Eval() (s string) {
@@ -304,6 +432,15 @@ type Stmts struct {
 	Stmts []Node
 }
 
+func (ss *Stmts) Valid() bool {
+	for _, s := range ss.Stmts {
+		if s.Valid() == false {
+			return false
+		}
+	}
+	return true
+}
+
 func (ss *Stmts) Eval() (s string) {
 	for _, st := range ss.Stmts {
 		s += st.Eval()
@@ -315,6 +452,10 @@ type Stmt struct {
 	S Node
 }
 
+func (s *Stmt) Valid() bool {
+	return s.S.Valid()
+}
+
 func (s *Stmt) Eval() string {
 	if s.S != nil {
 		return s.S.Eval()
@@ -324,6 +465,10 @@ func (s *Stmt) Eval() string {
 
 type Result struct {
 	ParamsOrTyp Node
+}
+
+func (r *Result) Valid() bool {
+	return r.ParamsOrTyp.Valid()
 }
 
 func (r *Result) Eval() (s string) {
@@ -339,6 +484,15 @@ type Params struct {
 	Params []Node
 }
 
+func (ps *Params) Valid() bool {
+	for _, p := range ps.Params {
+		if p.Valid() == false {
+			return false
+		}
+	}
+	return true
+}
+
 func (ps *Params) Eval() (s string) {
 	s += "start parameters\n"
 	for _, p := range ps.Params {
@@ -352,6 +506,10 @@ type Param struct {
 	Idents    Node
 	DotDotDot bool // if true, apply "..." to type
 	Typ       Node
+}
+
+func (p *Param) Valid() bool {
+	return p.Idents.Valid() && p.Typ.Valid()
 }
 
 func (p *Param) Eval() (s string) {
@@ -373,9 +531,253 @@ type Block struct {
 	Stmts Node
 }
 
+func (b *Block) Valid() bool {
+	return b.Stmts.Valid()
+}
+
 func (b *Block) Eval() (s string) {
 	s += "start block\n"
 	s += b.Stmts.Eval()
 	s += "end block\n"
 	return
+}
+
+type LabeledStmt struct {
+	Label Node // identifier
+	Stmt Node
+}
+
+func (l *LabeledStmt) Valid() bool {
+	return l.Label.Valid() && l.Stmt.Valid()
+}
+
+func (l *LabledStmt) Eval() string {
+	return "label: " + l.Label.Eval() + " stmt: " + l.Stmt.Eval() + "\n"
+}
+
+type ExprStmt struct {
+	Expr Node
+}
+
+func (e *ExprStmt) Valid() bool {
+	return e.Expr.Valid()
+}
+
+func (e *ExprStmt) Eval() string {
+	return e.Expr.Eval()
+}
+
+type SendStmt struct {
+	Chan Node
+	Expr Node
+}
+
+func (s *SendStmt) Valid() bool {
+	return s.Chan.Valid() && s.Expr.Valid()
+}
+
+func (s *SendStmt) Eval() string {
+	return "chan: " + s.Chan.Eval() + " expr: " + s.Expr.Eval() + "\n"
+}
+
+type IncDecStmt struct {
+	Expr Node
+	Postfix string // either "++" or "--"
+}
+
+func (i *IncDecStmt) Valid() bool {
+	return i.Expr.Valid()
+}
+
+func (i *IncDecStmt) Eval() string {
+	return "expr: " + i.Expr.Eval() + " " + i.Postfix + "\n"
+}
+
+// Assignment = ExpressionList assign_op ExpressionList .
+type Assign struct {
+	Op string // add_op, mul_op, or "="
+	LeftExpr Node
+	RightExpr Node
+}
+
+func (a *Assign) Valid() bool {
+	return a.LeftExpr.Valid() && a.RightExpr.Valid()
+}
+
+func (a *Assign) Eval() (s string) {
+	s += "op: " + s.Op + "\n"
+	s += "left: " + a.LeftExpr.Eval()
+	s += "right: " + a.RightExpr.Eval()
+	return
+}
+
+type IfStmt struct {
+	SimpleStmt Node
+	Expr Node
+	Block Node
+	Else Node
+}
+
+func (i *IfStmt) Valid() bool {
+	return i.SimpleStmt.Valid() && i.Expr.Valid() &&
+		i.Block.Valid() && i.Else.Valid()
+}
+
+func (i *IfStmt) Eval() (s string) {
+	if i.SimpleStmt != nil {
+		s += i.SimpleStmt.Eval()
+	}
+	s += i.Expr.Eval()
+	s += i.Block.Eval()
+	if i.Else != nil {
+		s += i.Else.Eval()
+	}
+	return
+}
+
+type ForStmt struct {
+	Clause Node // ForClause or Condition
+	Block Node
+}
+
+func (f *ForStmt) Valid() bool {
+	return f.Clause.Valid() && f.Block.Valid()
+}
+
+func (f *ForStmt) Eval() (s string) {
+	s += s.Clause.Eval()
+	s += s.Block.Eval()
+	return
+}
+
+type ForClause struct {
+	InitStmt Node
+	Condition Node
+	PostStmt Node
+}
+
+func (f *ForClause) Valid() bool {
+	return f.InitStmt.Valid() && f.Condition.Valid() && f.PostStmt.Valid()
+}
+	
+func (f *ForClause) Eval() (s string) {
+	if f.InitStmt != nil {
+		s += f.InitStmt.Eval()
+	}
+	if f.Condition != nil {
+		s += f.Condition.Eval()
+	}
+	if f.PostStmt != nil {
+		s += f.PostStmt.Eval()
+	}
+	return
+}
+
+type RangeClause struct {
+	ExprsOrIdents Node
+	Op string // "=" or ":="
+	Expr Node // that comes after the op... need a better nayme
+}
+
+func (r *RangeClause) Valid() bool {
+	return r.ExprsOrIdents.Valid() && r.Expr.Valid()
+}
+
+func (r *RangeClause) Eval() (s string) {
+	s += r.ExprsOrIdents.Eval()
+	s += "op :" + s.Op + "\n"
+	s += s.Expr.Eval()
+}
+
+type GoStmt struct {
+	Expr Node
+}
+
+func (g *GoStmt) Valid() bool {
+	return g.Expr.Valid()
+}
+
+func (g *GoStmt) Eval() string {
+	return "go: " + g.Expr.Eval()
+}
+
+type ReturnStmt struct {
+	Exprs Node
+}
+
+func (r *ReturnStmt) Valid() bool {
+	return r.Exprs.Valid()
+}
+
+func (r *ReturnStmt) Eval() (s string) {
+	s += "start return\n"
+	if r.Exprs != nil {
+		s += r.Exprs.Eval()
+	}
+	s += "end return\n"
+	return
+}
+
+type BreakStmt struct {
+	Label Node
+}
+
+func (b *BreakStmt) Valid() bool {
+	return b.Label.Valid()
+}
+
+func (b *BreakStmt) Eval() (s string) {
+	s += "break: "
+	if b.Label != nil {
+		s += b.Label.Eval()
+	}
+	s += "\n"
+	return
+}
+
+type ContinueStmt struct {
+	Label Node
+}
+
+func (c *ContinueStmt) Valid() bool {
+	return c.Label.Valid()
+}
+
+func (c *ContinueStmt) Eval() (s string) {
+	s += "continue: "
+	if c.Label != nil {
+		s += c.Label.Eval()
+	}
+	s += "\n"
+	return
+}
+
+type GotoStmt struct {
+	Label Node
+}
+
+func (g *GotoStmt) Valid() bool {
+	return g.Label.Valid()
+}
+
+func (g *GotoStmt) Eval() string {
+	return "goto: " + g.Label.Eval() + "\n"
+}
+
+type Fallthrough Node
+
+func (f *Fallthrough) Eval() string {
+	return "fallthrough\n"
+}
+
+type DeferStmt Struct {
+	Expr Node
+}
+
+func (f *Fallthrough) Valid() bool {
+	return f.Expr.Valid()
+}
+
+func (d *DeferStmt) Eval() string {
+	return d.Expr.Eval()
 }

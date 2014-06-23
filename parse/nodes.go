@@ -120,7 +120,8 @@ type Cnst struct {
 }
 
 func (c *Cnst) Valid() bool {
-	return c.Is.Valid() && c.T.Valid() && c.Es.Valid()
+	return c.Is != nil && c.T != nil && c.Es != nil &&
+		c.Is.Valid() && c.T.Valid() && c.Es.Valid()
 }
 
 func (c *Cnst) Eval() (s string) {
@@ -188,11 +189,11 @@ type UnaryE struct {
 }
 
 func (u *UnaryE) Valid() bool {
-	return u.Expr.Valid()
+	return u.Expr != nil && u.Expr.Valid()
 }
 
 func (u *UnaryE) Eval() (s string) {
-	s += "op: " + u.Op + "\n"
+	s += "unary_op: " + u.Op + "\n"
 	s += u.Expr.Eval()
 	return
 }
@@ -225,8 +226,13 @@ type Expr struct {
 	SecondN Node
 }
 
+// SecondN can be nil
 func (e *Expr) Valid() bool {
-	return e.FirstN.Valid() && e.SecondN.Valid()
+	t := e.FirstN != nil && e.FirstN.Valid()
+	if e.SecondN != nil {
+		t = t && e.SecondN.Valid()
+	}
+	return t
 }
 
 func (e *Expr) Eval() (s string) {
@@ -247,7 +253,7 @@ type Typ struct {
 }
 
 func (t *Typ) Valid() bool {
-	return t.T.Valid()
+	return t.T != nil && t.T.Valid()
 }
 
 func (t *Typ) Eval() string {
@@ -307,7 +313,7 @@ type Typespec struct {
 }
 
 func (t *Typespec) Valid() bool {
-	return t.I.Valid() && t.Typ.Valid()
+	return t.I != nil && t.Typ != nil && t.I.Valid() && t.Typ.Valid()
 }
 
 func (t *Typespec) Eval() (s string) {
@@ -351,7 +357,8 @@ type Varspec struct {
 }
 
 func (v *Varspec) Valid() bool {
-	return v.Idents.Valid() && v.T.Valid() && v.Exprs.Valid()
+	return v.Idents != nil && v.T != nil && v.Exprs != nil &&
+		v.Idents.Valid() && v.T.Valid() && v.Exprs.Valid()
 }
 
 func (v *Varspec) Eval() (s string) {
@@ -375,7 +382,8 @@ type Funcdecl struct {
 }
 
 func (f *Funcdecl) Valid() bool {
-	return f.Name.Valid() && f.FuncOrSig.Valid()
+	return f.Name != nil && f.FuncOrSig != nil &&
+		f.Name.Valid() && f.FuncOrSig.Valid()
 }
 
 func (f *Funcdecl) Eval() (s string) {
@@ -396,7 +404,8 @@ type Func struct {
 }
 
 func (f *Func) Valid() bool {
-	return f.Sig.Valid() && f.Body.Valid()
+	return f.Sig != nil && f.Body != nil &&
+		f.Sig.Valid() && f.Body.Valid()
 }
 
 func (f *Func) Eval() (s string) {
@@ -415,7 +424,8 @@ type Sig struct {
 }
 
 func (sig *Sig) Valid() bool {
-	return sig.Params.Valid() && sig.Result.Valid()
+	return sig.Params != nil && sig.Result != nil &&
+		sig.Params.Valid() && sig.Result.Valid()
 }
 
 func (sig *Sig) Eval() (s string) {
@@ -453,7 +463,7 @@ type Stmt struct {
 }
 
 func (s *Stmt) Valid() bool {
-	return s.S.Valid()
+	return s.S != nil && s.S.Valid()
 }
 
 func (s *Stmt) Eval() string {
@@ -468,7 +478,7 @@ type Result struct {
 }
 
 func (r *Result) Valid() bool {
-	return r.ParamsOrTyp.Valid()
+	return r.ParamsOrTyp != nil && r.ParamsOrTyp.Valid()
 }
 
 func (r *Result) Eval() (s string) {
@@ -509,7 +519,7 @@ type Param struct {
 }
 
 func (p *Param) Valid() bool {
-	return p.Idents.Valid() && p.Typ.Valid()
+	return p.Idents != nil && p.Typ != nil && p.Idents.Valid() && p.Typ.Valid()
 }
 
 func (p *Param) Eval() (s string) {
@@ -532,7 +542,7 @@ type Block struct {
 }
 
 func (b *Block) Valid() bool {
-	return b.Stmts.Valid()
+	return b.Stmts != nil && b.Stmts.Valid()
 }
 
 func (b *Block) Eval() (s string) {
@@ -548,7 +558,7 @@ type LabeledStmt struct {
 }
 
 func (l *LabeledStmt) Valid() bool {
-	return l.Label.Valid() && l.Stmt.Valid()
+	return l.Label != nil && l.Stmt != nil && l.Label.Valid() && l.Stmt.Valid()
 }
 
 func (l *LabeledStmt) Eval() string {
@@ -560,7 +570,7 @@ type ExprStmt struct {
 }
 
 func (e *ExprStmt) Valid() bool {
-	return e.Expr.Valid()
+	return e.Expr != nil && e.Expr.Valid()
 }
 
 func (e *ExprStmt) Eval() string {
@@ -573,7 +583,7 @@ type SendStmt struct {
 }
 
 func (s *SendStmt) Valid() bool {
-	return s.Chan.Valid() && s.Expr.Valid()
+	return s.Chan != nil && s.Expr != nil && s.Chan.Valid() && s.Expr.Valid()
 }
 
 func (s *SendStmt) Eval() string {
@@ -586,7 +596,7 @@ type IncDecStmt struct {
 }
 
 func (i *IncDecStmt) Valid() bool {
-	return i.Expr.Valid()
+	return i.Expr != nil && i.Expr.Valid()
 }
 
 func (i *IncDecStmt) Eval() string {
@@ -601,11 +611,12 @@ type Assign struct {
 }
 
 func (a *Assign) Valid() bool {
-	return a.LeftExpr.Valid() && a.RightExpr.Valid()
+	return a.LeftExpr != nil && a.RightExpr != nil &&
+		a.LeftExpr.Valid() && a.RightExpr.Valid()
 }
 
 func (a *Assign) Eval() (s string) {
-	s += "op: " + a.Op + "\n"
+	s += "assign_op: " + a.Op + "\n"
 	s += "left: " + a.LeftExpr.Eval()
 	s += "right: " + a.RightExpr.Eval()
 	return
@@ -619,7 +630,8 @@ type IfStmt struct {
 }
 
 func (i *IfStmt) Valid() bool {
-	return i.SimpleStmt.Valid() && i.Expr.Valid() &&
+	return i.SimpleStmt != nil && i.Expr != nil && i.Block != nil &&
+		i.Else != nil && i.SimpleStmt.Valid() && i.Expr.Valid() &&
 		i.Block.Valid() && i.Else.Valid()
 }
 
@@ -641,7 +653,8 @@ type ForStmt struct {
 }
 
 func (f *ForStmt) Valid() bool {
-	return f.Clause.Valid() && f.Block.Valid()
+	return f.Clause != nil && f.Block != nil &&
+		f.Clause.Valid() && f.Block.Valid()
 }
 
 func (f *ForStmt) Eval() (s string) {
@@ -657,7 +670,8 @@ type ForClause struct {
 }
 
 func (f *ForClause) Valid() bool {
-	return f.InitStmt.Valid() && f.Condition.Valid() && f.PostStmt.Valid()
+	return f.InitStmt != nil && f.Condition != nil && f.PostStmt != nil &&
+		f.InitStmt.Valid() && f.Condition.Valid() && f.PostStmt.Valid()
 }
 
 func (f *ForClause) Eval() (s string) {
@@ -680,7 +694,8 @@ type RangeClause struct {
 }
 
 func (r *RangeClause) Valid() bool {
-	return r.ExprsOrIdents.Valid() && r.Expr.Valid()
+	return r.ExprsOrIdents != nil && r.Expr != nil &&
+		r.ExprsOrIdents.Valid() && r.Expr.Valid()
 }
 
 func (r *RangeClause) Eval() (s string) {
@@ -695,7 +710,7 @@ type GoStmt struct {
 }
 
 func (g *GoStmt) Valid() bool {
-	return g.Expr.Valid()
+	return g.Expr != nil && g.Expr.Valid()
 }
 
 func (g *GoStmt) Eval() string {
@@ -707,7 +722,7 @@ type ReturnStmt struct {
 }
 
 func (r *ReturnStmt) Valid() bool {
-	return r.Exprs.Valid()
+	return r.Exprs != nil && r.Exprs.Valid()
 }
 
 func (r *ReturnStmt) Eval() (s string) {
@@ -724,7 +739,7 @@ type BreakStmt struct {
 }
 
 func (b *BreakStmt) Valid() bool {
-	return b.Label.Valid()
+	return b.Label != nil && b.Label.Valid()
 }
 
 func (b *BreakStmt) Eval() (s string) {
@@ -741,7 +756,7 @@ type ContinueStmt struct {
 }
 
 func (c *ContinueStmt) Valid() bool {
-	return c.Label.Valid()
+	return c.Label != nil && c.Label.Valid()
 }
 
 func (c *ContinueStmt) Eval() (s string) {
@@ -758,7 +773,7 @@ type GotoStmt struct {
 }
 
 func (g *GotoStmt) Valid() bool {
-	return g.Label.Valid()
+	return g.Label != nil && g.Label.Valid()
 }
 
 func (g *GotoStmt) Eval() string {
@@ -781,7 +796,7 @@ type DeferStmt struct {
 }
 
 func (d *DeferStmt) Valid() bool {
-	return d.Expr.Valid()
+	return d.Expr != nil && d.Expr.Valid()
 }
 
 func (d *DeferStmt) Eval() string {
@@ -794,7 +809,8 @@ type ShortVarDecl struct {
 }
 
 func (s *ShortVarDecl) Valid() bool {
-	return s.Idents.Valid() && s.Exprs.Valid()
+	return s.Idents != nil && s.Exprs != nil &&
+		s.Idents.Valid() && s.Exprs.Valid()
 }
 
 func (s *ShortVarDecl) Eval() (str string) {
@@ -803,4 +819,14 @@ func (s *ShortVarDecl) Eval() (str string) {
 	str += s.Exprs.Eval()
 	str += "stop shortvardecl\n"
 	return
+}
+
+type EmptyStmt struct {}
+
+func (e *EmptyStmt) Valid() bool {
+	return true
+}
+
+func (e *EmptyStmt) Eval() string {
+	return "empty statement\n"
 }

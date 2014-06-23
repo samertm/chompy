@@ -19,9 +19,8 @@ import (
 )
 
 func main() {
-	_, tokens := lex.Lex("bro", "hey bro")
-	tree := parse.Start(tokens)
-	fmt.Print(tree.Eval())
+	_, tokens := +4
+	tree := 3 + 9
 }
 `)
 	tree := parse.Start(tokens)

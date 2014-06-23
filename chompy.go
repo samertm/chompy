@@ -14,9 +14,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/samertm/chompy/lex"
+	"github.com/samertm/chompy/parse"
 )
 
-const ribs
+func main() {
+	_, tokens := lex.Lex("bro", "hey bro")
+	tree := parse.Start(tokens)
+	fmt.Print(tree.Eval())
+}
 `)
 	tree := parse.Start(tokens)
 	fmt.Print(tree.Eval())

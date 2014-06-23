@@ -544,14 +544,14 @@ func (b *Block) Eval() (s string) {
 
 type LabeledStmt struct {
 	Label Node // identifier
-	Stmt Node
+	Stmt  Node
 }
 
 func (l *LabeledStmt) Valid() bool {
 	return l.Label.Valid() && l.Stmt.Valid()
 }
 
-func (l *LabledStmt) Eval() string {
+func (l *LabeledStmt) Eval() string {
 	return "label: " + l.Label.Eval() + " stmt: " + l.Stmt.Eval() + "\n"
 }
 
@@ -581,7 +581,7 @@ func (s *SendStmt) Eval() string {
 }
 
 type IncDecStmt struct {
-	Expr Node
+	Expr    Node
 	Postfix string // either "++" or "--"
 }
 
@@ -595,8 +595,8 @@ func (i *IncDecStmt) Eval() string {
 
 // Assignment = ExpressionList assign_op ExpressionList .
 type Assign struct {
-	Op string // add_op, mul_op, or "="
-	LeftExpr Node
+	Op        string // add_op, mul_op, or "="
+	LeftExpr  Node
 	RightExpr Node
 }
 
@@ -605,7 +605,7 @@ func (a *Assign) Valid() bool {
 }
 
 func (a *Assign) Eval() (s string) {
-	s += "op: " + s.Op + "\n"
+	s += "op: " + a.Op + "\n"
 	s += "left: " + a.LeftExpr.Eval()
 	s += "right: " + a.RightExpr.Eval()
 	return
@@ -613,9 +613,9 @@ func (a *Assign) Eval() (s string) {
 
 type IfStmt struct {
 	SimpleStmt Node
-	Expr Node
-	Block Node
-	Else Node
+	Expr       Node
+	Block      Node
+	Else       Node
 }
 
 func (i *IfStmt) Valid() bool {
@@ -637,7 +637,7 @@ func (i *IfStmt) Eval() (s string) {
 
 type ForStmt struct {
 	Clause Node // ForClause or Condition
-	Block Node
+	Block  Node
 }
 
 func (f *ForStmt) Valid() bool {
@@ -645,21 +645,21 @@ func (f *ForStmt) Valid() bool {
 }
 
 func (f *ForStmt) Eval() (s string) {
-	s += s.Clause.Eval()
-	s += s.Block.Eval()
+	s += f.Clause.Eval()
+	s += f.Block.Eval()
 	return
 }
 
 type ForClause struct {
-	InitStmt Node
+	InitStmt  Node
 	Condition Node
-	PostStmt Node
+	PostStmt  Node
 }
 
 func (f *ForClause) Valid() bool {
 	return f.InitStmt.Valid() && f.Condition.Valid() && f.PostStmt.Valid()
 }
-	
+
 func (f *ForClause) Eval() (s string) {
 	if f.InitStmt != nil {
 		s += f.InitStmt.Eval()
@@ -675,8 +675,8 @@ func (f *ForClause) Eval() (s string) {
 
 type RangeClause struct {
 	ExprsOrIdents Node
-	Op string // "=" or ":="
-	Expr Node // that comes after the op... need a better nayme
+	Op            string // "=" or ":="
+	Expr          Node   // that comes after the op... need a better nayme
 }
 
 func (r *RangeClause) Valid() bool {
@@ -685,8 +685,9 @@ func (r *RangeClause) Valid() bool {
 
 func (r *RangeClause) Eval() (s string) {
 	s += r.ExprsOrIdents.Eval()
-	s += "op :" + s.Op + "\n"
-	s += s.Expr.Eval()
+	s += "op :" + r.Op + "\n"
+	s += r.Expr.Eval()
+	return
 }
 
 type GoStmt struct {
@@ -764,20 +765,42 @@ func (g *GotoStmt) Eval() string {
 	return "goto: " + g.Label.Eval() + "\n"
 }
 
-type Fallthrough Node
+type Fallthrough struct {
+}
+
+func (f *Fallthrough) Valid() bool {
+	return true
+}
 
 func (f *Fallthrough) Eval() string {
 	return "fallthrough\n"
 }
 
-type DeferStmt Struct {
+type DeferStmt struct {
 	Expr Node
 }
 
-func (f *Fallthrough) Valid() bool {
-	return f.Expr.Valid()
+func (d *DeferStmt) Valid() bool {
+	return d.Expr.Valid()
 }
 
 func (d *DeferStmt) Eval() string {
 	return d.Expr.Eval()
+}
+
+type ShortVarDecl struct {
+	Idents Node // identifier list
+	Exprs  Node // expression list
+}
+
+func (s *ShortVarDecl) Valid() bool {
+	return s.Idents.Valid() && s.Exprs.Valid()
+}
+
+func (s *ShortVarDecl) Eval() (str string) {
+	str += "start shortvardecl\n"
+	str += s.Idents.Eval()
+	str += s.Exprs.Eval()
+	str += "stop shortvardecl\n"
+	return
 }

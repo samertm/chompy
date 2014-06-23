@@ -54,9 +54,10 @@ func (p *parser) push(t *lex.Token) {
 		log.Fatal("bad push")
 	}
 	p.oldToks = append(p.oldToks, t)
-	if p.recordTokens {
-		// pop last token off slice
-		p.recordedTokens = p.recordedTokens[:len(p.oldToks)-1]
+	if len(p.trackers) > 0 {
+		// pop last token off last slice
+ 		p.trackers[len(p.trackers)-1] =
+			p.trackers[len(p.trackers)-1][:len(p.trackers[len(p.trackers)-1])-1]
 	}
 }
 
@@ -78,7 +79,7 @@ func (p *parser) backtrack() {
 	if len(p.trackers) == 0 {
 		log.Fatal("Error: backtrack called with zero trackers")
 	}
-	for i := len(p.recordedTokens) - 1; i >= 0; i-- {
+	for i := len(p.trackers[len(p.trackers)-1]) - 1; i >= 0; i-- {
 		p.oldToks = append(p.oldToks, p.trackers[len(p.trackers)-1][i])
 	}
 	p.trackers[len(p.trackers)-1] = make([]*lex.Token, 0)

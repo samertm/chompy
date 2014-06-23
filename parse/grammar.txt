@@ -34,9 +34,22 @@ Declaration   = ConstDecl | TypeDecl | VarDecl .
 
 VarDecl     = "var" ( VarSpec | "(" { VarSpec ";" } ")" ) .
 VarSpec      = IdentifierList ( Type [ "=" ExpressionList ] | "=" ExpressionList ) .
+
+FunctionName = identifier .
+Function     = Signature FunctionBody .
+FunctionBody = Block .
+
+Block = "{" StatementList "}" .
+StatementList = { Statement ";" } .
+
+Signature      = Parameters [ Result ] .
+Result         = Parameters | Type .
+Parameters     = "(" [ ParameterList [ "," ] ] ")" .
+ParameterList  = ParameterDecl { "," ParameterDecl } .
+ParameterDecl  = [ IdentifierList ] [ "..." ] Type .
 --- implemented incomplete ---
 
-TopLevelDecl  = Declaration .
+TopLevelDecl  = Declaration | FunctionDecl .
 
 PrimaryExpr =
 	Operand .
@@ -47,26 +60,62 @@ BasicLit   = int_lit | string_lit .
 
 Type      = TypeName | "(" Type ")" .
 
---- implementing ---
-
-TopLevelDecl  = Declaration | FunctionDecl .
-
 FunctionDecl = "func" FunctionName Function .
-FunctionName = identifier .
-Function     = Signature FunctionBody .
-FunctionBody = Block .
-
-Block = "{" StatementList "}" .
-StatementList = { Statement ";" } .
 
 Statement =
 	Declaration .
+--- implementing ---
 
-Signature      = Parameters [ Result ] .
-Result         = Parameters | Type .
-Parameters     = "(" [ ParameterList [ "," ] ] ")" .
-ParameterList  = ParameterDecl { "," ParameterDecl } .
-ParameterDecl  = [ IdentifierList ] [ "..." ] Type .
+Statement =
+	Declaration | LabeledStmt | SimpleStmt |
+	GoStmt | ReturnStmt | BreakStmt | ContinueStmt | GotoStmt |
+	FallthroughStmt | Block | IfStmt |  ForStmt |
+	DeferStmt .
+
+SimpleStmt = EmptyStmt | ExpressionStmt | SendStmt | IncDecStmt | Assignment | ShortVarDecl .
+
+ShortVarDecl = IdentifierList ":=" ExpressionList .
+
+EmptyStmt = .
+
+LabeledStmt = Label ":" Statement .
+Label       = identifier .
+
+ExpressionStmt = Expression .
+
+SendStmt = Channel "<-" Expression .
+Channel  = Expression .
+
+IncDecStmt = Expression ( "++" | "--" ) .
+
+Assignment = ExpressionList assign_op ExpressionList .
+
+assign_op = [ add_op | mul_op ] "=" .
+
+IfStmt = "if" [ SimpleStmt ";" ] Expression Block [ "else" ( IfStmt | Block ) ] .
+
+ForStmt = "for" [ Condition | ForClause | RangeClause ] Block .
+Condition = Expression .
+
+ForClause = [ InitStmt ] ";" [ Condition ] ";" [ PostStmt ] .
+InitStmt = SimpleStmt .
+PostStmt = SimpleStmt .
+
+RangeClause = ( ExpressionList "=" | IdentifierList ":=" ) "range" Expression .
+
+GoStmt = "go" Expression .
+
+ReturnStmt = "return" [ ExpressionList ] .
+
+BreakStmt = "break" [ Label ] .
+
+ContinueStmt = "continue" [ Label ] .
+
+GotoStmt = "goto" Label .
+
+FallthroughStmt = "fallthrough" .
+
+DeferStmt = "defer" Expression .
 
 --- not implemented ---
 
@@ -100,11 +149,6 @@ PointerType = "*" BaseType .
 BaseType = Type .
 
 FunctionType   = "func" Signature .
-Signature      = Parameters [ Result ] .
-Result         = Parameters | Type .
-Parameters     = "(" [ ParameterList [ "," ] ] ")" .
-ParameterList  = ParameterDecl { "," ParameterDecl } .
-ParameterDecl  = [ IdentifierList ] [ "..." ] Type .
 
 InterfaceType      = "interface" "{" { MethodSpec ";" } "}" .
 MethodSpec         = MethodName Signature | InterfaceTypeName .
@@ -116,16 +160,9 @@ KeyType     = Type .
 
 ChannelType = ( "chan" [ "<-" ] | "<-" "chan" ) ElementType .
 
-Block = "{" StatementList "}" .
-StatementList = { Statement ";" } .
-
-
 ShortVarDecl = IdentifierList ":=" ExpressionList .
 
 FunctionDecl = "func" FunctionName ( Function | Signature ) .
-FunctionName = identifier .
-Function     = Signature FunctionBody .
-FunctionBody = Block .
 
 MethodDecl   = "func" Receiver MethodName ( Function | Signature ) .
 Receiver     = "(" [ identifier ] [ "*" ] BaseTypeName ")" .

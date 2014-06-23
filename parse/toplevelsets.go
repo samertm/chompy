@@ -8,6 +8,17 @@ var (
 	tokString        = lex.Token{Typ: lex.String}
 	tokIdentifier    = lex.Token{Typ: lex.Identifier}
 	tokInt           = lex.Token{Typ: lex.Int}
+	tokIf            = lex.Token{Typ: lex.Keyword, Val: "if"}
+	tokElse          = lex.Token{Typ: lex.Keyword, Val: "else"}
+	tokFor           = lex.Token{Typ: lex.Keyword, Val: "for"}
+	tokGo            = lex.Token{Typ: lex.Keyword, Val: "go"}
+	tokReturn        = lex.Token{Typ: lex.Keyword, Val: "return"}
+	tokBreak         = lex.Token{Typ: lex.Keyword, Val: "break"}
+	tokContinue      = lex.Token{Typ: lex.Keyword, Val: "continue"}
+	tokGoto          = lex.Token{Typ: lex.Keyword, Val: "goto"}
+	tokFallthrough   = lex.Token{Typ: lex.Keyword, Val: "fallthrough"}
+	tokDefer         = lex.Token{Typ: lex.Keyword, Val: "defer"}
+	tokRange         = lex.Token{Typ: lex.Keyword, Val: "range"}
 	tokSemicolon     = lex.Token{Typ: lex.OpOrDelim, Val: ";"}
 	tokDot           = lex.Token{Typ: lex.OpOrDelim, Val: "."}
 	tokOpenParen     = lex.Token{Typ: lex.OpOrDelim, Val: "("}
@@ -16,8 +27,15 @@ var (
 	tokCloseSquiggly = lex.Token{Typ: lex.OpOrDelim, Val: "}"}
 	tokComma         = lex.Token{Typ: lex.OpOrDelim, Val: ","}
 	tokEqual         = lex.Token{Typ: lex.OpOrDelim, Val: "="}
+	tokColonEqual    = lex.Token{Typ: lex.OpOrDelim, Val: ":="}
 	tokDotDotDot     = lex.Token{Typ: lex.OpOrDelim, Val: "..."}
-	tokUnaryOp       = []lex.Token{
+	tokLeftArrow     = lex.Token{Typ: lex.OpOrDelim, Val: "<-"}
+	tokColon         = lex.Token{Typ: lex.OpOrDelim, Val: ":"}
+	tokIncDec        = []lex.Token{
+		lex.Token{Typ: lex.OpOrDelim, Val: "++"},
+		lex.Token{Typ: lex.OpOrDelim, Val: "--"},
+	}
+	tokUnaryOp = []lex.Token{
 		lex.Token{Typ: lex.OpOrDelim, Val: "+"},
 		lex.Token{Typ: lex.OpOrDelim, Val: "-"},
 		lex.Token{Typ: lex.OpOrDelim, Val: "!"},
@@ -53,6 +71,8 @@ var (
 		lex.Token{Typ: lex.OpOrDelim, Val: "||"},
 		lex.Token{Typ: lex.OpOrDelim, Val: "&&"},
 	}, tokMulOp...), tokAddOp...), tokRelOp...)
+	tokAssignOp = append(append([]lex.Token{
+		tokEqual}, tokAddOp...), tokMulOp...)
 )
 
 var (
@@ -99,10 +119,38 @@ var (
 	topFunctionBody  = topBlock
 	topBlock         = tokOpenSquiggly
 	topStatementList = topStatement
-	topStatement     = append([]lex.Token{}, topDeclaration...)
+	topStatement     = append(append([]lex.Token{
+		topLabeledStmt, topGoStmt, topReturnStmt, topBreakStmt,
+		topContinueStmt, topGotoStmt, topFallthroughStmt, topBlock,
+		topIfStmt, topForStmt, topDeferStmt,
+	}, topDeclaration...), topSimpleStmt...)
 	topSignature     = topParameters
 	topResult        = append([]lex.Token{topParameters}, topType...)
 	topParameters    = tokOpenParen
 	topParameterList = topParameterDecl
 	topParameterDecl = topIdentifierList
+	// all simple statements start with an expression
+	topSimpleStmt      = topExpression
+	topLabeledStmt     = topLabel
+	topLabel           = tokIdentifier
+	topExpressionStmt  = topExpression
+	topSendStmt        = topChannel
+	topChannel         = topExpression
+	topIncDecStmt      = topExpression
+	topAssignment      = topExpression
+	topIfStmt          = tokIf
+	topForStmt         = tokFor
+	topCondition       = topExpression
+	topForClause       = append([]lex.Token{tokSemicolon}, topInitStmt...)
+	topInitStmt        = topSimpleStmt
+	topPostStmt        = topSimpleStmt
+	topRangeClause     = append([]lex.Token{topIdentifierList}, topExpressionList...)
+	topGoStmt          = tokGo
+	topReturnStmt      = tokReturn
+	topBreakStmt       = tokBreak
+	topContinueStmt    = tokContinue
+	topGotoStmt        = tokGoto
+	topFallthroughStmt = tokFallthrough
+	topDeferStmt       = tokDefer
+	topShortVarDecl    = topIdentifierList
 )

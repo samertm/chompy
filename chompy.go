@@ -19,6 +19,7 @@ import (
 )
 
 func main() {
+	tree := Start
 	_, tokens := +4
 	tree := 3 + 9
 }

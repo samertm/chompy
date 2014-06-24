@@ -240,6 +240,7 @@ func expression(p *parser) Node {
 	return firstE
 }
 
+// UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
 func unaryExpr(p *parser) Node {
 	un := &UnaryE{}
 	if p.accept(topPrimaryExpr...) {
@@ -480,9 +481,7 @@ func signature(p *parser) Node {
 // StatementList = { Statement ";" } .
 func statementList(p *parser) Node {
 	ss := &Stmts{}
-	fmt.Println("YAY")
 	for p.accept(topStatement...) {
-		fmt.Println("DOUBLEYAY")
 		ss.Stmts = append(ss.Stmts, statement(p))
 		
 		if err := p.expect(tokSemicolon); err != nil {
@@ -891,7 +890,6 @@ func shortVarDecl(p *parser) Node {
 
 // SimpleStmt = EmptyStmt | ExpressionStmt | SendStmt | IncDecStmt | Assignment | ShortVarDecl .
 func simpleStmt(p *parser) Node {
-	fmt.Println("WEJFKLJLK")
 	var stmt Node
 	// set up backtracking
 	p.hookTracker()
@@ -899,14 +897,10 @@ func simpleStmt(p *parser) Node {
 	// this is a super inefficient way of doing this lol
 	// look at statements in reverse order
 	if p.accept(topShortVarDecl) {
-		fmt.Println("CLOSER")
 		stmt = shortVarDecl(p)
 		if stmt.Valid() {
-			fmt.Println("MAYBE?")
 			return stmt
 		}
-		fmt.Println(stmt.Eval())
-		fmt.Println("valid", stmt.Valid())
 		p.backtrack()
 	}
 	// Assignment, IncDecStmt, SendStmt, ExpressionStmt all start with expressions
@@ -948,7 +942,6 @@ func statement(p *parser) Node {
 	// least general first: !LabeledStmt, !SimpleStmt
 	// Declaration, GoStmt, ReturnStmt, BreakStmt, ContinueStmt,
 	// GotoStmt, FallthroughStmt, Block, IfStmt, ForStmt, DeferStmt
-	fmt.Println("TRIPLE YAY")
 	if p.accept(topDeclaration...) {
 		return declaration(p)
 	} else if p.accept(topGoStmt) {

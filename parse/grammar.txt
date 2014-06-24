@@ -47,24 +47,6 @@ Result         = Parameters | Type .
 Parameters     = "(" [ ParameterList [ "," ] ] ")" .
 ParameterList  = ParameterDecl { "," ParameterDecl } .
 ParameterDecl  = [ IdentifierList ] [ "..." ] Type .
---- implemented incomplete ---
-
-TopLevelDecl  = Declaration | FunctionDecl .
-
-PrimaryExpr =
-	Operand .
-
-Operand    = Literal | OperandName .
-Literal    = BasicLit .
-BasicLit   = int_lit | string_lit .
-
-Type      = TypeName | "(" Type ")" .
-
-FunctionDecl = "func" FunctionName Function .
-
-Statement =
-	Declaration .
---- implementing ---
 
 Statement =
 	Declaration | LabeledStmt | SimpleStmt |
@@ -117,6 +99,42 @@ FallthroughStmt = "fallthrough" .
 
 DeferStmt = "defer" Expression .
 
+--- implemented incomplete ---
+
+TopLevelDecl  = Declaration | FunctionDecl .
+
+PrimaryExpr =
+	Operand .
+
+Operand    = Literal | OperandName .
+Literal    = BasicLit .
+BasicLit   = int_lit | string_lit .
+
+Type      = TypeName | "(" Type ")" .
+
+FunctionDecl = "func" FunctionName Function .
+
+--- implementing ---
+
+PrimaryExpr =
+	Operand |
+	Conversion |
+	BuiltinCall |
+	PrimaryExpr Selector |
+	PrimaryExpr Index |
+	PrimaryExpr Slice |
+	PrimaryExpr TypeAssertion |
+	PrimaryExpr Call .
+
+Selector       = "." identifier .
+Index          = "[" Expression "]" .
+Slice          = "[" ( [ Expression ] ":" [ Expression ] ) |
+                     ( [ Expression ] ":" Expression ":" Expression )
+                 "]" .
+TypeAssertion  = "." "(" Type ")" .
+Call           = "(" [ ArgumentList [ "," ] ] ")" .
+ArgumentList   = ExpressionList [ "..." ] .
+
 --- not implemented ---
 
 TopLevelDecl  = Declaration | FunctionDecl | MethodDecl .
@@ -124,15 +142,6 @@ TopLevelDecl  = Declaration | FunctionDecl | MethodDecl .
 Type      = TypeName | TypeLit | "(" Type ")" .
 TypeLit   = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
 	    SliceType | MapType | ChannelType .
-
-UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
-
-binary_op  = "||" | "&&" | rel_op | add_op | mul_op .
-rel_op     = "==" | "!=" | "<" | "<=" | ">" | ">=" .
-add_op     = "+" | "-" | "|" | "^" .
-mul_op     = "*" | "/" | "%" | "<<" | ">>" | "&" | "&^" .
-
-unary_op   = "+" | "-" | "!" | "^" | "*" | "&" | "<-" .
 
 ArrayType   = "[" ArrayLength "]" ElementType .
 ArrayLength = Expression .
@@ -226,26 +235,6 @@ Statement =
 	FallthroughStmt | Block | IfStmt | SwitchStmt | SelectStmt | ForStmt |
 	DeferStmt .
 
-SimpleStmt = EmptyStmt | ExpressionStmt | SendStmt | IncDecStmt | Assignment | ShortVarDecl .
-
-EmptyStmt = .
-
-LabeledStmt = Label ":" Statement .
-Label       = identifier .
-
-ExpressionStmt = Expression .
-
-SendStmt = Channel "<-" Expression .
-Channel  = Expression .
-
-IncDecStmt = Expression ( "++" | "--" ) .
-
-Assignment = ExpressionList assign_op ExpressionList .
-
-assign_op = [ add_op | mul_op ] "=" .
-
-IfStmt = "if" [ SimpleStmt ";" ] Expression Block [ "else" ( IfStmt | Block ) ] .
-
 SwitchStmt = ExprSwitchStmt | TypeSwitchStmt .
 
 ExprSwitchStmt = "switch" [ SimpleStmt ";" ] [ Expression ] "{" { ExprCaseClause } "}" .
@@ -258,32 +247,11 @@ TypeCaseClause  = TypeSwitchCase ":" StatementList .
 TypeSwitchCase  = "case" TypeList | "default" .
 TypeList        = Type { "," Type } .
 
-ForStmt = "for" [ Condition | ForClause | RangeClause ] Block .
-Condition = Expression .
-
-ForClause = [ InitStmt ] ";" [ Condition ] ";" [ PostStmt ] .
-InitStmt = SimpleStmt .
-PostStmt = SimpleStmt .
-
-RangeClause = ( ExpressionList "=" | IdentifierList ":=" ) "range" Expression .
-
-GoStmt = "go" Expression .
-
 SelectStmt = "select" "{" { CommClause } "}" .
 CommClause = CommCase ":" StatementList .
 CommCase   = "case" ( SendStmt | RecvStmt ) | "default" .
 RecvStmt   = [ ExpressionList "=" | IdentifierList ":=" ] RecvExpr .
 RecvExpr   = Expression .
-
-ReturnStmt = "return" [ ExpressionList ] .
-
-BreakStmt = "break" [ Label ] .
-
-ContinueStmt = "continue" [ Label ] .
-
-GotoStmt = "goto" Label .
-
-FallthroughStmt = "fallthrough" .
 
 DeferStmt = "defer" Expression .
 

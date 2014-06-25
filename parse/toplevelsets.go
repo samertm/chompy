@@ -101,7 +101,7 @@ var (
 	topExpression     = append([]lex.Token{}, topUnaryExpr...)
 	topUnaryExpr      = append(append([]lex.Token{},
 		topPrimaryExpr...), tokUnaryOp...)
-	topPrimaryExpr = append(append([]lex.Token{topBuiltinCall}, topOperand...), topConversion)
+	topPrimaryExpr = append(append([]lex.Token{topBuiltinCall}, topOperand...), topConversion...)
 	topOperand     = append([]lex.Token{topOperandName}, topLiteral...)
 	topLiteral     = topBasicLit
 	topBasicLit    = []lex.Token{

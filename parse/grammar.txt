@@ -141,6 +141,58 @@ TypeAssertion  = "." "(" Type ")" .
 Call           = "(" [ ArgumentList [ "," ] ] ")" .
 ArgumentList   = ExpressionList [ "..." ] .
 
+--- not working on yet ----
+
+Type      = TypeName | TypeLit | "(" Type ")" .
+TypeLit   = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
+	    SliceType | MapType | ChannelType .
+
+ArrayType   = "[" ArrayLength "]" ElementType .
+ArrayLength = Expression .
+ElementType = Type .
+
+SliceType = "[" "]" ElementType .
+
+StructType     = "struct" "{" { FieldDecl ";" } "}" .
+FieldDecl      = (IdentifierList Type | AnonymousField) [ Tag ] .
+AnonymousField = [ "*" ] TypeName .
+Tag            = string_lit .
+
+PointerType = "*" BaseType .
+BaseType = Type .
+
+FunctionType   = "func" Signature .
+
+InterfaceType      = "interface" "{" { MethodSpec ";" } "}" .
+MethodSpec         = MethodName Signature | InterfaceTypeName .
+MethodName         = identifier .
+InterfaceTypeName  = TypeName .
+
+MapType     = "map" "[" KeyType "]" ElementType .
+KeyType     = Type .
+
+ChannelType = ( "chan" [ "<-" ] | "<-" "chan" ) ElementType .
+
+TopLevelDecl  = Declaration | FunctionDecl | MethodDecl .
+
+Operand    = Literal | OperandName | MethodExpr | "(" Expression ")" .
+Literal    = BasicLit | CompositeLit | FunctionLit .
+BasicLit   = int_lit | float_lit | imaginary_lit | rune_lit | string_lit .
+OperandName = identifier | QualifiedIdent.
+
+CompositeLit  = LiteralType LiteralValue .
+LiteralType   = StructType | ArrayType | "[" "..." "]" ElementType |
+                SliceType | MapType | TypeName .
+LiteralValue  = "{" [ ElementList [ "," ] ] "}" .
+ElementList   = Element { "," Element } .
+Element       = [ Key ":" ] Value .
+Key           = FieldName | ElementIndex .
+FieldName     = identifier .
+ElementIndex  = Expression .
+Value         = Expression | LiteralValue .
+
+FunctionLit = "func" Function .
+
 --- not implemented ---
 
 TopLevelDecl  = Declaration | FunctionDecl | MethodDecl .
@@ -220,16 +272,6 @@ TypeAssertion  = "." "(" Type ")" .
 Call           = "(" [ ArgumentList [ "," ] ] ")" .
 ArgumentList   = ExpressionList [ "..." ] .
 
-Expression = UnaryExpr | Expression binary_op UnaryExpr .
-UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
-
-binary_op  = "||" | "&&" | rel_op | add_op | mul_op .
-rel_op     = "==" | "!=" | "<" | "<=" | ">" | ">=" .
-add_op     = "+" | "-" | "|" | "^" .
-mul_op     = "*" | "/" | "%" | "<<" | ">>" | "&" | "&^" .
-
-unary_op   = "+" | "-" | "!" | "^" | "*" | "&" | "<-" .
-
 MethodExpr    = ReceiverType "." MethodName .
 ReceiverType  = TypeName | "(" "*" TypeName ")" | "(" ReceiverType ")" .
 
@@ -258,8 +300,6 @@ CommClause = CommCase ":" StatementList .
 CommCase   = "case" ( SendStmt | RecvStmt ) | "default" .
 RecvStmt   = [ ExpressionList "=" | IdentifierList ":=" ] RecvExpr .
 RecvExpr   = Expression .
-
-DeferStmt = "defer" Expression .
 
 BuiltinCall = identifier "(" [ BuiltinArgs [ "," ] ] ")" .
 BuiltinArgs = Type [ "," ArgumentList ] | ArgumentList .

@@ -110,6 +110,31 @@ func meow(a thing, b otherthing) string {
 	var meow int = 4 + 4
 }
 `,
+	`package main
+
+import "fmt"
+
+func meow() {
+	meow := 4 + 4
+}
+`,
+	`package main
+
+import "fmt"
+
+func meow() {
+	f := int(4,)
+	m := make(map[string]int)
+	f[1]
+	f[:]
+	f[1:2]
+	f[:2]
+	f[1:]
+	f[:3:5]
+	f.(int)
+	f(swag, bag)
+}
+`,
 }
 
 var outputs = []string{
@@ -162,7 +187,7 @@ end imports
 start const decl
 start const spec
 ident: ribs
-op: 
+unary_op: 
 lit: type: Int val: 4
 end const spec
 end const decl
@@ -174,12 +199,12 @@ end imports
 start const decl
 start const spec
 ident: ribs
-op: 
+unary_op: 
 lit: type: Int val: 4
 end const spec
 start const spec
 ident: mibs
-op: 
+unary_op: 
 lit: type: String val: hi there
 end const spec
 end const decl
@@ -192,9 +217,9 @@ start const decl
 start const spec
 ident: ribs
 binary_op: +
-op: 
+unary_op: 
 lit: type: Int val: 4
-op: 
+unary_op: 
 lit: type: Int val: 4
 end const spec
 end const decl
@@ -208,9 +233,9 @@ start const spec
 ident: ribs
 type: int
 binary_op: +
-op: 
+unary_op: 
 lit: type: Int val: 4
-op: 
+unary_op: 
 lit: type: Int val: 4
 end const spec
 end const decl
@@ -224,9 +249,9 @@ start const spec
 ident: ribs
 type: pkg: fmt ident: Int
 binary_op: +
-op: 
+unary_op: 
 lit: type: Int val: 4
-op: 
+unary_op: 
 lit: type: Int val: 4
 end const spec
 end const decl
@@ -262,9 +287,9 @@ start varspec
 ident: meow
 type: int
 binary_op: +
-op: 
+unary_op: 
 lit: type: Int val: 4
-op: 
+unary_op: 
 lit: type: Int val: 4
 end varspec
 end vardecl
@@ -281,9 +306,9 @@ start varspec
 ident: meow
 type: int
 binary_op: +
-op: 
+unary_op: 
 lit: type: Int val: 4
-op: 
+unary_op: 
 lit: type: Int val: 4
 end varspec
 end vardecl
@@ -315,12 +340,94 @@ start varspec
 ident: meow
 type: int
 binary_op: +
-op: 
+unary_op: 
 lit: type: Int val: 4
-op: 
+unary_op: 
 lit: type: Int val: 4
 end varspec
 end vardecl
+end block
+end funcdecl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start funcdecl
+ident: meow
+start block
+start shortvardecl
+ident: meow
+binary_op: +
+unary_op: 
+lit: type: Int val: 4
+unary_op: 
+lit: type: Int val: 4
+end shortvardecl
+end block
+end funcdecl
+`,
+	`in package  main
+start imports
+import: pkgName:  imptName: fmt
+end imports
+start funcdecl
+ident: meow
+start block
+start shortvardecl
+ident: f
+start conversion
+type: int
+unary_op: 
+lit: type: Int val: 4
+end shortvardecl
+start shortvardecl
+ident: m
+start builtincall
+ident: make
+type: map[string]int
+end builtincall
+end shortvardecl
+ident: f
+index: 1
+ident: f
+start slice
+start: 
+end: 
+cap: 
+end slice
+ident: f
+start slice
+start: 1
+end: 2
+cap: 
+end slice
+ident: f
+start slice
+start: 
+end: 2
+cap: 
+end slice
+ident: f
+start slice
+start: 1
+end: 
+cap: 
+end slice
+ident: f
+start slice
+start: 
+end: 3
+cap: 5
+end slice
+ident: f
+ident: f
+type assert: int
+ident: f
+start call
+ident: swag
+ident: bag
+end call
 end block
 end funcdecl
 `,

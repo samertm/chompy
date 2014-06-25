@@ -819,7 +819,7 @@ func (s *ShortVarDecl) Eval() (str string) {
 	str += "start shortvardecl\n"
 	str += s.Idents.Eval()
 	str += s.Exprs.Eval()
-	str += "stop shortvardecl\n"
+	str += "end shortvardecl\n"
 	return
 }
 
@@ -844,8 +844,8 @@ func (c *Conversion) Valid() bool {
 
 func (c *Conversion) Eval() (s string) {
 	s += "start conversion\n"
-	s += s.Typ.Eval()
-	s += s.Expr.Eval()
+	s += c.Typ.Eval()
+	s += c.Expr.Eval()
 	s += "end conversion\n"
 	return
 }
@@ -857,9 +857,9 @@ type Builtin struct {
 }
 
 func (b *Builtin) Valid() bool {
-	t := c.Name != nil && c.Name.Valid() && t.Args != nil && t.Args.Valid()
-	if t.Typ != nil {
-		t = t && t.Typ.Valid()
+	t := b.Name != nil && b.Name.Valid() && b.Args != nil && b.Args.Valid()
+	if b.Typ != nil {
+		t = t && b.Typ.Valid()
 	}
 	return t
 }
@@ -874,4 +874,4 @@ func (b *Builtin) Eval() (s string) {
 	return
 }
 
-type 
+

@@ -219,6 +219,8 @@ func (e *Exprs) Eval() (s string) {
 	return
 }
 
+
+
 // expression list
 type Expr struct {
 	BinOp   string
@@ -830,3 +832,46 @@ func (e *EmptyStmt) Valid() bool {
 func (e *EmptyStmt) Eval() string {
 	return "empty statement\n"
 }
+
+type Conversion struct {
+	Typ Node
+	Expr Node
+}
+
+func (c *Conversion) Valid() bool {
+	return c.Typ != nil && c.Expr != nil && c.Typ.Valid() && c.Expr.Valid()
+}
+
+func (c *Conversion) Eval() (s string) {
+	s += "start conversion\n"
+	s += s.Typ.Eval()
+	s += s.Expr.Eval()
+	s += "end conversion\n"
+	return
+}
+
+type Builtin struct {
+	Name Node
+	Typ Node
+	Args Node
+}
+
+func (b *Builtin) Valid() bool {
+	t := c.Name != nil && c.Name.Valid() && t.Args != nil && t.Args.Valid()
+	if t.Typ != nil {
+		t = t && t.Typ.Valid()
+	}
+	return t
+}
+
+func (b *Builtin) Eval() (s string) {
+	s += "start builtin\n"
+	s += b.Name.Eval()
+	if b.Typ != nil {
+		s += b.Typ.Eval()
+	}
+	s += b.Args.Eval()
+	return
+}
+
+type 

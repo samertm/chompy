@@ -114,7 +114,13 @@ Type      = TypeName | "(" Type ")" .
 
 FunctionDecl = "func" FunctionName Function .
 
+	Declaration .
 --- implementing ---
+
+Conversion = Type "(" Expression [ "," ] ")" .
+
+BuiltinCall = identifier "(" [ BuiltinArgs [ "," ] ] ")" .
+BuiltinArgs = Type [ "," ArgumentList ] | ArgumentList .
 
 PrimaryExpr =
 	Operand |

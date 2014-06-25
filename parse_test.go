@@ -392,37 +392,28 @@ ident: f
 index: 1
 ident: f
 start slice
-start: 
-end: 
-cap: 
 end slice
 ident: f
 start slice
 start: 1
 end: 2
-cap: 
 end slice
 ident: f
 start slice
-start: 
 end: 2
-cap: 
 end slice
 ident: f
 start slice
 start: 1
-end: 
-cap: 
 end slice
 ident: f
 start slice
-start: 
 end: 3
 cap: 5
 end slice
 ident: f
 ident: f
-type assert: int
+type assert: type: int
 ident: f
 start call
 ident: swag

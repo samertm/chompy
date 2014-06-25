@@ -183,21 +183,6 @@ func (o *OpName) Eval() string {
 	return "opname: " + o.Id + "\n"
 }
 
-type UnaryE struct {
-	Op   string // Operand
-	Expr Node
-}
-
-func (u *UnaryE) Valid() bool {
-	return u.Expr != nil && u.Expr.Valid()
-}
-
-func (u *UnaryE) Eval() (s string) {
-	s += "unary_op: " + u.Op + "\n"
-	s += u.Expr.Eval()
-	return
-}
-
 // expression list
 type Exprs struct {
 	Es []Node
@@ -218,8 +203,6 @@ func (e *Exprs) Eval() (s string) {
 	}
 	return
 }
-
-
 
 // expression list
 type Expr struct {
@@ -248,6 +231,43 @@ func (e *Expr) Eval() (s string) {
 		s += e.SecondN.Eval()
 	}
 	return
+}
+
+type UnaryE struct {
+	Op   string // Operand
+	Expr Node
+}
+
+func (u *UnaryE) Valid() bool {
+	return u.Expr != nil && u.Expr.Valid()
+}
+
+func (u *UnaryE) Eval() (s string) {
+	s += "unary_op: " + u.Op + "\n"
+	s += u.Expr.Eval()
+	return
+}
+
+// PrimaryExprPrimes are also PrimaryExprs
+type PrimaryE struct {
+	Expr  Node
+	Prime Node
+}
+
+func (p *PrimaryE) Valid() bool {
+	t := p.Expr != nil && p.Expr.Valid()
+	if p.Prime != nil {
+		t = t && p.Prime.Valid()
+	}
+	return t
+}
+
+func (p *PrimaryE) Eval() (s string) {
+	s += p.Expr.Eval()
+	if p.Prime != nil {
+		s += p.Prime.Eval()
+	}
+	return s
 }
 
 type Typ struct {
@@ -823,7 +843,7 @@ func (s *ShortVarDecl) Eval() (str string) {
 	return
 }
 
-type EmptyStmt struct {}
+type EmptyStmt struct{}
 
 func (e *EmptyStmt) Valid() bool {
 	return true
@@ -834,7 +854,7 @@ func (e *EmptyStmt) Eval() string {
 }
 
 type Conversion struct {
-	Typ Node
+	Typ  Node
 	Expr Node
 }
 
@@ -852,7 +872,7 @@ func (c *Conversion) Eval() (s string) {
 
 type Builtin struct {
 	Name Node
-	Typ Node
+	Typ  Node
 	Args Node
 }
 
@@ -874,4 +894,116 @@ func (b *Builtin) Eval() (s string) {
 	return
 }
 
+type Selector struct {
+	Ident Node
+}
 
+func (s *Selector) Valid() bool {
+	return s.Ident != nil && s.Ident.Valid()
+}
+
+func (s *Selector) Eval() string {
+	return s.Ident.Eval()
+}
+
+type Index struct {
+	Expr Node
+}
+
+func (i *Index) Valid() bool {
+	return i.Expr != nil && i.Expr.Valid()
+}
+
+func (i *Index) Eval() string {
+	return "index: " + i.Expr.Eval()
+}
+
+type Slice struct {
+	Start Node
+	End   Node
+	Cap   Node
+}
+
+func (s *Slice) Vaild() (t bool) {
+	if s.Cap != nil {
+		// checking:
+		// "[" ( [ Expression ] ":" Expression ":" Expression ) "]"
+		t = s.End != nil && s.End.Valid() && s.Cap.Valid()
+		if s.Start != nil {
+			t = t && s.Start.Valid()
+		}
+	} else {
+		// checking:
+		// "[" ( [ Expression ] ":" [ Expression ] ) "]"
+		t = true
+		if s.Start != nil {
+			t = t && s.Start.Valid()
+		}
+		if s.End != nil {
+			t = t && s.End.Valid()
+		}
+	}
+	return
+}
+
+func (s *Slice) Eval() (str string) {
+	str += "start slice\n"
+	if s.Start != nil {
+		str += "start: " + s.Start.Eval()
+	}
+	if s.End != nil {
+		str += "end: " + s.End.Eval()
+	}
+	if s.Cap != nil {
+		str += "cap: " + s.Cap.Eval()
+	}
+	str += "end slice\n"
+	return
+}
+
+type TypeAssertion struct {
+	Typ Node
+}
+
+func (t *TypeAssertion) Valid() bool {
+	return t.Typ != nil && t.Typ.Valid()
+}
+
+func (t *TypeAssertion) Eval() string {
+	return "type assert: " + t.Typ.Eval()
+}
+
+type Call struct {
+	Args Node
+}
+
+func (c *Call) Valid() bool {
+	if c.Args != nil {
+		return c.Args.Valid()
+	}
+	return true
+}
+
+func (c *Call) Eval() (s string) {
+	s += "start call\n"
+	s += c.Args.Eval()
+	s += "end call\n"
+	return
+}
+
+type Args struct {
+	Exprs     Node
+	Dotdotdot bool
+}
+
+func (a *Args) Valid() bool {
+	return a.Exprs.Valid()
+}
+
+func (a *Args) Eval() (s string) {
+	s += a.Exprs.Eval()
+	if s.Dotdotdot {
+		s += "...\n"
+	}
+	return
+}

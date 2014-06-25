@@ -256,9 +256,18 @@ func unaryExpr(p *parser) Node {
 	return &Erro{"expected primary exp or unary_op"}
 }
 
+// PrimaryExpr =
+// 	Operand     [ PrimaryExprPrime ] |
+// 	Conversion  [ PrimaryExprPrime ] |
+// 	BuiltinCall [ PrimaryExprPrime ] .
 func primaryExpr(p *parser) Node {
+	expr := &PrimaryE{}
 	if p.accept(topOperand...) {
-		return operand(p)
+		expr.Expr = operand(p)
+		if p.accept(topPrimaryExprPrime...) {
+			//expr.Prime = primaryExprPrime(p)
+		}
+		return expr
 	}
 	return &Erro{"expected operand"}
 }

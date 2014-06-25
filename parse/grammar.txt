@@ -20,6 +20,8 @@ OperandName = identifier .
 ExpressionList = Expression { "," Expression } .
 UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
 
+
+
 Expression = UnaryExpr | Expression binary_op UnaryExpr .
 (equvialent to: Expression = UnaryExpr {binary_op UnaryExpr})
 
@@ -123,14 +125,16 @@ BuiltinCall = identifier "(" [ BuiltinArgs [ "," ] ] ")" .
 BuiltinArgs = Type [ "," ArgumentList ] | ArgumentList .
 
 PrimaryExpr =
-	Operand |
-	Conversion |
-	BuiltinCall |
-	PrimaryExpr Selector |
-	PrimaryExpr Index |
-	PrimaryExpr Slice |
-	PrimaryExpr TypeAssertion |
-	PrimaryExpr Call .
+	Operand     [ PrimaryExprPrime ] |
+	Conversion  [ PrimaryExprPrime ] |
+	BuiltinCall [ PrimaryExprPrime ] .
+        
+PrimaryExprPrime =
+             Selector      [ PrimaryExprPrime ] |
+             Index         [ PrimaryExprPrime ] |
+             Slice         [ PrimaryExprPrime ] |
+             TypeAssertion [ PrimaryExprPrime ] |
+             Call          [ PrimaryExprPrime ] .
 
 Selector       = "." identifier .
 Index          = "[" Expression "]" .

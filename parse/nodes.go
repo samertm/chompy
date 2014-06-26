@@ -172,15 +172,15 @@ func (l *Lit) Eval() string {
 }
 
 type OpName struct {
-	Id string
+	Id Node
 }
 
 func (o *OpName) Valid() bool {
-	return true
+	return o.Id != nil && o.Id.Valid()
 }
 
 func (o *OpName) Eval() string {
-	return "opname: " + o.Id + "\n"
+	return "opname: " + o.Id.Eval() + "\n"
 }
 
 // expression list

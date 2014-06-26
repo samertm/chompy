@@ -143,6 +143,8 @@ TypeAssertion  = "." "(" Type ")" .
 Call           = "(" [ ArgumentList [ "," ] ] ")" .
 ArgumentList   = ExpressionList [ "..." ] .
 
+OperandName = identifier | QualifiedIdent.
+
 --- not working on yet ----
 
 Type      = TypeName | TypeLit | "(" Type ")" .

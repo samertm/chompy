@@ -276,8 +276,14 @@ func literal(p *parser) Node {
 
 func operandName(p *parser) Node {
 	id := p.next() // get identifier
+	if p.accept(tokDot) {
+		// is qualified ident
+		p.next() // eat "."
+		nextid := p.next() // get identifier
+		return &OpName{Id: &QualifiedIdent{Pkg: id.Val, Ident: nextid.Val}}
+	}
 	// fmt.Println("OPERAND NAME", id.Val)
-	return &OpName{Id: id.Val}
+	return &OpName{Id: &Ident{Name: id.Val}}
 }
 
 func typeGrammar(p *parser) Node {
@@ -296,14 +302,14 @@ func typeGrammar(p *parser) Node {
 }
 
 func typeName(p *parser) Node {
-	i := p.next() // ident
+	id := p.next() // ident
 	if p.accept(tokDot) {
 		// is qualified ident
 		p.next() // eat "."
-		nexti := p.next()
-		return &QualifiedIdent{Pkg: i.Val, Ident: nexti.Val}
+		nextid := p.next() // get identifier
+		return &QualifiedIdent{Pkg: id.Val, Ident: nextid.Val}
 	}
-	return &Ident{Name: i.Val}
+	return &Ident{Name: id.Val}
 }
 
 func typeDecl(p *parser) Node {
@@ -1197,17 +1203,17 @@ func primaryExpr(p *parser) Node {
 		}
 		p.backtrack()
 	}
-	if p.accept(topConversion...) {
-		c := conversion(p)
-		if c.Valid() {
-			e.Expr = c
-			if p.accept(topPrimaryExprPrime...) {
-				e.Prime = primaryExprPrime(p)
-			}
-			return e
-		}
-		p.backtrack()
-	}
+	// if p.accept(topConversion...) {
+	// 	c := conversion(p)
+	// 	if c.Valid() {
+	// 		e.Expr = c
+	// 		if p.accept(topPrimaryExprPrime...) {
+	// 			e.Prime = primaryExprPrime(p)
+	// 		}
+	// 		return e
+	// 	}
+	// 	p.backtrack()
+	// }
 	if p.accept(topOperand...) {
 		o := operand(p)
 		if o.Valid() {

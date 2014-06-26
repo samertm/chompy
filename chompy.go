@@ -19,9 +19,8 @@ import (
 )
 
 func main() {
-	tree := Start
-	_, tokens := +4
-	tree := 3 + 9
+	tree := parse.Start(tokens)
+	fmt.Print(tree.Eval())
 }
 `)
 	tree := parse.Start(tokens)

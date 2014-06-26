@@ -986,7 +986,9 @@ func (c *Call) Valid() bool {
 
 func (c *Call) Eval() (s string) {
 	s += "start call\n"
-	s += c.Args.Eval()
+	if c.Args != nil {
+		s += c.Args.Eval()
+	}
 	s += "end call\n"
 	return
 }

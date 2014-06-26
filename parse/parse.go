@@ -5,8 +5,13 @@ package parse
 import (
 	"github.com/samertm/chompy/lex"
 
+	"fmt"
 	"log"
+	"strconv"
 )
+
+var _ = fmt.Printf   // debugging
+var _ = strconv.Itoa // debugging
 
 type parser struct {
 	toks    chan lex.Token
@@ -16,9 +21,10 @@ type parser struct {
 	// always emit to the channel on the top
 	// push chan when going down a level
 
-	// set when you want to backtrack
-	// default to false
-	trackers [][]*lex.Token
+	// stream of recorded tokens
+	recordedTokens []*lex.Token
+	// index in recorded tokens each tracker is at
+	trackers []int
 	nodes    chan Node
 	ast      Tree
 }
@@ -28,7 +34,7 @@ func (p *parser) next() *lex.Token {
 		curr := p.oldToks[len(p.oldToks)-1]
 		p.oldToks = p.oldToks[:len(p.oldToks)-1]
 		if len(p.trackers) > 0 {
-			p.trackers[len(p.trackers)-1] = append(p.trackers[len(p.trackers)-1], curr)
+			p.recordedTokens = append(p.recordedTokens, curr)
 		}
 		return curr
 	}
@@ -39,7 +45,7 @@ func (p *parser) next() *lex.Token {
 			return nil
 		}
 		if len(p.trackers) > 0 {
-			p.trackers[len(p.trackers)-1] = append(p.trackers[len(p.trackers)-1], curr)
+			p.recordedTokens = append(p.recordedTokens, curr)
 		}
 		return curr
 	}
@@ -55,34 +61,53 @@ func (p *parser) push(t *lex.Token) {
 	}
 	p.oldToks = append(p.oldToks, t)
 	if len(p.trackers) > 0 {
-		// pop last token off last slice
- 		p.trackers[len(p.trackers)-1] =
-			p.trackers[len(p.trackers)-1][:len(p.trackers[len(p.trackers)-1])-1]
+		// pop last token off recordedTokens
+		p.recordedTokens = p.recordedTokens[:len(p.recordedTokens)-1]
 	}
 }
 
 // hook up a tracker for backtracking
 func (p *parser) hookTracker() {
-	p.trackers = append(p.trackers, make([]*lex.Token, 0))
+	fmt.Println("HOOK TRACKER")
+	// add tracker at current index in recordedTokens stream
+	p.trackers = append(p.trackers, len(p.recordedTokens))
 }
 
 // unhook a tracker
 func (p *parser) unhookTracker() {
+	fmt.Println("UNHOOK TRACKER")
 	if len(p.trackers) == 0 {
 		log.Fatal("Error: unhookTracker called with zero trackers")
+	} else if len(p.trackers) == 1 {
+		// erase trackers, recordedTokens
+		p.trackers = make([]int, 0)
+		p.recordedTokens = make([]*lex.Token, 0)
+	} else {
+		// remove tracker, keep recorded tokens intact
+		p.trackers = p.trackers[:len(p.trackers)-1]
 	}
-	p.trackers = p.trackers[:len(p.trackers)-1]
 }
 
 // does not unhook tracker
 func (p *parser) backtrack() {
+	fmt.Println(strconv.Itoa(len(p.trackers)), "many backtrackers")
+	fmt.Println("BACKTRACKING START")
 	if len(p.trackers) == 0 {
 		log.Fatal("Error: backtrack called with zero trackers")
 	}
-	for i := len(p.trackers[len(p.trackers)-1]) - 1; i >= 0; i-- {
-		p.oldToks = append(p.oldToks, p.trackers[len(p.trackers)-1][i])
+	// invariant: i is always the index of the token we want to push on the stream
+	// starts at the last index in recordedTokens
+	// ends at the index where the tracker began tracking
+	start := len(p.recordedTokens) - 1
+	end := p.trackers[len(p.trackers)-1]
+	for i := start; i >= end; i-- {
+		t := p.recordedTokens[i]
+		fmt.Println("BACK: ", t)
+		p.oldToks = append(p.oldToks, t)
 	}
-	p.trackers[len(p.trackers)-1] = make([]*lex.Token, 0)
+	// remove backtracked tokens from recordedTokens
+	p.recordedTokens = p.recordedTokens[:end]
+	fmt.Println("BACKTRACKING END")
 }
 
 func (p *parser) peek() *lex.Token {

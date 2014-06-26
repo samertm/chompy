@@ -20,10 +20,8 @@ OperandName = identifier .
 ExpressionList = Expression { "," Expression } .
 UnaryExpr  = PrimaryExpr | unary_op UnaryExpr .
 
-
-
 Expression = UnaryExpr | Expression binary_op UnaryExpr .
-(equvialent to: Expression = UnaryExpr {binary_op UnaryExpr})
+(equvialent to: Expression = UnaryExpr {binary_op Expression})
 
 ConstSpec      = IdentifierList [ [ Type ] "=" ExpressionList ] .
 QualifiedIdent = PackageName "." identifier .

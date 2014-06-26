@@ -219,7 +219,7 @@ func expressionList(p *parser) Node {
 }
 
 // Expression = UnaryExpr | Expression binary_op UnaryExpr .
-// (equvialent to: Expression = UnaryExpr {binary_op UnaryExpr})
+// (equvialent to: Expression = UnaryExpr {binary_op Expression})
 func expression(p *parser) Node {
 	e := &Expr{}
 	firstE := e
@@ -256,22 +256,6 @@ func unaryExpr(p *parser) Node {
 	return &Erro{"expected primary exp or unary_op"}
 }
 
-// PrimaryExpr =
-// 	Operand     [ PrimaryExprPrime ] |
-// 	Conversion  [ PrimaryExprPrime ] |
-// 	BuiltinCall [ PrimaryExprPrime ] .
-func primaryExpr(p *parser) Node {
-	expr := &PrimaryE{}
-	if p.accept(topOperand...) {
-		expr.Expr = operand(p)
-		if p.accept(topPrimaryExprPrime...) {
-			//expr.Prime = primaryExprPrime(p)
-		}
-		return expr
-	}
-	return &Erro{"expected operand"}
-}
-
 func operand(p *parser) Node {
 	if p.accept(topLiteral...) {
 		return literal(p)
@@ -292,7 +276,8 @@ func literal(p *parser) Node {
 
 func operandName(p *parser) Node {
 	id := p.next() // get identifier
-	return &OpName{Id: id.String()}
+	// fmt.Println("OPERAND NAME", id.Val)
+	return &OpName{Id: id.Val}
 }
 
 func typeGrammar(p *parser) Node {
@@ -491,9 +476,13 @@ func signature(p *parser) Node {
 func statementList(p *parser) Node {
 	ss := &Stmts{}
 	for p.accept(topStatement...) {
+		// fmt.Println("peeking: ", p.peek())
+		// s := statement(p)
+		// fmt.Println("next stmt: ", s.Eval())
+		// ss.Stmts = append(ss.Stmts, s)
 		ss.Stmts = append(ss.Stmts, statement(p))
-		
 		if err := p.expect(tokSemicolon); err != nil {
+			// fmt.Println("statementlist: ", ss.Eval())
 			return err
 		}
 		p.next() // eat ";"
@@ -752,12 +741,12 @@ func forStmt(p *parser) Node {
 // IfStmt = "if" [ SimpleStmt ";" ] Expression Block [ "else" ( IfStmt | Block ) ] .
 func ifStmt(p *parser) Node {
 	p.next() // eat "if"
-	
+
 	p.hookTracker()
-	
+
 	ifstmt := &IfStmt{}
 	// next expr may be simplestmt or expression
-	
+
 	// check to see if it's a simple statement
 	// if we don't see a semicolon, we'll assume that
 	// they meant to use an expression and backtrack
@@ -814,7 +803,7 @@ func assignment(p *parser) Node {
 	return assign
 }
 
-// IncDecStmt = Expression ( "++" | "--" ) 
+// IncDecStmt = Expression ( "++" | "--" )
 func incDecStmt(p *parser) Node {
 	e := expression(p)
 	if !p.accept(tokIncDec...) {
@@ -870,7 +859,7 @@ func labeledStmt(p *parser) Node {
 	s := statement(p)
 	return &LabeledStmt{
 		Label: l,
-		Stmt: s,
+		Stmt:  s,
 	}
 }
 
@@ -882,6 +871,7 @@ func emptyStmt(p *parser) Node {
 
 // ShortVarDecl = IdentifierList ":=" ExpressionList .
 func shortVarDecl(p *parser) Node {
+	// fmt.Println("SHORTVARDECL")
 	ids := identifierList(p)
 	if err := p.expect(tokColonEqual); err != nil {
 		return err
@@ -893,12 +883,13 @@ func shortVarDecl(p *parser) Node {
 	e := expressionList(p)
 	return &ShortVarDecl{
 		Idents: ids,
-		Exprs: e,
+		Exprs:  e,
 	}
 }
 
 // SimpleStmt = EmptyStmt | ExpressionStmt | SendStmt | IncDecStmt | Assignment | ShortVarDecl .
 func simpleStmt(p *parser) Node {
+	// fmt.Println("in simplestmt, peek: ", p.peek())
 	var stmt Node
 	// set up backtracking
 	p.hookTracker()
@@ -908,18 +899,26 @@ func simpleStmt(p *parser) Node {
 	if p.accept(topShortVarDecl) {
 		stmt = shortVarDecl(p)
 		if stmt.Valid() {
+			// fmt.Println("accepted shortvardecl: ", stmt.Eval())
 			return stmt
 		}
+		// fmt.Println("BEFORE BACKTRACK: ", p.peek())
 		p.backtrack()
+		// fmt.Println("AFTER BACKTRACK: ", p.peek())
+		// ... my backtracking might not be working...
 	}
 	// Assignment, IncDecStmt, SendStmt, ExpressionStmt all start with expressions
 	if p.accept(topExpression...) {
 		// check in order
+		// fmt.Println("BEFORE ASSIGNMENT", p.peek())
 		stmt = assignment(p)
 		if stmt.Valid() {
 			return stmt
 		}
+		// fmt.Println("AFTER ASSIGNMENT")
+		// fmt.Println("BEFORE BACKTRACK: ", p.peek())
 		p.backtrack()
+		// fmt.Println("AFTER BACKTRACK: ", p.peek())
 		stmt = incDecStmt(p)
 		if stmt.Valid() {
 			return stmt
@@ -930,13 +929,16 @@ func simpleStmt(p *parser) Node {
 			return stmt
 		}
 		p.backtrack()
+		// fmt.Println("BEFORE EXPRESSIONSTMT")
 		stmt = expressionStmt(p)
+		// fmt.Println("AFTER EXPRESSIONSTMT: ", stmt.Eval())
 		if stmt.Valid() {
 			return stmt
 		}
 		p.backtrack()
+
 		// none were valid, return error
-		return &Erro{"Expected statement"}
+		return &Erro{"Expected statement meow"}
 	}
 	// nothing accepted, return empty statement i.e. nil
 	return emptyStmt(p)
@@ -978,6 +980,7 @@ func statement(p *parser) Node {
 	// because it can be an EmptyStmt
 	// start backtracking
 	p.hookTracker()
+	defer p.unhookTracker()
 	if p.accept(topLabeledStmt) {
 		l := labeledStmt(p)
 		if l.Valid() {
@@ -985,6 +988,300 @@ func statement(p *parser) Node {
 		}
 		p.backtrack()
 	}
-	p.unhookTracker()
 	return simpleStmt(p)
+}
+
+// ArgumentList   = ExpressionList [ "..." ] .
+func argumentList(p *parser) Node {
+	a := &Args{}
+	a.Exprs = expressionList(p)
+	if p.accept(tokDotDotDot) {
+		a.DotDotDot = true
+	}
+	return a
+}
+
+// Call           = "(" [ ArgumentList [ "," ] ] ")" .
+func call(p *parser) Node {
+	p.next() // eat "("
+	c := &Call{}
+	if p.accept(topArgumentList...) {
+		c.Args = argumentList(p)
+		if p.accept(tokComma) {
+			p.next() // eat ","
+		}
+	}
+	if err := p.expect(tokCloseParen); err != nil {
+		return err
+	}
+	p.next() // eat ")"
+	return c
+}
+
+// TypeAssertion  = "." "(" Type ")" .
+func typeAssertion(p *parser) Node {
+	p.next() // eat "."
+	if err := p.expect(tokOpenParen); err != nil {
+		return err
+	}
+	p.next() // eat "("
+	if !p.accept(topType...) {
+		return &Erro{"Expected type"}
+	}
+	t := &TypeAssertion{}
+	t.Typ = typeGrammar(p)
+	if err := p.expect(tokCloseParen); err != nil {
+		return err
+	}
+	p.next() // eat ")"
+	return t
+}
+
+// Slice          = "[" ( [ Expression ] ":" [ Expression ] ) |
+//                      ( [ Expression ] ":" Expression ":" Expression )
+//                  "]" .
+// the logic for determining if a slice has the non-optional expressions
+// is in Slice.Valid. So, we do not care about that in this function.
+func slice(p *parser) Node {
+	p.next() // eat "["
+	s := &Slice{}
+	if p.accept(topExpression...) {
+		// fmt.Println("IN START")
+		s.Start = expression(p)
+	}
+	if err := p.expect(tokColon); err != nil {
+		return err
+	}
+	p.next() // eat ":"
+	if p.accept(topExpression...) {
+		// fmt.Println("IN END")
+		s.End = expression(p)
+		// fmt.Println("END: ", s.End.Eval())
+	}
+	if p.accept(tokColon) {
+		// on the second ":"
+		p.next() // eat ":"
+		// fmt.Println("IN CAP")
+		if !p.accept(topExpression...) {
+			// fmt.Println("OH NOOOO")
+			return &Erro{"Expected expression"}
+		}
+		// fmt.Println("BEFORE CAP")
+		s.Cap = expression(p)
+		// fmt.Println("AFTER CAP")
+		// fmt.Println("CAP: ", s.Cap.Eval())
+	}
+	if err := p.expect(tokCloseSquareBrace); err != nil {
+		return err
+	}
+	p.next() // eat "]"
+	return s
+}
+
+// Index          = "[" Expression "]" .
+func index(p *parser) Node {
+	p.next() // eat "["
+	if !p.accept(topExpression...) {
+		return &Erro{"Expected expression"}
+	}
+	i := &Index{}
+	i.Expr = expression(p)
+	if err := p.expect(tokCloseSquareBrace); err != nil {
+		return err
+	}
+	p.next() // eat "]"
+	return i
+}
+
+// Selector       = "." identifier .
+func selector(p *parser) Node {
+	p.next() // eat "."
+	s := &Selector{}
+	if !p.accept(tokIdentifier) {
+		return &Erro{"Expected identifier"}
+	}
+	ident := p.next() // get identifier
+	s.Ident = &Ident{Name: ident.Val}
+	return s
+}
+
+// PrimaryExprPrime =
+//              Selector      [ PrimaryExprPrime ] |
+//              Index         [ PrimaryExprPrime ] |
+//              Slice         [ PrimaryExprPrime ] |
+//              TypeAssertion [ PrimaryExprPrime ] |
+//              Call          [ PrimaryExprPrime ] .
+func primaryExprPrime(p *parser) Node {
+	e := &PrimaryE{}
+	p.hookTracker()
+	defer p.unhookTracker()
+	// fmt.Println("in primaryexprprime, peek: ", p.peek())
+	if p.accept(topSelector) {
+		s := selector(p)
+		if s.Valid() {
+			e.Expr = s
+			if p.accept(topPrimaryExprPrime...) {
+				e.Prime = primaryExprPrime(p)
+			}
+			return e
+		}
+		p.backtrack()
+	}
+	if p.accept(topIndex) {
+		i := index(p)
+		if i.Valid() {
+			e.Expr = i
+			if p.accept(topPrimaryExprPrime...) {
+				e.Prime = primaryExprPrime(p)
+			}
+			return e
+		}
+		p.backtrack()
+	}
+	if p.accept(topSlice) {
+		// fmt.Println("STARTING SLICE")
+		s := slice(p)
+		if s.Valid() {
+			e.Expr = s
+			if p.accept(topPrimaryExprPrime...) {
+				e.Prime = primaryExprPrime(p)
+			}
+			return e
+		}
+		// fmt.Println("ENDED SLICE")
+		p.backtrack()
+	}
+	if p.accept(topTypeAssertion) {
+		ta := typeAssertion(p)
+		if ta.Valid() {
+			e.Expr = ta
+			if p.accept(topPrimaryExprPrime...) {
+				e.Prime = primaryExprPrime(p)
+			}
+			return e
+		}
+		p.backtrack()
+	}
+	if p.accept(topCall) {
+		c := call(p)
+		if c.Valid() {
+			e.Expr = c
+			if p.accept(topPrimaryExprPrime...) {
+				e.Prime = primaryExprPrime(p)
+			}
+			return e
+		}
+		p.backtrack()
+	}
+	p.backtrack()
+	return &Erro{"Expected primary expression"}
+}
+
+// PrimaryExpr =
+// 	Operand     [ PrimaryExprPrime ] |
+// 	Conversion  [ PrimaryExprPrime ] |
+// 	BuiltinCall [ PrimaryExprPrime ] .
+func primaryExpr(p *parser) Node {
+	e := &PrimaryE{}
+	p.hookTracker()
+	defer p.unhookTracker()
+	// fmt.Println("in primaryexpr, peek: ", p.peek())
+	if p.accept(topBuiltinCall) {
+		b := builtinCall(p)
+		if b.Valid() {
+			e.Expr = b
+			if p.accept(topPrimaryExprPrime...) {
+				e.Prime = primaryExprPrime(p)
+			}
+			return e
+		}
+		p.backtrack()
+	}
+	if p.accept(topConversion...) {
+		c := conversion(p)
+		if c.Valid() {
+			e.Expr = c
+			if p.accept(topPrimaryExprPrime...) {
+				e.Prime = primaryExprPrime(p)
+			}
+			return e
+		}
+		p.backtrack()
+	}
+	if p.accept(topOperand...) {
+		o := operand(p)
+		if o.Valid() {
+			e.Expr = o
+			if p.accept(topPrimaryExprPrime...) {
+				// fmt.Println("PRIME")
+				e.Prime = primaryExprPrime(p)
+				// fmt.Println("prime: ", e.Prime.Eval())
+			}
+			return e
+		}
+		p.backtrack()
+	}
+	p.backtrack()
+	return &Erro{"Expected primary expression"}
+}
+
+// BuiltinCall = identifier "(" [ BuiltinArgs [ "," ] ] ")" .
+// BuiltinArgs = Type [ "," ArgumentList ] | ArgumentList .
+func builtinCall(p *parser) Node {
+	b := &Builtin{}
+	i := p.next() // get identifier
+	b.Name = &Ident{Name: i.Val}
+	if err := p.expect(tokOpenParen); err != nil {
+		return err
+	}
+	if p.accept(topBuiltinArgs...) {
+		// BuiltinArgs = Type [ "," ArgumentList ] | ArgumentList .
+		if p.accept(topType...) {
+			b.Typ = typeGrammar(p)
+			if p.accept(tokComma) {
+				p.next() // eat ","
+				if !p.accept(topArgumentList...) {
+					return &Erro{"Expected argument list"}
+				}
+				b.Args = argumentList(p)
+			}
+		} else {
+			// argument list
+			if !p.accept(topArgumentList...) {
+				return &Erro{"Expected argument list"}
+			}
+			b.Args = argumentList(p)
+		}
+		// accept comma
+		if p.accept(tokComma) {
+			p.next() // eat ","
+		}
+	}
+	if err := p.expect(tokCloseParen); err != nil {
+		return err
+	}
+	p.next() // eat ")"
+	return b
+}
+
+// Conversion = Type "(" Expression [ "," ] ")" .
+func conversion(p *parser) Node {
+	c := &Conversion{}
+	c.Typ = typeGrammar(p)
+	if err := p.expect(tokOpenParen); err != nil {
+		return err
+	}
+	p.next() // eat "("
+	if !p.accept(topExpression...) {
+		return &Erro{"Expected expression"}
+	}
+	c.Expr = expression(p)
+	if p.accept(tokComma) {
+		p.next() // eat ","
+	}
+	if err := p.expect(tokCloseParen); err != nil {
+		return err
+	}
+	p.next() // eat ")"
+	return c
 }

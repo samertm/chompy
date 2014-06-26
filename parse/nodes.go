@@ -924,7 +924,7 @@ type Slice struct {
 	Cap   Node
 }
 
-func (s *Slice) Vaild() (t bool) {
+func (s *Slice) Valid() (t bool) {
 	if s.Cap != nil {
 		// checking:
 		// "[" ( [ Expression ] ":" Expression ":" Expression ) "]"
@@ -993,7 +993,7 @@ func (c *Call) Eval() (s string) {
 
 type Args struct {
 	Exprs     Node
-	Dotdotdot bool
+	DotDotDot bool
 }
 
 func (a *Args) Valid() bool {
@@ -1002,7 +1002,7 @@ func (a *Args) Valid() bool {
 
 func (a *Args) Eval() (s string) {
 	s += a.Exprs.Eval()
-	if s.Dotdotdot {
+	if a.DotDotDot {
 		s += "...\n"
 	}
 	return

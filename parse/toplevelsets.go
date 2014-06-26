@@ -32,7 +32,7 @@ var (
 	tokLeftArrow         = lex.Token{Typ: lex.OpOrDelim, Val: "<-"}
 	tokColon             = lex.Token{Typ: lex.OpOrDelim, Val: ":"}
 	tokOpenSquareBrace   = lex.Token{Typ: lex.OpOrDelim, Val: "["}
-	tokClosedSquareBrace = lex.Token{Typ: lex.OpOrDelim, Val: "]"}
+	tokCloseSquareBrace = lex.Token{Typ: lex.OpOrDelim, Val: "]"}
 	tokIncDec            = []lex.Token{
 		lex.Token{Typ: lex.OpOrDelim, Val: "++"},
 		lex.Token{Typ: lex.OpOrDelim, Val: "--"},
@@ -160,7 +160,7 @@ var (
 	topShortVarDecl    = topIdentifierList
 	topConversion      = topType
 	topBuiltinCall     = tokIdentifier
-	topBuiltinArgs     = topType
+	topBuiltinArgs     = append(append([]lex.Token{}, topType...), topArgumentList...)
 	topSelector        = tokDot
 	topIndex           = tokOpenSquareBrace
 	topSlice           = tokOpenSquareBrace

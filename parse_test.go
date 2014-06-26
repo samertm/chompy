@@ -124,15 +124,16 @@ import "fmt"
 
 func meow() {
 	f := int(4,)
-	m := make(map[string]int)
-	f[1]
-	f[:]
-	f[1:2]
-	f[:2]
-	f[1:]
-	f[:3:5]
-	f.(int)
-	f(swag, bag)
+	m := make(int)
+	a[1]
+	b[:]
+	c[1:2]
+	d[:2]
+	e[1:]
+	g[:3:5]
+	h.(int)
+	i(swag, bag)
+	i(swag)
 }
 `,
 }
@@ -376,48 +377,66 @@ ident: meow
 start block
 start shortvardecl
 ident: f
+unary_op: 
 start conversion
 type: int
 unary_op: 
 lit: type: Int val: 4
+end conversion
 end shortvardecl
 start shortvardecl
 ident: m
 start builtincall
 ident: make
-type: map[string]int
+type: int
 end builtincall
 end shortvardecl
-ident: f
-index: 1
-ident: f
+unary_op: 
+opname: a
+index: unary_op: 
+lit: type: Int val: 1
+unary_op: 
+opname: b
 start slice
 end slice
-ident: f
+unary_op: 
+opname: c
 start slice
-start: 1
-end: 2
+start: unary_op: 
+lit: type: Int val: 1
+end: unary_op: 
+lit: type: Int val: 2
 end slice
-ident: f
+unary_op: 
+opname: d
 start slice
-end: 2
+end: unary_op: 
+lit: type: Int val: 2
 end slice
-ident: f
+unary_op: 
+opname: e
 start slice
-start: 1
+start: unary_op: 
+lit: type: Int val: 1
 end slice
-ident: f
+unary_op: 
+opname: g
 start slice
-end: 3
-cap: 5
+end: unary_op: 
+lit: type: Int val: 3
+cap: unary_op: 
+lit: type: Int val: 5
 end slice
-ident: f
-ident: f
+unary_op: 
+opname: h
 type assert: type: int
-ident: f
+unary_op: 
+opname: i
 start call
-ident: swag
-ident: bag
+unary_op: 
+opname: swag
+unary_op: 
+opname: bag
 end call
 end block
 end funcdecl
@@ -429,7 +448,8 @@ func TestParse(t *testing.T) {
 		t.Errorf("len(inputs) != len(outputs)")
 		return
 	}
-	for i, _ := range inputs {
+	for i := len(inputs) - 1; i < len(inputs); i ++ {
+	// for i, _ := range inputs {
 		_, tokens := lex.Lex("bro", inputs[i])
 		tree := parse.Start(tokens)
 		result := tree.Eval()

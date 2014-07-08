@@ -5,13 +5,8 @@ package parse
 import (
 	"github.com/samertm/chompy/lex"
 
-	"fmt"
 	"log"
-	"strconv"
 )
-
-var _ = fmt.Printf   // debugging
-var _ = strconv.Itoa // debugging
 
 type parser struct {
 	toks    chan lex.Token

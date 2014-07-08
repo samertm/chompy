@@ -1,0 +1,38 @@
+from stanford slides:
+http://web.stanford.edu/class/archive/cs/cs143/cs143.1128/lectures/13/Slides13.pdf
+three address code spec
+
+val -> var | const .
+op -> "*" | "+" | "-" | "/" | "%" | "==" | "<" | ">" | "||" | "&&"
+var -> variable .
+const -> constant number .
+labelStmt -> label ":" .
+label -> string .
+
+var = val op val
+
+var = op val
+
+var = val
+
+var = *var
+
+var = *(var + const)
+
+*var = val
+
+*(var + const) = val
+
+Goto label
+
+IfZ val Goto label
+
+BeginFunc const
+
+EndFunc
+
+PushParam val
+
+LCall label
+
+PopParams const

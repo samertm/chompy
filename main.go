@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/samertm/chompy/fgen"
 	"github.com/samertm/chompy/lex"
 	"github.com/samertm/chompy/parse"
 )
@@ -18,11 +20,11 @@ import (
 	"github.com/samertm/chompy/parse"
 )
 
+var mex = 4
+
 func main() {
-	tree := parse.Start(tokens)
-	fmt.Print(tree.Eval())
 }
 `)
 	tree := parse.Start(tokens)
-	fmt.Print(tree.Eval())
+	fmt.Println(fgen.Fgen(tree))
 }

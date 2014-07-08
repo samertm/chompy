@@ -488,7 +488,6 @@ func statementList(p *parser) Node {
 		// ss.Stmts = append(ss.Stmts, s)
 		ss.Stmts = append(ss.Stmts, statement(p))
 		if err := p.expect(tokSemicolon); err != nil {
-			// fmt.Println("statementlist: ", ss.Eval())
 			return err
 		}
 		p.next() // eat ";"
@@ -500,9 +499,11 @@ func statementList(p *parser) Node {
 func block(p *parser) Node {
 	p.next() // eat "{"
 	b := &Block{}
-	if !p.accept(topStatementList...) {
-		return &Erro{"Expected statement list, found " + p.peek().String()}
-	}
+	// I don't think I need this check, because I need to
+	// allow empty statements
+	// if !p.accept(topStatementList...) {
+	// 	return &Erro{"Expected statement list, found " + p.peek().String()}
+	// }
 	b.Stmts = statementList(p)
 	if err := p.expect(tokCloseSquiggly); err != nil {
 		return err
@@ -1002,6 +1003,7 @@ func argumentList(p *parser) Node {
 	a := &Args{}
 	a.Exprs = expressionList(p)
 	if p.accept(tokDotDotDot) {
+		p.next() // eat "..."
 		a.DotDotDot = true
 	}
 	return a

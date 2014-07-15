@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/samertm/chompy/fgen"
 	"github.com/samertm/chompy/lex"
 	"github.com/samertm/chompy/parse"
 )
@@ -26,5 +25,5 @@ func main() {
 }
 `)
 	tree := parse.Start(tokens)
-	fmt.Println(fgen.Fgen(tree))
+	fmt.Println(tree)
 }

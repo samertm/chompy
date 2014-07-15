@@ -1,7 +1,6 @@
 package parse
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -970,6 +969,18 @@ func (s *Slice) String() (str string) {
 	}
 	str += "end slice\n"
 	return
+}
+
+type TypeAssertion struct {
+	Typ Node
+}
+
+func (t *TypeAssertion) Valid() bool {
+	return t.Typ != nil && t.Typ.Valid()
+}
+
+func (t *TypeAssertion) String() string {
+	return "type assert: " + t.Typ.String()
 }
 
 type Call struct {

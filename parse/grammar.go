@@ -11,7 +11,6 @@ func Start(toks chan lex.Token) Node {
 	p := &parser{
 		toks:    toks,
 		oldToks: make([]*lex.Token, 0),
-		nodes:   make(chan Node),
 	}
 	t := sourceFile(p)
 	return t
@@ -21,7 +20,6 @@ func Start(toks chan lex.Token) Node {
 // Every nonterminal function assumes that it is in the correct
 // starting state, except for sourceFile.
 func sourceFile(p *parser) *Tree {
-	defer close(p.nodes)
 	tr := &Tree{Kids: make([]Node, 0)}
 	if !p.accept(topPackageClause) {
 		tr.Kids = append(tr.Kids, &Erro{"PackageClause not found"})

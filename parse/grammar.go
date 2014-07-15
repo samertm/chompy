@@ -17,9 +17,9 @@ func Start(toks chan lex.Token) Node {
 	return t
 }
 
-// should the states return their list?... probably but not rn
-// every nonterminal function assumes that it is in the correct starting state,
-// except for sourceFile
+// SourceFile = PackageClause ";" { ImportDecl ";" } { TopLevelDecl ";" } .
+// Every nonterminal function assumes that it is in the correct
+// starting state, except for sourceFile.
 func sourceFile(p *parser) *Tree {
 	defer close(p.nodes)
 	tr := &Tree{Kids: make([]Node, 0)}
@@ -53,6 +53,7 @@ func sourceFile(p *parser) *Tree {
 	return tr
 }
 
+// PackageClause  = "package" PackageName .
 func packageClause(p *parser) Node {
 	p.next() // eat "package"
 	if err := p.expect(topPackageName); err != nil {
@@ -61,12 +62,14 @@ func packageClause(p *parser) Node {
 	return packageName(p)
 }
 
+// PackageName    = identifier .
 func packageName(p *parser) Node {
 	t := p.next()
 	// should I sanity-check t?
 	return &Pkg{Name: t.Val}
 }
 
+// ImportDecl       = "import" ( ImportSpec | "(" { ImportSpec ";" } ")" ) .
 func importDecl(p *parser) Node {
 	p.next() // eat "import"
 	i := &Impts{Imports: make([]Node, 0)}
@@ -93,6 +96,7 @@ func importDecl(p *parser) Node {
 	return i
 }
 
+// ImportSpec       = [ "." | PackageName ] ImportPath .
 func importSpec(p *parser) Node {
 	i := &Impt{}
 	if p.accept(tokDot) {
@@ -107,10 +111,10 @@ func importSpec(p *parser) Node {
 		}
 		i.PkgName = t.Val
 	}
+	// ImportPath       = string_lit .
 	if !p.accept(topImportPath) {
 		return &Erro{"expected tokString"}
 	}
-	// process importPath here.
 	t := p.next()
 	i.ImptName = t.Val
 	return i
@@ -129,6 +133,7 @@ func topLevelDecl(p *parser) Node {
 	return &Erro{"Expected declaration or function declaration"}
 }
 
+// Declaration   = ConstDecl | TypeDecl | VarDecl .
 func declaration(p *parser) Node {
 	if p.accept(topConstDecl) {
 		consts := constDecl(p)
@@ -145,6 +150,7 @@ func declaration(p *parser) Node {
 	return &Erro{"expected const"}
 }
 
+// ConstDecl = "const" ( ConstSpec | "(" { ConstSpec ";" } ")" ) .
 func constDecl(p *parser) Node {
 	p.next() // eat "const"
 	cs := &Consts{}
@@ -170,6 +176,7 @@ func constDecl(p *parser) Node {
 	return &Erro{"expected ConstSpec"}
 }
 
+// ConstSpec = IdentifierList [ [ Type ] "=" ExpressionList ] .
 func constSpec(p *parser) Node {
 	c := &Cnst{}
 	c.Is = identifierList(p)
@@ -191,6 +198,7 @@ func constSpec(p *parser) Node {
 	return c
 }
 
+// IdentifierList = identifier { "," identifier } .
 func identifierList(p *parser) Node {
 	idnts := &Idents{}
 	id := p.next() // first identifier
@@ -256,6 +264,7 @@ func unaryExpr(p *parser) Node {
 	return &Erro{"expected primary exp or unary_op"}
 }
 
+// Operand    = Literal | OperandName .
 func operand(p *parser) Node {
 	if p.accept(topLiteral...) {
 		return literal(p)
@@ -266,7 +275,9 @@ func operand(p *parser) Node {
 	return &Erro{"Expected literal or operand name"}
 }
 
+// Literal    = BasicLit .
 func literal(p *parser) Node {
+	// BasicLit   = int_lit | string_lit .
 	if p.accept(topBasicLit...) {
 		l := p.next() // int_lit or string_lit
 		return &Lit{Typ: l.Typ.String(), Val: l.Val}
@@ -274,6 +285,7 @@ func literal(p *parser) Node {
 	return &Erro{"Expected basic literal"}
 }
 
+// OperandName = identifier .
 func operandName(p *parser) Node {
 	id := p.next() // get identifier
 	if p.accept(tokDot) {
@@ -292,6 +304,7 @@ func operandName(p *parser) Node {
 	return &OpName{Id: &Ident{Name: id.Val}}
 }
 
+// Type      = TypeName | "(" Type ")" .
 func typeGrammar(p *parser) Node {
 	if p.accept(topTypeName) {
 		t := &Typ{}
@@ -307,6 +320,7 @@ func typeGrammar(p *parser) Node {
 	return &Erro{"Expected type"}
 }
 
+// TypeName  = identifier | QualifiedIdent .
 func typeName(p *parser) Node {
 	id := p.next() // ident
 	if p.accept(tokDot) {
@@ -318,6 +332,7 @@ func typeName(p *parser) Node {
 	return &Ident{Name: id.Val}
 }
 
+// TypeDecl = "type" ( TypeSpec | "(" { TypeSpec ";" } ")" ) .
 func typeDecl(p *parser) Node {
 	p.next() // eat "type"
 	types := &Types{}
@@ -343,6 +358,7 @@ func typeDecl(p *parser) Node {
 	return types
 }
 
+// TypeSpec     = identifier Type .
 func typeSpec(p *parser) Node {
 	spec := &Typespec{}
 	spec.I = &Ident{Name: p.next().Val} // ident
@@ -353,6 +369,7 @@ func typeSpec(p *parser) Node {
 	return spec
 }
 
+// VarDecl     = "var" ( VarSpec | "(" { VarSpec ";" } ")" ) .
 func varDecl(p *parser) Node {
 	p.next() // eat "var"
 	vs := &Vars{}
@@ -378,6 +395,7 @@ func varDecl(p *parser) Node {
 	return vs
 }
 
+// VarSpec = IdentifierList ( Type [ "=" ExpressionList ] | "=" ExpressionList ) .
 func varSpec(p *parser) Node {
 	spec := &Varspec{}
 	spec.Idents = identifierList(p)

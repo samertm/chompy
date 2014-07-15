@@ -1,29 +1,24 @@
 package parse
 
-// - come up with data structure for top-level terminals
-
 import (
 	"github.com/samertm/chompy/lex"
 
 	"log"
 )
 
+// parser type keeps track of the state of the parser for the state
+// functions in grammar.go. None of its fields should be accessed
+// directly.
 type parser struct {
 	toks    chan lex.Token
 	oldToks []*lex.Token
-	// IDEA: stack of channels?
-	// that's pretty good...
-	// always emit to the channel on the top
-	// push chan when going down a level
-
 	// stream of recorded tokens
 	recordedTokens []*lex.Token
-	// index in recorded tokens each tracker is at
+	// index in recorded tokens that each tracker is on
 	trackers []int
-	nodes    chan Node
-	ast      Tree
 }
 
+// gets the next token in the stream
 func (p *parser) next() *lex.Token {
 	if len(p.oldToks) != 0 {
 		curr := p.oldToks[len(p.oldToks)-1]
@@ -48,7 +43,8 @@ func (p *parser) next() *lex.Token {
 	return nil
 }
 
-// It is illegal to push a token other than the one that was just
+// pushes a token onto the stream
+// it is illegal to push a token other than the one that was just
 // recieved from next() when recording tokens
 func (p *parser) push(t *lex.Token) {
 	if t == nil {
@@ -69,6 +65,7 @@ func (p *parser) hookTracker() {
 }
 
 // unhook a tracker
+// does not backtrack
 func (p *parser) unhookTracker() {
 	//fmt.Println("UNHOOK TRACKER")
 	if len(p.trackers) == 0 {
@@ -83,6 +80,7 @@ func (p *parser) unhookTracker() {
 	}
 }
 
+// pushes all tokens of the tracker onto the stream
 // does not unhook tracker
 func (p *parser) backtrack() {
 	//fmt.Println(strconv.Itoa(len(p.trackers)), "many backtrackers")
@@ -105,13 +103,16 @@ func (p *parser) backtrack() {
 	//fmt.Println("BACKTRACKING END")
 }
 
+// peek looks at the next token without modifying the stream
 func (p *parser) peek() *lex.Token {
 	t := p.next()
 	p.push(t)
 	return t
 }
 
-// accept and expect are both based on peek...
+// accept returns true if the next token in the stream matches
+// all of the tokens passed in as args. accept does not modify
+// the stream.
 func (p *parser) accept(toks ...lex.Token) bool {
 	nextTok := p.peek()
 	for _, t := range toks {
@@ -122,6 +123,9 @@ func (p *parser) accept(toks ...lex.Token) bool {
 	return false
 }
 
+// expect returns an error if it cannot accept the token that is
+// passed in. Use it as a stronger version of accept. expect does
+// not modify the stream.
 func (p *parser) expect(tok lex.Token) *Erro {
 	if p.accept(tok) {
 		return nil

@@ -1,9 +1,11 @@
+// Definitions of tokens and top level sets (start sets)
 package parse
 
 import (
 	"github.com/samertm/chompy/lex"
 )
 
+// all tokens start with "tok"
 var (
 	tokString            = lex.Token{Typ: lex.String}
 	tokIdentifier        = lex.Token{Typ: lex.Identifier}
@@ -77,6 +79,8 @@ var (
 		tokEqual}, tokAddOp...), tokMulOp...)
 )
 
+// All top level sets start with "top". The rest of the identifier
+// maps directly to a nonterminal in grammar.txt.
 var (
 	topPackageClause = lex.Token{Typ: lex.Keyword, Val: "package"}
 	topPackageName   = tokIdentifier

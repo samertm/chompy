@@ -277,10 +277,16 @@ func literal(p *parser) Node {
 func operandName(p *parser) Node {
 	id := p.next() // get identifier
 	if p.accept(tokDot) {
-		// is qualified ident
-		p.next() // eat "."
-		nextid := p.next() // get identifier
-		return &OpName{Id: &QualifiedIdent{Pkg: id.Val, Ident: nextid.Val}}
+		// operand name did not include "."
+		// so that type assertions parse correctly
+		p.hookTracker()
+		p.next()           // eat "."
+		if p.accept(tokIdentifier) {
+			nextid := p.next() // get identifier
+			return &OpName{Id: &QualifiedIdent{Pkg: id.Val, Ident: nextid.Val}}
+		}
+		p.backtrack()
+		p.unhookTracker()
 	}
 	// fmt.Println("OPERAND NAME", id.Val)
 	return &OpName{Id: &Ident{Name: id.Val}}
@@ -305,7 +311,7 @@ func typeName(p *parser) Node {
 	id := p.next() // ident
 	if p.accept(tokDot) {
 		// is qualified ident
-		p.next() // eat "."
+		p.next()           // eat "."
 		nextid := p.next() // get identifier
 		return &QualifiedIdent{Pkg: id.Val, Ident: nextid.Val}
 	}
@@ -484,7 +490,7 @@ func statementList(p *parser) Node {
 	for p.accept(topStatement...) {
 		// fmt.Println("peeking: ", p.peek())
 		// s := statement(p)
-		// fmt.Println("next stmt: ", s.Eval())
+		// fmt.Println("next stmt: ", s)
 		// ss.Stmts = append(ss.Stmts, s)
 		ss.Stmts = append(ss.Stmts, statement(p))
 		if err := p.expect(tokSemicolon); err != nil {
@@ -492,6 +498,7 @@ func statementList(p *parser) Node {
 		}
 		p.next() // eat ";"
 	}
+	// fmt.Println(ss)
 	return ss
 }
 
@@ -499,8 +506,7 @@ func statementList(p *parser) Node {
 func block(p *parser) Node {
 	p.next() // eat "{"
 	b := &Block{}
-	// I don't think I need this check, because I need to
-	// allow empty statements
+	// I don't think I need this check, because I need to allow empty statements
 	// if !p.accept(topStatementList...) {
 	// 	return &Erro{"Expected statement list, found " + p.peek().String()}
 	// }
@@ -906,7 +912,7 @@ func simpleStmt(p *parser) Node {
 	if p.accept(topShortVarDecl) {
 		stmt = shortVarDecl(p)
 		if stmt.Valid() {
-			// fmt.Println("accepted shortvardecl: ", stmt.Eval())
+			// fmt.Println("accepted shortvardecl: ", stmt)
 			return stmt
 		}
 		// fmt.Println("BEFORE BACKTRACK: ", p.peek())
@@ -938,7 +944,7 @@ func simpleStmt(p *parser) Node {
 		p.backtrack()
 		// fmt.Println("BEFORE EXPRESSIONSTMT")
 		stmt = expressionStmt(p)
-		// fmt.Println("AFTER EXPRESSIONSTMT: ", stmt.Eval())
+		// fmt.Println("AFTER EXPRESSIONSTMT: ", stmt)
 		if stmt.Valid() {
 			return stmt
 		}
@@ -1010,6 +1016,11 @@ func argumentList(p *parser) Node {
 }
 
 // Call           = "(" [ ArgumentList [ "," ] ] ")" .
+// TODO right now, conversions are processed as calls
+// which means we don't accept the full conversion grammar
+// I'm not sure how to fix this yet... because we would need
+// to know if something is a type, and right now we only see
+// identifiers.
 func call(p *parser) Node {
 	p.next() // eat "("
 	c := &Call{}
@@ -1028,6 +1039,7 @@ func call(p *parser) Node {
 
 // TypeAssertion  = "." "(" Type ")" .
 func typeAssertion(p *parser) Node {
+	// fmt.Println("Enter typeassertion", p.peek())
 	p.next() // eat "."
 	if err := p.expect(tokOpenParen); err != nil {
 		return err
@@ -1172,6 +1184,7 @@ func primaryExprPrime(p *parser) Node {
 	}
 	if p.accept(topCall) {
 		c := call(p)
+		//fmt.Println("HERE", c)
 		if c.Valid() {
 			e.Expr = c
 			if p.accept(topPrimaryExprPrime...) {
@@ -1179,6 +1192,7 @@ func primaryExprPrime(p *parser) Node {
 			}
 			return e
 		}
+		// fmt.Println("call invalid")
 		p.backtrack()
 	}
 	p.backtrack()

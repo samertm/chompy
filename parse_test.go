@@ -123,7 +123,7 @@ func meow() {
 import "fmt"
 
 func meow() {
-	f := int(4,)
+	f := int(4)
 	m := make(int)
 	a[1]
 	b[:]
@@ -378,18 +378,20 @@ start block
 start shortvardecl
 ident: f
 unary_op: 
-start conversion
-type: int
+opname: int
+start call
 unary_op: 
 lit: type: Int val: 4
-end conversion
+end call
 end shortvardecl
 start shortvardecl
 ident: m
-start builtincall
-ident: make
-type: int
-end builtincall
+unary_op: 
+opname: make
+start call
+unary_op: 
+opname: int
+end call
 end shortvardecl
 unary_op: 
 opname: a
@@ -438,6 +440,12 @@ opname: swag
 unary_op: 
 opname: bag
 end call
+unary_op: 
+opname: i
+start call
+unary_op: 
+opname: swag
+end call
 end block
 end funcdecl
 `,
@@ -452,7 +460,7 @@ func TestParse(t *testing.T) {
 	// for i, _ := range inputs {
 		_, tokens := lex.Lex("bro", inputs[i])
 		tree := parse.Start(tokens)
-		result := tree.Eval()
+		result := tree.String()
 		if outputs[i] != result {
 			t.Errorf("\n---expected---\n%s---recieved---\n%s---end---", outputs[i], result)
 		}

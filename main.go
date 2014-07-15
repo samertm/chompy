@@ -19,11 +19,14 @@ import (
 	"github.com/samertm/chompy/parse"
 )
 
-var mex = 4
+var _ = fmt.Print // debugging
 
 func main() {
+	tree := parse.Start(tokens)
+	fmt.Print(tree)
 }
 `)
 	tree := parse.Start(tokens)
-	fmt.Println(tree)
+	fmt.Print(tree)
+	fmt.Print(tree.Valid())
 }

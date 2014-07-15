@@ -17,9 +17,9 @@ type Tree struct {
 }
 
 func (t *Tree) Valid() bool {
-	// tree is invalid if it has no kids
+	// I believe the tree is valid if it has no kids
 	if len(t.Kids) == 0 {
-		return false
+		return true
 	}
 	for _, k := range t.Kids {
 		if k.Valid() == false {

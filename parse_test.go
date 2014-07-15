@@ -456,8 +456,7 @@ func TestParse(t *testing.T) {
 		t.Errorf("len(inputs) != len(outputs)")
 		return
 	}
-	for i := len(inputs) - 1; i < len(inputs); i ++ {
-	// for i, _ := range inputs {
+	for i, _ := range inputs {
 		_, tokens := lex.Lex("bro", inputs[i])
 		tree := parse.Start(tokens)
 		result := tree.String()

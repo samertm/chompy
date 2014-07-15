@@ -16,15 +16,6 @@ type Tree struct {
 	Kids []Node
 }
 
-func AssertTree(n Node) (*Tree, error) {
-	switch n.(type) {
-	case *Tree:
-		return n.(*Tree), nil
-	default:
-		return nil, errors.New("Expected *Tree")
-	}
-}
-
 func (t *Tree) Valid() bool {
 	// tree is invalid if it has no kids
 	if len(t.Kids) == 0 {
@@ -49,15 +40,6 @@ type Pkg struct {
 	Name string
 }
 
-func AssertPkg(n Node) (*Pkg, error) {
-	switch n.(type) {
-	case *Pkg:
-		return n.(*Pkg), nil
-	default:
-		return nil, errors.New("Expected *Pkg")
-	}
-}
-
 func (p *Pkg) Valid() bool {
 	return true
 }
@@ -68,15 +50,6 @@ func (p *Pkg) String() string {
 
 type Impts struct {
 	Imports []Node
-}
-
-func AssertImpts(n Node) (*Impts, error) {
-	switch n.(type) {
-	case *Impts:
-		return n.(*Impts), nil
-	default:
-		return nil, errors.New("Expected *Impts")
-	}
 }
 
 func (i *Impts) Valid() bool {
@@ -102,15 +75,6 @@ type Impt struct {
 	ImptName string
 }
 
-func AssertImpt(n Node) (*Impt, error) {
-	switch n.(type) {
-	case *Impt:
-		return n.(*Impt), nil
-	default:
-		return nil, errors.New("Expected *Impt")
-	}
-}
-
 func (i *Impt) Valid() bool {
 	return true
 }
@@ -123,15 +87,6 @@ type Erro struct {
 	Desc string
 }
 
-func AssertErro(n Node) (*Erro, error) {
-	switch n.(type) {
-	case *Erro:
-		return n.(*Erro), nil
-	default:
-		return nil, errors.New("Expected *Erro")
-	}
-}
-
 func (e *Erro) Valid() bool {
 	return false
 }
@@ -142,15 +97,6 @@ func (e *Erro) String() string {
 
 type Consts struct {
 	Cs []Node // consts
-}
-
-func AssertConsts(n Node) (*Consts, error) {
-	switch n.(type) {
-	case *Consts:
-		return n.(*Consts), nil
-	default:
-		return nil, errors.New("Expected *Consts")
-	}
 }
 
 func (c *Consts) Valid() bool {
@@ -178,15 +124,6 @@ type Cnst struct {
 	Es Node // expressions
 }
 
-func AssertCnst(n Node) (*Cnst, error) {
-	switch n.(type) {
-	case *Cnst:
-		return n.(*Cnst), nil
-	default:
-		return nil, errors.New("Expected *Cnst")
-	}
-}
-
 func (c *Cnst) Valid() bool {
 	return c.Is != nil && c.T != nil && c.Es != nil &&
 		c.Is.Valid() && c.T.Valid() && c.Es.Valid()
@@ -210,15 +147,6 @@ type Idents struct {
 	Is []Node
 }
 
-func AssertIdents(n Node) (*Idents, error) {
-	switch n.(type) {
-	case *Idents:
-		return n.(*Idents), nil
-	default:
-		return nil, errors.New("Expected *Idents")
-	}
-}
-
 func (i *Idents) Valid() bool {
 	for _, id := range i.Is {
 		if id.Valid() == false {
@@ -240,15 +168,6 @@ type Lit struct {
 	Val string
 }
 
-func AssertLit(n Node) (*Lit, error) {
-	switch n.(type) {
-	case *Lit:
-		return n.(*Lit), nil
-	default:
-		return nil, errors.New("Expected *Lit")
-	}
-}
-
 func (l *Lit) Valid() bool {
 	return true
 }
@@ -259,15 +178,6 @@ func (l *Lit) String() string {
 
 type OpName struct {
 	Id Node
-}
-
-func AssertOpName(n Node) (*OpName, error) {
-	switch n.(type) {
-	case *OpName:
-		return n.(*OpName), nil
-	default:
-		return nil, errors.New("Expected *OpName")
-	}
 }
 
 func (o *OpName) Valid() bool {
@@ -281,15 +191,6 @@ func (o *OpName) String() string {
 // expression list
 type Exprs struct {
 	Es []Node
-}
-
-func AssertExprs(n Node) (*Exprs, error) {
-	switch n.(type) {
-	case *Exprs:
-		return n.(*Exprs), nil
-	default:
-		return nil, errors.New("Expected *Exprs")
-	}
 }
 
 func (e *Exprs) Valid() bool {
@@ -313,15 +214,6 @@ type Expr struct {
 	BinOp   string
 	FirstN  Node
 	SecondN Node
-}
-
-func AssertExpr(n Node) (*Expr, error) {
-	switch n.(type) {
-	case *Expr:
-		return n.(*Expr), nil
-	default:
-		return nil, errors.New("Expected *Expr")
-	}
 }
 
 // SecondN can be nil
@@ -351,15 +243,6 @@ type UnaryE struct {
 	Expr Node
 }
 
-func AssertUnaryE(n Node) (*UnaryE, error) {
-	switch n.(type) {
-	case *UnaryE:
-		return n.(*UnaryE), nil
-	default:
-		return nil, errors.New("Expected *UnaryE")
-	}
-}
-
 func (u *UnaryE) Valid() bool {
 	return u.Expr != nil && u.Expr.Valid()
 }
@@ -374,15 +257,6 @@ func (u *UnaryE) String() (s string) {
 type PrimaryE struct {
 	Expr  Node
 	Prime Node
-}
-
-func AssertPrimaryE(n Node) (*PrimaryE, error) {
-	switch n.(type) {
-	case *PrimaryE:
-		return n.(*PrimaryE), nil
-	default:
-		return nil, errors.New("Expected *PrimaryE")
-	}
 }
 
 func (p *PrimaryE) Valid() bool {
@@ -405,15 +279,6 @@ type Typ struct {
 	T Node
 }
 
-func AssertTyp(n Node) (*Typ, error) {
-	switch n.(type) {
-	case *Typ:
-		return n.(*Typ), nil
-	default:
-		return nil, errors.New("Expected *Typ")
-	}
-}
-
 func (t *Typ) Valid() bool {
 	return t.T != nil && t.T.Valid()
 }
@@ -424,15 +289,6 @@ func (t *Typ) String() string {
 
 type Ident struct {
 	Name string
-}
-
-func AssertIdent(n Node) (*Ident, error) {
-	switch n.(type) {
-	case *Ident:
-		return n.(*Ident), nil
-	default:
-		return nil, errors.New("Expected *Ident")
-	}
 }
 
 func (i *Ident) Valid() bool {
@@ -448,15 +304,6 @@ type QualifiedIdent struct {
 	Ident string
 }
 
-func AssertQualifiedIdent(n Node) (*QualifiedIdent, error) {
-	switch n.(type) {
-	case *QualifiedIdent:
-		return n.(*QualifiedIdent), nil
-	default:
-		return nil, errors.New("Expected *QualifiedIdent")
-	}
-}
-
 func (q *QualifiedIdent) Valid() bool {
 	return true
 }
@@ -467,15 +314,6 @@ func (q *QualifiedIdent) String() string {
 
 type Types struct {
 	Typspecs []Node
-}
-
-func AssertTypes(n Node) (*Types, error) {
-	switch n.(type) {
-	case *Types:
-		return n.(*Types), nil
-	default:
-		return nil, errors.New("Expected *Types")
-	}
 }
 
 func (t *Types) Valid() bool {
@@ -501,15 +339,6 @@ type Typespec struct {
 	Typ Node //type
 }
 
-func AssertTypespec(n Node) (*Typespec, error) {
-	switch n.(type) {
-	case *Typespec:
-		return n.(*Typespec), nil
-	default:
-		return nil, errors.New("Expected *Typespec")
-	}
-}
-
 func (t *Typespec) Valid() bool {
 	return t.I != nil && t.Typ != nil && t.I.Valid() && t.Typ.Valid()
 }
@@ -528,15 +357,6 @@ func (t *Typespec) String() (s string) {
 
 type Vars struct {
 	Vs []Node
-}
-
-func AssertVars(n Node) (*Vars, error) {
-	switch n.(type) {
-	case *Vars:
-		return n.(*Vars), nil
-	default:
-		return nil, errors.New("Expected *Vars")
-	}
 }
 
 func (v *Vars) Valid() bool {
@@ -561,15 +381,6 @@ type Varspec struct {
 	Idents Node
 	T      Node // type
 	Exprs  Node
-}
-
-func AssertVarspec(n Node) (*Varspec, error) {
-	switch n.(type) {
-	case *Varspec:
-		return n.(*Varspec), nil
-	default:
-		return nil, errors.New("Expected *Varspec")
-	}
 }
 
 func (v *Varspec) Valid() bool {
@@ -597,15 +408,6 @@ type Funcdecl struct {
 	FuncOrSig Node
 }
 
-func AssertFuncdecl(n Node) (*Funcdecl, error) {
-	switch n.(type) {
-	case *Funcdecl:
-		return n.(*Funcdecl), nil
-	default:
-		return nil, errors.New("Expected *Funcdecl")
-	}
-}
-
 func (f *Funcdecl) Valid() bool {
 	return f.Name != nil && f.FuncOrSig != nil &&
 		f.Name.Valid() && f.FuncOrSig.Valid()
@@ -628,15 +430,6 @@ type Func struct {
 	Body Node
 }
 
-func AssertFunc(n Node) (*Func, error) {
-	switch n.(type) {
-	case *Func:
-		return n.(*Func), nil
-	default:
-		return nil, errors.New("Expected *Func")
-	}
-}
-
 func (f *Func) Valid() bool {
 	return f.Sig != nil && f.Body != nil &&
 		f.Sig.Valid() && f.Body.Valid()
@@ -655,15 +448,6 @@ func (f *Func) String() (s string) {
 type Sig struct {
 	Params Node
 	Result Node
-}
-
-func AssertSig(n Node) (*Sig, error) {
-	switch n.(type) {
-	case *Sig:
-		return n.(*Sig), nil
-	default:
-		return nil, errors.New("Expected *Sig")
-	}
 }
 
 func (sig *Sig) Valid() bool {
@@ -691,15 +475,6 @@ type Stmts struct {
 	Stmts []Node
 }
 
-func AssertStmts(n Node) (*Stmts, error) {
-	switch n.(type) {
-	case *Stmts:
-		return n.(*Stmts), nil
-	default:
-		return nil, errors.New("Expected *Stmts")
-	}
-}
-
 func (ss *Stmts) Valid() bool {
 	for _, s := range ss.Stmts {
 		if s.Valid() == false {
@@ -720,15 +495,6 @@ type Stmt struct {
 	S Node
 }
 
-func AssertStmt(n Node) (*Stmt, error) {
-	switch n.(type) {
-	case *Stmt:
-		return n.(*Stmt), nil
-	default:
-		return nil, errors.New("Expected *Stmt")
-	}
-}
-
 func (s *Stmt) Valid() bool {
 	return s.S != nil && s.S.Valid()
 }
@@ -742,15 +508,6 @@ func (s *Stmt) String() string {
 
 type Result struct {
 	ParamsOrTyp Node
-}
-
-func AssertResult(n Node) (*Result, error) {
-	switch n.(type) {
-	case *Result:
-		return n.(*Result), nil
-	default:
-		return nil, errors.New("Expected *Result")
-	}
 }
 
 func (r *Result) Valid() bool {
@@ -768,15 +525,6 @@ func (r *Result) String() (s string) {
 
 type Params struct {
 	Params []Node
-}
-
-func AssertParams(n Node) (*Params, error) {
-	switch n.(type) {
-	case *Params:
-		return n.(*Params), nil
-	default:
-		return nil, errors.New("Expected *Params")
-	}
 }
 
 func (ps *Params) Valid() bool {
@@ -803,15 +551,6 @@ type Param struct {
 	Typ       Node
 }
 
-func AssertParam(n Node) (*Param, error) {
-	switch n.(type) {
-	case *Param:
-		return n.(*Param), nil
-	default:
-		return nil, errors.New("Expected *Param")
-	}
-}
-
 func (p *Param) Valid() bool {
 	return p.Idents != nil && p.Typ != nil && p.Idents.Valid() && p.Typ.Valid()
 }
@@ -835,15 +574,6 @@ type Block struct {
 	Stmts Node
 }
 
-func AssertBlock(n Node) (*Block, error) {
-	switch n.(type) {
-	case *Block:
-		return n.(*Block), nil
-	default:
-		return nil, errors.New("Expected *Block")
-	}
-}
-
 func (b *Block) Valid() bool {
 	return b.Stmts != nil && b.Stmts.Valid()
 }
@@ -860,15 +590,6 @@ type LabeledStmt struct {
 	Stmt  Node
 }
 
-func AssertLabeledStmt(n Node) (*LabeledStmt, error) {
-	switch n.(type) {
-	case *LabeledStmt:
-		return n.(*LabeledStmt), nil
-	default:
-		return nil, errors.New("Expected *LabeledStmt")
-	}
-}
-
 func (l *LabeledStmt) Valid() bool {
 	return l.Label != nil && l.Stmt != nil && l.Label.Valid() && l.Stmt.Valid()
 }
@@ -879,15 +600,6 @@ func (l *LabeledStmt) String() string {
 
 type ExprStmt struct {
 	Expr Node
-}
-
-func AssertExprStmt(n Node) (*ExprStmt, error) {
-	switch n.(type) {
-	case *ExprStmt:
-		return n.(*ExprStmt), nil
-	default:
-		return nil, errors.New("Expected *ExprStmt")
-	}
 }
 
 func (e *ExprStmt) Valid() bool {
@@ -903,15 +615,6 @@ type SendStmt struct {
 	Expr Node
 }
 
-func AssertSendStmt(n Node) (*SendStmt, error) {
-	switch n.(type) {
-	case *SendStmt:
-		return n.(*SendStmt), nil
-	default:
-		return nil, errors.New("Expected *SendStmt")
-	}
-}
-
 func (s *SendStmt) Valid() bool {
 	return s.Chan != nil && s.Expr != nil && s.Chan.Valid() && s.Expr.Valid()
 }
@@ -923,15 +626,6 @@ func (s *SendStmt) String() string {
 type IncDecStmt struct {
 	Expr    Node
 	Postfix string // either "++" or "--"
-}
-
-func AssertIncDecStmt(n Node) (*IncDecStmt, error) {
-	switch n.(type) {
-	case *IncDecStmt:
-		return n.(*IncDecStmt), nil
-	default:
-		return nil, errors.New("Expected *IncDecStmt")
-	}
 }
 
 func (i *IncDecStmt) Valid() bool {
@@ -947,15 +641,6 @@ type Assign struct {
 	Op        string // add_op, mul_op, or "="
 	LeftExpr  Node
 	RightExpr Node
-}
-
-func AssertAssign(n Node) (*Assign, error) {
-	switch n.(type) {
-	case *Assign:
-		return n.(*Assign), nil
-	default:
-		return nil, errors.New("Expected *Assign")
-	}
 }
 
 func (a *Assign) Valid() bool {
@@ -975,15 +660,6 @@ type IfStmt struct {
 	Expr       Node
 	Block      Node
 	Else       Node
-}
-
-func AssertIfStmt(n Node) (*IfStmt, error) {
-	switch n.(type) {
-	case *IfStmt:
-		return n.(*IfStmt), nil
-	default:
-		return nil, errors.New("Expected *IfStmt")
-	}
 }
 
 func (i *IfStmt) Valid() bool {
@@ -1009,15 +685,6 @@ type ForStmt struct {
 	Block  Node
 }
 
-func AssertForStmt(n Node) (*ForStmt, error) {
-	switch n.(type) {
-	case *ForStmt:
-		return n.(*ForStmt), nil
-	default:
-		return nil, errors.New("Expected *ForStmt")
-	}
-}
-
 func (f *ForStmt) Valid() bool {
 	return f.Clause != nil && f.Block != nil &&
 		f.Clause.Valid() && f.Block.Valid()
@@ -1033,15 +700,6 @@ type ForClause struct {
 	InitStmt  Node
 	Condition Node
 	PostStmt  Node
-}
-
-func AssertForClause(n Node) (*ForClause, error) {
-	switch n.(type) {
-	case *ForClause:
-		return n.(*ForClause), nil
-	default:
-		return nil, errors.New("Expected *ForClause")
-	}
 }
 
 func (f *ForClause) Valid() bool {
@@ -1068,15 +726,6 @@ type RangeClause struct {
 	Expr          Node   // that comes after the op... need a better nayme
 }
 
-func AssertRangeClause(n Node) (*RangeClause, error) {
-	switch n.(type) {
-	case *RangeClause:
-		return n.(*RangeClause), nil
-	default:
-		return nil, errors.New("Expected *RangeClause")
-	}
-}
-
 func (r *RangeClause) Valid() bool {
 	return r.ExprsOrIdents != nil && r.Expr != nil &&
 		r.ExprsOrIdents.Valid() && r.Expr.Valid()
@@ -1093,15 +742,6 @@ type GoStmt struct {
 	Expr Node
 }
 
-func AssertGoStmt(n Node) (*GoStmt, error) {
-	switch n.(type) {
-	case *GoStmt:
-		return n.(*GoStmt), nil
-	default:
-		return nil, errors.New("Expected *GoStmt")
-	}
-}
-
 func (g *GoStmt) Valid() bool {
 	return g.Expr != nil && g.Expr.Valid()
 }
@@ -1112,15 +752,6 @@ func (g *GoStmt) String() string {
 
 type ReturnStmt struct {
 	Exprs Node
-}
-
-func AssertReturnStmt(n Node) (*ReturnStmt, error) {
-	switch n.(type) {
-	case *ReturnStmt:
-		return n.(*ReturnStmt), nil
-	default:
-		return nil, errors.New("Expected *ReturnStmt")
-	}
 }
 
 func (r *ReturnStmt) Valid() bool {
@@ -1140,15 +771,6 @@ type BreakStmt struct {
 	Label Node
 }
 
-func AssertBreakStmt(n Node) (*BreakStmt, error) {
-	switch n.(type) {
-	case *BreakStmt:
-		return n.(*BreakStmt), nil
-	default:
-		return nil, errors.New("Expected *BreakStmt")
-	}
-}
-
 func (b *BreakStmt) Valid() bool {
 	return b.Label != nil && b.Label.Valid()
 }
@@ -1164,15 +786,6 @@ func (b *BreakStmt) String() (s string) {
 
 type ContinueStmt struct {
 	Label Node
-}
-
-func AssertContinueStmt(n Node) (*ContinueStmt, error) {
-	switch n.(type) {
-	case *ContinueStmt:
-		return n.(*ContinueStmt), nil
-	default:
-		return nil, errors.New("Expected *ContinueStmt")
-	}
 }
 
 func (c *ContinueStmt) Valid() bool {
@@ -1192,15 +805,6 @@ type GotoStmt struct {
 	Label Node
 }
 
-func AssertGotoStmt(n Node) (*GotoStmt, error) {
-	switch n.(type) {
-	case *GotoStmt:
-		return n.(*GotoStmt), nil
-	default:
-		return nil, errors.New("Expected *GotoStmt")
-	}
-}
-
 func (g *GotoStmt) Valid() bool {
 	return g.Label != nil && g.Label.Valid()
 }
@@ -1210,15 +814,6 @@ func (g *GotoStmt) String() string {
 }
 
 type Fallthrough struct {
-}
-
-func AssertFallthrough(n Node) (*Fallthrough, error) {
-	switch n.(type) {
-	case *Fallthrough:
-		return n.(*Fallthrough), nil
-	default:
-		return nil, errors.New("Expected *Fallthrough")
-	}
 }
 
 func (f *Fallthrough) Valid() bool {
@@ -1233,15 +828,6 @@ type DeferStmt struct {
 	Expr Node
 }
 
-func AssertDeferStmt(n Node) (*DeferStmt, error) {
-	switch n.(type) {
-	case *DeferStmt:
-		return n.(*DeferStmt), nil
-	default:
-		return nil, errors.New("Expected *DeferStmt")
-	}
-}
-
 func (d *DeferStmt) Valid() bool {
 	return d.Expr != nil && d.Expr.Valid()
 }
@@ -1253,15 +839,6 @@ func (d *DeferStmt) String() string {
 type ShortVarDecl struct {
 	Idents Node // identifier list
 	Exprs  Node // expression list
-}
-
-func AssertShortVarDecl(n Node) (*ShortVarDecl, error) {
-	switch n.(type) {
-	case *ShortVarDecl:
-		return n.(*ShortVarDecl), nil
-	default:
-		return nil, errors.New("Expected *ShortVarDecl")
-	}
 }
 
 func (s *ShortVarDecl) Valid() bool {
@@ -1292,15 +869,6 @@ type Conversion struct {
 	Expr Node
 }
 
-func AssertConversion(n Node) (*Conversion, error) {
-	switch n.(type) {
-	case *Conversion:
-		return n.(*Conversion), nil
-	default:
-		return nil, errors.New("Expected *Conversion")
-	}
-}
-
 func (c *Conversion) Valid() bool {
 	return c.Typ != nil && c.Expr != nil && c.Typ.Valid() && c.Expr.Valid()
 }
@@ -1317,15 +885,6 @@ type Builtin struct {
 	Name Node
 	Typ  Node
 	Args Node
-}
-
-func AssertBuiltin(n Node) (*Builtin, error) {
-	switch n.(type) {
-	case *Builtin:
-		return n.(*Builtin), nil
-	default:
-		return nil, errors.New("Expected *Builtin")
-	}
 }
 
 func (b *Builtin) Valid() bool {
@@ -1350,15 +909,6 @@ type Selector struct {
 	Ident Node
 }
 
-func AssertSelector(n Node) (*Selector, error) {
-	switch n.(type) {
-	case *Selector:
-		return n.(*Selector), nil
-	default:
-		return nil, errors.New("Expected *Selector")
-	}
-}
-
 func (s *Selector) Valid() bool {
 	return s.Ident != nil && s.Ident.Valid()
 }
@@ -1369,15 +919,6 @@ func (s *Selector) String() string {
 
 type Index struct {
 	Expr Node
-}
-
-func AssertIndex(n Node) (*Index, error) {
-	switch n.(type) {
-	case *Index:
-		return n.(*Index), nil
-	default:
-		return nil, errors.New("Expected *Index")
-	}
 }
 
 func (i *Index) Valid() bool {
@@ -1392,15 +933,6 @@ type Slice struct {
 	Start Node
 	End   Node
 	Cap   Node
-}
-
-func AssertSlice(n Node) (*Slice, error) {
-	switch n.(type) {
-	case *Slice:
-		return n.(*Slice), nil
-	default:
-		return nil, errors.New("Expected *Slice")
-	}
 }
 
 func (s *Slice) Valid() (t bool) {
@@ -1440,38 +972,8 @@ func (s *Slice) String() (str string) {
 	return
 }
 
-type TypeAssertion struct {
-	Typ Node
-}
-
-func AssertTypeAssertion(n Node) (*TypeAssertion, error) {
-	switch n.(type) {
-	case *TypeAssertion:
-		return n.(*TypeAssertion), nil
-	default:
-		return nil, errors.New("Expected *ion")
-	}
-}
-
-func (t *TypeAssertion) Valid() bool {
-	return t.Typ != nil && t.Typ.Valid()
-}
-
-func (t *TypeAssertion) String() string {
-	return "type assert: " + t.Typ.String()
-}
-
 type Call struct {
 	Args Node
-}
-
-func AssertCall(n Node) (*Call, error) {
-	switch n.(type) {
-	case *Call:
-		return n.(*Call), nil
-	default:
-		return nil, errors.New("Expected *Call")
-	}
 }
 
 func (c *Call) Valid() bool {
@@ -1493,15 +995,6 @@ func (c *Call) String() (s string) {
 type Args struct {
 	Exprs     Node
 	DotDotDot bool
-}
-
-func AssertArgs(n Node) (*Args, error) {
-	switch n.(type) {
-	case *Args:
-		return n.(*Args), nil
-	default:
-		return nil, errors.New("Expected *Args")
-	}
 }
 
 func (a *Args) Valid() bool {

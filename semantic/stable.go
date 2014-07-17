@@ -10,11 +10,13 @@ type NodeInfo struct {
 	// What else? We don't need the identifier name because
 	// that's stored in the symbol table. There may be other
 	// things but I'm not sure what they are.
+	// We need to store the thing above it
+	Up *NodeInfo
 }
 
 // Okay, let's create our Type type. Type will hold all the
 // information we need to generate code for a specific type.
-interface Type  {
+type Type interface {
 	Equal(Type) bool
 }
 
@@ -27,7 +29,7 @@ func (f *Func) Equal(t Type) bool {
 	if !ok {
 		return false
 	}
-	if len(f.Args) != len(fn.Args) [
+	if len(f.Args) != len(fn.Args) {
 		return false
 	}
 	for i := 0; i < len(f.Args); i++ {
@@ -38,7 +40,7 @@ func (f *Func) Equal(t Type) bool {
 	return true
 }
 
-func Basic struct {
+type Basic struct {
 	Name string
 	// this is a pointer type if true
 	Pointer bool

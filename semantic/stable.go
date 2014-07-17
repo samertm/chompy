@@ -10,6 +10,9 @@ type NodeInfo struct {
 	// things but I'm not sure what they are.
 	// We need to store the thing above it
 	up *NodeInfo
+	// We need to store the actual value. Hmm... can probably
+	// just attach a node here
+	Val Node
 }
 
 // Okay, let's create our Type type. Type will hold all the
@@ -79,3 +82,4 @@ type stable struct {
 	table map[string]NodeInfo
 	up    *stable
 }
+

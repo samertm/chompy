@@ -1,7 +1,5 @@
 package semantic
 
-import "log"
-
 // Let's create a type to hold information about the variables in
 // our program.
 type NodeInfo struct {
@@ -11,7 +9,7 @@ type NodeInfo struct {
 	// that's stored in the symbol table. There may be other
 	// things but I'm not sure what they are.
 	// We need to store the thing above it
-	Up *NodeInfo
+	up *NodeInfo
 }
 
 // Okay, let's create our Type type. Type will hold all the
@@ -40,6 +38,7 @@ func (f *Func) Equal(t Type) bool {
 	return true
 }
 
+// Represents all types that are not functions
 type Basic struct {
 	Name string
 	// this is a pointer type if true
@@ -54,45 +53,29 @@ func (b *Basic) Equal(t Type) bool {
 	return b.Name == ba.Name && b.Pointer == ba.Pointer
 }
 
-type stable struct {
-	scope []map[string]NodeInfo
+type Struct struct {
+	Name   string
+	Fields []Type
 }
 
-func NewStable() *stable {
-	s := &stable{scopes: make([]map[string]interface{}, 0, 1)}
-	s.scopes = append(s.scopes, make(map[string]interface{}))
-	return s
-}
-
-func (s *stable) Push() {
-	s.scopes = append(scopes, make([]map[string]interface{}))
-}
-
-func (s *stable) Pop() {
-	if len(s.scopes) == 0 {
-		log.Fatal("Popped scope that did not exist")
-	}
-	s.scopes = s.scopes[:len(s.scopes)-1]
-}
-
-// returns true if the spot already exists
-func (s *stable) Insert(key string, i interface{}) bool {
-	if len(s.scopes) == 0 {
-		log.Fatal("Popped scope that did not exist")
+func (s *Struct) Equal(t Type) bool {
+	ss, ok := t.(*Struct)
+	if !ok {
 		return false
 	}
-	// insert into top scope
-	_, exists := s.scopes[len(s.scopes)-1][key]
-	s.scopes[len(s.scopes)-1][key] = i
-	return exists
-}
-
-// follows item, ok result pattern of maps
-func (s *stable) Lookup(key string) (interface{}, bool) {
-	for i := len(s.scopes) - 1; i >= 0; i-- {
-		if val, ok := s.scopes[i][key]; ok {
-			return val, true
+	if s.Name != s.Name ||
+		len(s.Fields) != len(ss.Fields) {
+		return false
+	}
+	for i := 0; i < len(s.Fields); i++ {
+		if s.Fields[i].Equals(ss.Fields[i]) == false {
+			return false
 		}
 	}
-	return nil, false
+	return true
+}
+
+type stable struct {
+	table map[string]NodeInfo
+	up    *stable
 }

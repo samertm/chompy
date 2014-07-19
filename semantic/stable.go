@@ -1,5 +1,7 @@
 package semantic
 
+import "github.com/samertm/chompy/parse"
+
 // Let's create a type to hold information about the variables in
 // our program.
 type NodeInfo struct {
@@ -12,7 +14,7 @@ type NodeInfo struct {
 	up *NodeInfo
 	// We need to store the actual value. Hmm... can probably
 	// just attach a node here
-	Val Node
+	Val parse.Node
 }
 
 // Okay, let's create our Type type. Type will hold all the
@@ -71,7 +73,7 @@ func (s *Struct) Equal(t Type) bool {
 		return false
 	}
 	for i := 0; i < len(s.Fields); i++ {
-		if s.Fields[i].Equals(ss.Fields[i]) == false {
+		if s.Fields[i].Equal(ss.Fields[i]) == false {
 			return false
 		}
 	}
@@ -79,27 +81,25 @@ func (s *Struct) Equal(t Type) bool {
 }
 
 type Stable struct {
-	table  map[string]NodeInfo
-	latest NodeInfo
-	up     *stable
+	table  map[string]*NodeInfo
+	latest *NodeInfo
+	up     *Stable
 }
 
 // Creates a new Stable. It is legal to pass nil as the old Stable
-func NewStable(old *Stable) {
+func NewStable(old *Stable) *Stable {
 	return &Stable{
-		table: make(map[string]NodeInfo),
-		latest: nil,
-		up: nil,
+		table:  make(map[string]*NodeInfo),
 	}
 }
 
-func (s *Stable) Insert(name string, value NodeInfo) {
+func (s *Stable) Insert(name string, value *NodeInfo) {
 	value.up = s.latest
 	s.latest = value
 	s.table[name] = value
 }
 
-func (s *Stable) Get(name string) (NodeInfo, bool) {
+func (s *Stable) Get(name string) (*NodeInfo, bool) {
 	for tab := s; tab != nil; tab = s.up {
 		n, ok := tab.table[name]
 		if ok {
@@ -108,4 +108,3 @@ func (s *Stable) Get(name string) (NodeInfo, bool) {
 	}
 	return nil, false
 }
-

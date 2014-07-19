@@ -84,6 +84,15 @@ type Stable struct {
 	up     *stable
 }
 
+// Creates a new Stable. It is legal to pass nil as the old Stable
+func NewStable(old *Stable) {
+	return &Stable{
+		table: make(map[string]NodeInfo),
+		latest: nil,
+		up: nil,
+	}
+}
+
 func (s *Stable) Insert(name string, value NodeInfo) {
 	value.up = s.latest
 	s.latest = value

@@ -562,8 +562,13 @@ func (v *Varspec) Children(c chan<- Node) {
 }
 
 func (v *Varspec) Valid() bool {
-	return v.Idents != nil && v.T != nil && v.Exprs != nil &&
-		v.Idents.Valid() && v.T.Valid() && v.Exprs.Valid()
+	t := true
+	t = t && v.Idents != nil && v.Idents.Valid() &&
+		v.Exprs != nil && v.Exprs.Valid()
+	if v.T != nil {
+		t = t && v.T.Valid()
+	}
+	return t
 }
 
 func (v *Varspec) String() (s string) {

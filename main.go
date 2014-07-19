@@ -5,6 +5,7 @@ import (
 
 	"github.com/samertm/chompy/lex"
 	"github.com/samertm/chompy/parse"
+	"github.com/samertm/chompy/semantic"
 )
 
 var _ = fmt.Print // debugging
@@ -27,6 +28,5 @@ func main() {
 }
 `)
 	tree := parse.Start(tokens)
-	fmt.Print(tree)
-	fmt.Print(tree.Valid())
+	semantic.Check(tree)
 }

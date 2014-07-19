@@ -25,8 +25,11 @@ type Tree struct {
 // }
 
 func (t *Tree) Children(c chan<- Node) {
+	defer close(c)
 	for _, k := range t.Kids {
-		c <- k
+		if k != nil {
+			c <- k
+		}
 	}
 }
 
@@ -55,6 +58,7 @@ type Pkg struct {
 }
 
 func (p *Pkg) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -71,8 +75,11 @@ type Impts struct {
 }
 
 func (i *Impts) Children(c chan<- Node) {
+	defer close(c)
 	for _, im := range i.Imports {
-		c <- im
+		if im != nil {
+			c <- im
+		}
 	}
 }
 
@@ -100,6 +107,7 @@ type Impt struct {
 }
 
 func (i *Impt) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -116,6 +124,7 @@ type Erro struct {
 }
 
 func (e *Erro) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -132,8 +141,11 @@ type Consts struct {
 }
 
 func (con *Consts) Children(c chan<- Node) {
+	defer close(c)
 	for _, cn := range con.Cs {
-		c <- cn
+		if cn != nil {
+			c <- cn
+		}
 	}
 }
 
@@ -163,9 +175,16 @@ type Cnst struct {
 }
 
 func (con *Cnst) Children(c chan<- Node) {
-	c <- con.Is
-	c <- con.T
-	c <- con.Es
+	defer close(c)
+	if con.Is != nil {
+		c <- con.Is
+	}
+	if con.T != nil {
+		c <- con.T
+	}
+	if con.Es != nil {
+		c <- con.Es
+	}
 }
 
 func (c *Cnst) Valid() bool {
@@ -192,8 +211,11 @@ type Idents struct {
 }
 
 func (i *Idents) Children(c chan<- Node) {
+	defer close(c)
 	for _, id := range i.Is {
-		c <- id
+		if id != nil {
+			c <- id
+		}
 	}
 }
 
@@ -219,6 +241,7 @@ type Lit struct {
 }
 
 func (l *Lit) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -235,7 +258,10 @@ type OpName struct {
 }
 
 func (o *OpName) Children(c chan<- Node) {
-	c <- o.Id
+	defer close(c)
+	if o.Id != nil {
+		c <- o.Id
+	}
 }
 
 func (o *OpName) Valid() bool {
@@ -252,8 +278,11 @@ type Exprs struct {
 }
 
 func (e *Exprs) Children(c chan<- Node) {
+	defer close(c)
 	for _, ex := range e.Es {
-		c <- ex
+		if ex != nil {
+			c <- ex
+		}
 	}
 }
 
@@ -281,8 +310,13 @@ type Expr struct {
 }
 
 func (e *Expr) Children(c chan<- Node) {
-	c <- e.FirstN
-	c <- e.SecondN
+	defer close(c)
+	if e.FirstN != nil {
+		c <- e.FirstN
+	}
+	if e.SecondN != nil {
+		c <- e.SecondN
+	}
 }
 
 // SecondN can be nil
@@ -313,7 +347,10 @@ type UnaryE struct {
 }
 
 func (u *UnaryE) Children(c chan<- Node) {
-	c <- u.Expr
+	defer close(c)
+	if u.Expr != nil {
+		c <- u.Expr
+	}
 }
 
 func (u *UnaryE) Valid() bool {
@@ -333,8 +370,13 @@ type PrimaryE struct {
 }
 
 func (p *PrimaryE) Children(c chan<- Node) {
-	c <- p.Expr
-	c <- p.Prime
+	defer close(c)
+	if p.Expr != nil {
+		c <- p.Expr
+	}
+	if p.Prime != nil {
+		c <- p.Prime
+	}
 }
 
 func (p *PrimaryE) Valid() bool {
@@ -358,7 +400,10 @@ type Typ struct {
 }
 
 func (t *Typ) Children(c chan<- Node) {
-	c <- t.T
+	defer close(c)
+	if t.T != nil {
+		c <- t.T
+	}
 }
 
 func (t *Typ) Valid() bool {
@@ -374,6 +419,7 @@ type Ident struct {
 }
 
 func (i *Ident) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -391,6 +437,7 @@ type QualifiedIdent struct {
 }
 
 func (q *QualifiedIdent) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -407,8 +454,11 @@ type Types struct {
 }
 
 func (t *Types) Children(c chan<- Node) {
+	defer close(c)
 	for _, ty := range t.Typspecs {
-		c <- ty
+		if ty != nil {
+			c <- ty
+		}
 	}
 }
 
@@ -436,8 +486,13 @@ type Typespec struct {
 }
 
 func (t *Typespec) Children(c chan<- Node) {
-	c <- t.I
-	c <- t.Typ
+	defer close(c)
+	if t.I != nil {
+		c <- t.I
+	}
+	if t.Typ != nil {
+		c <- t.Typ
+	}
 }
 
 func (t *Typespec) Valid() bool {
@@ -461,8 +516,11 @@ type Vars struct {
 }
 
 func (v *Vars) Children(c chan<- Node) {
+	defer close(c)
 	for _, va := range v.Vs {
-		c <- va
+		if va != nil {
+			c <- va
+		}
 	}
 }
 
@@ -491,9 +549,16 @@ type Varspec struct {
 }
 
 func (v *Varspec) Children(c chan<- Node) {
-	c <- v.Idents
-	c <- v.T
-	c <- v.Exprs
+	defer close(c)
+	if v.Idents != nil {
+		c <- v.Idents
+	}
+	if v.T != nil {
+		c <- v.T
+	}
+	if v.Exprs != nil {
+		c <- v.Exprs
+	}
 }
 
 func (v *Varspec) Valid() bool {
@@ -522,8 +587,13 @@ type Funcdecl struct {
 }
 
 func (f *Funcdecl) Children(c chan<- Node) {
-	c <- f.Name
-	c <- f.FuncOrSig
+	defer close(c)
+	if f.Name != nil {
+		c <- f.Name
+	}
+	if f.FuncOrSig != nil {
+		c <- f.FuncOrSig
+	}
 }
 
 func (f *Funcdecl) Valid() bool {
@@ -549,8 +619,13 @@ type Func struct {
 }
 
 func (f *Func) Children(c chan<- Node) {
-	c <- f.Sig
-	c <- f.Body
+	defer close(c)
+	if f.Sig != nil {
+		c <- f.Sig
+	}
+	if f.Body != nil {
+		c <- f.Body
+	}
 }
 
 func (f *Func) Valid() bool {
@@ -574,8 +649,13 @@ type Sig struct {
 }
 
 func (s *Sig) Children(c chan<- Node) {
-	c <- s.Params
-	c <- s.Result
+	defer close(c)
+	if s.Params != nil {
+		c <- s.Params
+	}
+	if s.Result != nil {
+		c <- s.Result
+	}
 }
 
 func (sig *Sig) Valid() bool {
@@ -604,8 +684,11 @@ type Stmts struct {
 }
 
 func (s *Stmts) Children(c chan<- Node) {
+	defer close(c)
 	for _, ss := range s.Stmts {
-		c <- ss
+		if ss != nil {
+			c <- ss
+		}
 	}
 }
 
@@ -630,7 +713,10 @@ type Stmt struct {
 }
 
 func (s *Stmt) Children(c chan<- Node) {
-	c <- s.S
+	defer close(c)
+	if s.S != nil {
+		c <- s.S
+	}
 }
 
 func (s *Stmt) Valid() bool {
@@ -649,7 +735,10 @@ type Result struct {
 }
 
 func (r *Result) Children(c chan<- Node) {
-	c <- r.ParamsOrTyp
+	defer close(c)
+	if r.ParamsOrTyp != nil {
+		c <- r.ParamsOrTyp
+	}
 }
 
 func (r *Result) Valid() bool {
@@ -670,8 +759,11 @@ type Params struct {
 }
 
 func (p *Params) Children(c chan<- Node) {
+	defer close(c)
 	for _, pa := range p.Params {
-		c <- pa
+		if pa != nil {
+			c <- pa
+		}
 	}
 }
 
@@ -700,8 +792,13 @@ type Param struct {
 }
 
 func (p *Param) Children(c chan<- Node) {
-	c <- p.Idents
-	c <- p.Typ
+	defer close(c)
+	if p.Idents != nil {
+		c <- p.Idents
+	}
+	if p.Typ != nil {
+		c <- p.Typ
+	}
 }
 
 func (p *Param) Valid() bool {
@@ -728,7 +825,10 @@ type Block struct {
 }
 
 func (b *Block) Children(c chan<- Node) {
-	c <- b.Stmts
+	defer close(c)
+	if b.Stmts != nil {
+		c <- b.Stmts
+	}
 }
 
 func (b *Block) Valid() bool {
@@ -748,8 +848,13 @@ type LabeledStmt struct {
 }
 
 func (l *LabeledStmt) Children(c chan<- Node) {
-	c <- l.Label
-	c <- l.Stmt
+	defer close(c)
+	if l.Label != nil {
+		c <- l.Label
+	}
+	if l.Stmt != nil {
+		c <- l.Stmt
+	}
 }
 
 func (l *LabeledStmt) Valid() bool {
@@ -765,7 +870,10 @@ type ExprStmt struct {
 }
 
 func (e *ExprStmt) Children(c chan<- Node) {
-	c <- e.Expr
+	defer close(c)
+	if e.Expr != nil {
+		c <- e.Expr
+	}
 }
 
 func (e *ExprStmt) Valid() bool {
@@ -782,8 +890,13 @@ type SendStmt struct {
 }
 
 func (s *SendStmt) Children(c chan<- Node) {
-	c <- s.Chan
-	c <- s.Expr
+	defer close(c)
+	if s.Chan != nil {
+		c <- s.Chan
+	}
+	if s.Expr != nil {
+		c <- s.Expr
+	}
 }
 
 func (s *SendStmt) Valid() bool {
@@ -800,7 +913,10 @@ type IncDecStmt struct {
 }
 
 func (i *IncDecStmt) Children(c chan<- Node) {
-	c <- i.Expr
+	defer close(c)
+	if i.Expr != nil {
+		c <- i.Expr
+	}
 }
 
 func (i *IncDecStmt) Valid() bool {
@@ -819,8 +935,13 @@ type Assign struct {
 }
 
 func (a *Assign) Children(c chan<- Node) {
-	c <- a.LeftExpr
-	c <- a.RightExpr
+	defer close(c)
+	if a.LeftExpr != nil {
+		c <- a.LeftExpr
+	}
+	if a.RightExpr != nil {
+		c <- a.RightExpr
+	}
 }
 
 func (a *Assign) Valid() bool {
@@ -843,10 +964,19 @@ type IfStmt struct {
 }
 
 func (i *IfStmt) Children(c chan<- Node) {
-	c <- i.SimpleStmt
-	c <- i.Expr
-	c <- i.Block
-	c <- i.Else
+	defer close(c)
+	if i.SimpleStmt != nil {
+		c <- i.SimpleStmt
+	}
+	if i.Expr != nil {
+		c <- i.Expr
+	}
+	if i.Block != nil {
+		c <- i.Block
+	}
+	if i.Else != nil {
+		c <- i.Else
+	}
 }
 
 func (i *IfStmt) Valid() bool {
@@ -873,8 +1003,13 @@ type ForStmt struct {
 }
 
 func (f *ForStmt) Children(c chan<- Node) {
-	c <- f.Clause
-	c <- f.Block
+	defer close(c)
+	if f.Clause != nil {
+		c <- f.Clause
+	}
+	if f.Block != nil {
+		c <- f.Block
+	}
 }
 
 func (f *ForStmt) Valid() bool {
@@ -895,9 +1030,16 @@ type ForClause struct {
 }
 
 func (f *ForClause) Children(c chan<- Node) {
-	c <- f.InitStmt
-	c <- f.Condition
-	c <- f.PostStmt
+	defer close(c)
+	if f.InitStmt != nil {
+		c <- f.InitStmt
+	}
+	if f.Condition != nil {
+		c <- f.Condition
+	}
+	if f.PostStmt != nil {
+		c <- f.PostStmt
+	}
 }
 
 func (f *ForClause) Valid() bool {
@@ -925,8 +1067,13 @@ type RangeClause struct {
 }
 
 func (r *RangeClause) Children(c chan<- Node) {
-	c <- r.ExprsOrIdents
-	c <- r.Expr
+	defer close(c)
+	if r.ExprsOrIdents != nil {
+		c <- r.ExprsOrIdents
+	}
+	if r.Expr != nil {
+		c <- r.Expr
+	}
 }
 
 func (r *RangeClause) Valid() bool {
@@ -946,7 +1093,10 @@ type GoStmt struct {
 }
 
 func (g *GoStmt) Children(c chan<- Node) {
-	c <- g.Expr
+	defer close(c)
+	if g.Expr != nil {
+		c <- g.Expr
+	}
 }
 
 func (g *GoStmt) Valid() bool {
@@ -962,7 +1112,10 @@ type ReturnStmt struct {
 }
 
 func (r *ReturnStmt) Children(c chan<- Node) {
-	c <- r.Exprs
+	defer close(c)
+	if r.Exprs != nil {
+		c <- r.Exprs
+	}
 }
 
 func (r *ReturnStmt) Valid() bool {
@@ -983,7 +1136,10 @@ type BreakStmt struct {
 }
 
 func (b *BreakStmt) Children(c chan<- Node) {
-	c <- b.Label
+	defer close(c)
+	if b.Label != nil {
+		c <- b.Label
+	}
 }
 
 func (b *BreakStmt) Valid() bool {
@@ -1004,7 +1160,10 @@ type ContinueStmt struct {
 }
 
 func (con *ContinueStmt) Children(c chan<- Node) {
-	c <- con.Label
+	defer close(c)
+	if con.Label != nil {
+		c <- con.Label
+	}
 }
 
 func (c *ContinueStmt) Valid() bool {
@@ -1025,7 +1184,10 @@ type GotoStmt struct {
 }
 
 func (g *GotoStmt) Children(c chan<- Node) {
-	c <- g.Label
+	defer close(c)
+	if g.Label != nil {
+		c <- g.Label
+	}
 }
 
 func (g *GotoStmt) Valid() bool {
@@ -1040,6 +1202,7 @@ type Fallthrough struct {
 }
 
 func (f *Fallthrough) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -1056,7 +1219,10 @@ type DeferStmt struct {
 }
 
 func (d *DeferStmt) Children(c chan<- Node) {
-	c <- d.Expr
+	defer close(c)
+	if d.Expr != nil {
+		c <- d.Expr
+	}
 }
 
 func (d *DeferStmt) Valid() bool {
@@ -1073,8 +1239,13 @@ type ShortVarDecl struct {
 }
 
 func (s *ShortVarDecl) Children(c chan<- Node) {
-	c <- s.Idents
-	c <- s.Exprs
+	defer close(c)
+	if s.Idents != nil {
+		c <- s.Idents
+	}
+	if s.Exprs != nil {
+		c <- s.Exprs
+	}
 }
 
 func (s *ShortVarDecl) Valid() bool {
@@ -1093,6 +1264,7 @@ func (s *ShortVarDecl) String() (str string) {
 type EmptyStmt struct{}
 
 func (e *EmptyStmt) Children(c chan<- Node) {
+	defer close(c)
 	return
 }
 
@@ -1110,8 +1282,13 @@ type Conversion struct {
 }
 
 func (con *Conversion) Children(c chan<- Node) {
-	c <- con.Typ
-	c <- con.Expr
+	defer close(c)
+	if con.Typ != nil {
+		c <- con.Typ
+	}
+	if con.Expr != nil {
+		c <- con.Expr
+	}
 }
 
 func (c *Conversion) Valid() bool {
@@ -1133,9 +1310,16 @@ type Builtin struct {
 }
 
 func (b *Builtin) Children(c chan<- Node) {
-	c <- b.Name
-	c <- b.Typ
-	c <- b.Args
+	defer close(c)
+	if b.Name != nil {
+		c <- b.Name
+	}
+	if b.Typ != nil {
+		c <- b.Typ
+	}
+	if b.Args != nil {
+		c <- b.Args
+	}
 }
 
 func (b *Builtin) Valid() bool {
@@ -1161,7 +1345,10 @@ type Selector struct {
 }
 
 func (s *Selector) Children(c chan<- Node) {
-	c <- s.Ident
+	defer close(c)
+	if s.Ident != nil {
+		c <- s.Ident
+	}
 }
 
 func (s *Selector) Valid() bool {
@@ -1177,7 +1364,10 @@ type Index struct {
 }
 
 func (i *Index) Children(c chan<- Node) {
-	c <- i.Expr
+	defer close(c)
+	if i.Expr != nil {
+		c <- i.Expr
+	}
 }
 
 func (i *Index) Valid() bool {
@@ -1195,9 +1385,16 @@ type Slice struct {
 }
 
 func (s *Slice) Children(c chan<- Node) {
-	c <- s.Start
-	c <- s.End
-	c <- s.Cap
+	defer close(c)
+	if s.Start != nil {
+		c <- s.Start
+	}
+	if s.End != nil {
+		c <- s.End
+	}
+	if s.Cap != nil {
+		c <- s.Cap
+	}
 }
 
 func (s *Slice) Valid() (t bool) {
@@ -1242,7 +1439,10 @@ type TypeAssertion struct {
 }
 
 func (t *TypeAssertion) Children(c chan<- Node) {
-	c <- t.Typ
+	defer close(c)
+	if t.Typ != nil {
+		c <- t.Typ
+	}
 }
 
 func (t *TypeAssertion) Valid() bool {
@@ -1258,7 +1458,10 @@ type Call struct {
 }
 
 func (con *Call) Children(c chan<- Node) {
-	c <- con.Args
+	defer close(c)
+	if con.Args != nil {
+		c <- con.Args
+	}
 }
 
 func (c *Call) Valid() bool {
@@ -1283,7 +1486,10 @@ type Args struct {
 }
 
 func (a *Args) Children(c chan<- Node) {
-	c <- a.Exprs
+	defer close(c)
+	if a.Exprs != nil {
+		c <- a.Exprs
+	}
 }
 
 func (a *Args) Valid() bool {

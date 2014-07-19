@@ -2,6 +2,7 @@ package parse
 
 import (
 	"fmt"
+	"github.com/samertm/chompy/semantic/stable"
 )
 
 type Node interface {
@@ -15,6 +16,7 @@ type Node interface {
 type grammarFn func(*parser) Node
 
 type Tree struct {
+	RootStable *stable.Stable
 	Kids []Node
 }
 

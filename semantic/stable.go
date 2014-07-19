@@ -78,8 +78,25 @@ func (s *Struct) Equal(t Type) bool {
 	return true
 }
 
-type stable struct {
-	table map[string]NodeInfo
-	up    *stable
+type Stable struct {
+	table  map[string]NodeInfo
+	latest NodeInfo
+	up     *stable
+}
+
+func (s *Stable) Insert(name string, value NodeInfo) {
+	value.up = s.latest
+	s.latest = value
+	s.table[name] = value
+}
+
+func (s *Stable) Get(name string) (NodeInfo, bool) {
+	for tab := s; tab != nil; tab = s.up {
+		n, ok := tab.table[name]
+		if ok {
+			return n, true
+		}
+	}
+	return nil, false
 }
 

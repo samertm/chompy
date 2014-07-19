@@ -1,6 +1,4 @@
-package semantic
-
-import "github.com/samertm/chompy/parse"
+package stable
 
 // Let's create a type to hold information about the variables in
 // our program.
@@ -12,9 +10,9 @@ type NodeInfo struct {
 	// things but I'm not sure what they are.
 	// We need to store the thing above it
 	up *NodeInfo
-	// We need to store the actual value. Hmm... can probably
-	// just attach a node here
-	Val parse.Node
+	// We need to store the actual value.
+	// TODO create a type for val
+	Val interface{}
 }
 
 // Okay, let's create our Type type. Type will hold all the
@@ -87,9 +85,9 @@ type Stable struct {
 }
 
 // Creates a new Stable. It is legal to pass nil as the old Stable
-func NewStable(old *Stable) *Stable {
+func New(old *Stable) *Stable {
 	return &Stable{
-		table:  make(map[string]*NodeInfo),
+		table: make(map[string]*NodeInfo),
 	}
 }
 

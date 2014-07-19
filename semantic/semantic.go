@@ -84,7 +84,7 @@ func createStables(t *parse.Tree) []string {
 	errs := make([]string, 0)
 	// First, let's create an Stable to hold the information
 	// about the root tree's children.
-	//rootStable := NewStable(nil)
+	//rootStable := stable.New(nil)
 	// We're going to iterate through t's children and add them
 	// to rootStable.
 	kids := make(chan parse.Node)

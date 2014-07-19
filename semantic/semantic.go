@@ -1,57 +1,109 @@
 package semantic
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/samertm/chompy/parse"
 )
 
-// expects tree node
-func Semantic(n parse.Node) string {
-	s := NewStable()
-	t, err := parse.AssertTree(n)
-	if err != nil {
-		log.Fatal(err)
+// Check is the "main" method for the semanic package. It runs all
+// of the semanic checks and generates the IR for the backend.
+func Check(n parse.Node) string {
+	t, ok := n.(*parse.Tree)
+	if !ok {
+		log.Fatal("Needed a tree.")
 	}
-	// require a package statement
-	if len(t.Kids) == 0 {
-		log.Fatal("Requires a package statement")
+	if t.Valid() != true {
+		errs := collectErrors(t)
+		for _, s := range errs {
+			fmt.Println(s)
+		}
+		log.Fatal("Tree is not valid ):")
 	}
-	return root(s, t)
+	errs := createStables(t)
+	if len(errs) != 0 {
+		log.Fatal(errs)
+	}
+	return "yay"
 }
 
-// guaranteed to have at least one kid
-func root(s *stable, t *parse.Tree) []string {
-	msgs := make([]string, 0, 1)
-	p, err := AssertPkg(t.Kids[0])
-	if err != nil {
-		return []string{"error: package statement must be first in file"}
-	}
-	// get all import statements
-	i := 1
-	for ; i < len(t.Kids); i++ {
-		k := t.Kids[i]
-		switch k.(type) {
-		case *parse.Impts:
-			// do something with imports
-		default:
-			break
+// allChildren will iterate through every single child for a node
+// and thrown them down "kids". Does a depth-first search of the
+// tree.
+// Closes kids when done.
+// NOTE on the api, should it be (node, kids) or (kids, node)?
+func allChildren(node parse.Node, kids chan<- parse.Node) {
+	// Preamble: set up first channel in stack.
+	// chans is a stack. New channels are pushed and popped on
+	// the right.
+	defer close(kids)
+	chans := make([]chan parse.Node, 0, 1)
+	chans = append(chans, make(chan parse.Node))
+	go node.Children(chans[0])
+	for len(chans) != 0 {
+		next, ok := <-chans[len(chans)-1]
+		if !ok {
+			// The channel has closed, pop it off the
+			// stack.
+			chans = chans[:len(chans)-1]
+			continue
 		}
+		// next is a node. Create a new channel to recieve
+		// its children and push it into the stack.
+		chans = append(chans, make(chan parse.Node))
+		go next.Children(chans[len(chans)-1])
+		// Pass next to kids.
+		kids <- next
 	}
-	for i := 1; i < len(t.Kids); i++ {
-		k := t.Kids[i]
-		switch k.(type) {
-		case *parse.Pkg:
-			return "error: only one package statement per file"
-		case *parse.Impts:
-			return "error: imports must be declared before all other declarations"
-		case *parse.Consts:
-			consts(s, k.(*parse.Consts))
-		case *parse.Typ:
-			typ(s, k.(*parse.Typ))
-		case *parse.Vars:
-			vars(s, k.(*parse.Vars))
+}
 
+// Collects all the errors starting at node from Erro nodes.
+func collectErrors(node parse.Node) []string {
+	// Preamble.
+	errors := make([]string, 0, 5)
+	nodes := make(chan parse.Node)
+	go allChildren(node, nodes)
+	// Collect errors.
+	for n := range nodes {
+		switch n.(type) {
+		case *parse.Erro:
+			e := n.(*parse.Erro)
+			errors = append(errors, e.Desc)
+		default:
+			if n.Valid() == false {
+				fmt.Println("INVALID:", n)
+			}
 		}
 	}
+	return errors
+}
+
+func createStables(t *parse.Tree) []string {
+	// Let's initialize errors so we can report any we see
+	errs := make([]string, 0)
+	// First, let's create an Stable to hold the information
+	// about the root tree's children.
+	//rootStable := NewStable(nil)
+	// We're going to iterate through t's children and add them
+	// to rootStable.
+	kids := make(chan parse.Node)
+	go t.Children(kids)
+	for kid := range kids {
+		switch kid.(type) {
+		case *parse.Pkg:
+			break
+		case *parse.Impts:
+			break
+		case *parse.Funcdecl:
+			fmt.Println("FOUND", kid)
+		case *parse.Consts:
+			fmt.Println("FOUND", kid)
+		case *parse.Vars:
+			fmt.Println("FOUND", kid)
+		default:
+			errs = append(errs, kid.String())
+		}
+	}
+	return errs
 }

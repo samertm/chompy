@@ -12,17 +12,21 @@ type NodeInfo struct {
 	up *NodeInfo
 	// We need to store the actual value.
 	// TODO create a type for val
-	Val interface{}
+	Val  interface{}
 }
 
 // Okay, let's create our Type type. Type will hold all the
 // information we need to generate code for a specific type.
 type Type interface {
 	Equal(Type) bool
+	String() string
 }
 
 type Func struct {
+	// Might not need this for anonymous functions
+	Name *Basic
 	Args []Type
+	Result []Type
 }
 
 func (f *Func) Equal(t Type) bool {
@@ -30,19 +34,37 @@ func (f *Func) Equal(t Type) bool {
 	if !ok {
 		return false
 	}
-	if len(f.Args) != len(fn.Args) {
+	// Check the names and results for equality.
+	// NOTE I'm not sure if I need this, or if this will work
+	// with closures.
+	return f.Name.Equal(fn) && typesEqual(f.Result, fn.Result) &&
+		typesEqual(f.Args, fn.Args)
+}
+
+func typesEqual(types0, types1 []Type) bool {
+	if len(types0) != len(types1) {
 		return false
 	}
-	for i := 0; i < len(f.Args); i++ {
-		if f.Args[i].Equal(fn.Args[i]) == false {
+	for i := 0; i < len(types0); i++ {
+		if types0[i].Equal(types1[i]) == false {
 			return false
 		}
 	}
 	return true
 }
 
+func (f *Func) String() string {
+	s := "func: " + f.Name.String() + "\n"
+	s += "args: "
+	for _, a := range f.Args {
+		s += a.String() + "\n"
+	}
+	return s
+}
+
 // Represents all types that are not functions
 type Basic struct {
+	Pkg string
 	Name string
 	// this is a pointer type if true
 	Pointer bool
@@ -53,11 +75,19 @@ func (b *Basic) Equal(t Type) bool {
 	if !ok {
 		return false
 	}
-	return b.Name == ba.Name && b.Pointer == ba.Pointer
+	return b.Pkg == ba.Pkg && b.Name == ba.Name && b.Pointer == ba.Pointer
+}
+
+func (b *Basic) String() string {
+	s := "pkg: " + b.Pkg + " name: " + b.Name
+	if b.Pointer {
+		s += " *"
+	}
+	return s
 }
 
 type Struct struct {
-	Name   string
+	Name   *Basic
 	Fields []Type
 }
 
@@ -76,6 +106,15 @@ func (s *Struct) Equal(t Type) bool {
 		}
 	}
 	return true
+}
+
+func (s *Struct) String() string {
+	str := "struct: " + s.Name.String() + "\n"
+	str += "fields: "
+	for _, f := range s.Fields {
+		str += f.String()
+	}
+	return str
 }
 
 type Stable struct {

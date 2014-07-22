@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/samertm/chompy/parse"
 	"github.com/samertm/chompy/semantic/stable"
@@ -30,12 +31,23 @@ func Check(n parse.Node) string {
 	return "yay"
 }
 
-// allChildren will iterate through every single child for a node
-// and thrown them down "kids". Does a depth-first search of the
-// tree.
+// Walks through all children
+func walkAll(node parse.Node, kids chan<- parse.Node) {
+	walkAllHooks(node, kids, nil)
+}
+
+// walkAllHooks will iterate through every single child for a node
+// and thrown them down "kids", and does dispatch based on the type
+// of the node from "hooks". Does a depth-first search of the tree.
 // Closes kids when done.
+//
+// hooks is a map from strings (in the form "*parse.TYPE" to match
+// the node types, which are all pointers and mostly from the package
+// "parse") to functions. The function returns a bool indicating
+// whether we should walk through the
+//
 // NOTE on the api, should it be (node, kids) or (kids, node)?
-func allChildren(node parse.Node, kids chan<- parse.Node) {
+func walkAllHooks(node parse.Node, kids chan<- parse.Node, hooks map[string]func(parse.Node) bool) {
 	// Preamble: set up first channel in stack.
 	// chans is a stack. New channels are pushed and popped on
 	// the right.
@@ -53,8 +65,29 @@ func allChildren(node parse.Node, kids chan<- parse.Node) {
 		}
 		// next is a node. Create a new channel to recieve
 		// its children and push it into the stack.
+		if hooks == nil {
+			goto APPEND
+		} else {
+			// We need to look inside hooks and dispatch
+			// based on the type of next. I assume that
+			// reflect is expensive, so we don't take
+			// this path if hooks is nil.
+			typ := reflect.TypeOf(node).String()
+			fn, ok := hooks[typ]
+			if !ok {
+				goto APPEND
+			} else {
+				val := fn(next)
+				if val {
+					goto APPEND
+				}
+				goto NEXT
+			}
+		}
+	APPEND:
 		chans = append(chans, make(chan parse.Node))
 		go next.Children(chans[len(chans)-1])
+	NEXT:
 		// Pass next to kids.
 		kids <- next
 	}
@@ -65,7 +98,7 @@ func collectErrors(node parse.Node) []string {
 	// Preamble.
 	errors := make([]string, 0, 5)
 	nodes := make(chan parse.Node)
-	go allChildren(node, nodes)
+	go walkAll(node, nodes)
 	// Collect errors.
 	for n := range nodes {
 		switch n.(type) {
@@ -86,6 +119,9 @@ func collectErrors(node parse.Node) []string {
 // NOTE this may be better off in the package stable, but I can't put
 // it there because it accepts a parse.Node.
 func createType(node parse.Node) (stable.Type, error) {
+	if node == nil {
+		return nil, errors.New("Recieved nil type")
+	}
 	switch n := node.(type) {
 	case *parse.Typ:
 		return createType(n.T)
@@ -134,8 +170,6 @@ func createType(node parse.Node) (stable.Type, error) {
 		}
 	case *parse.Typespec:
 		return createType(n.Typ)
-	case *parse.Varspec:
-		return createType(n.T)
 	case *parse.Funcdecl:
 		// NOTE Might be able to break this into another case
 		// statement (so that most of it gets handled by, say
@@ -234,20 +268,29 @@ func createStables(t *parse.Tree) []string {
 	kids := make(chan parse.Node)
 	go t.Children(kids)
 	for kid := range kids {
-		switch kid.(type) {
+		switch k := kid.(type) {
 		case *parse.Pkg:
 			break
 		case *parse.Impts:
 			break
 		case *parse.Funcdecl:
-			fmt.Println("FOUND", kid)
+			fmt.Println("FOUND", k)
 		case *parse.Consts:
-			fmt.Println("FOUND", kid)
+			fmt.Println("FOUND", k)
 		case *parse.Vars:
-			fmt.Println("FOUND", kid)
+			// for _, v := range k.Vs {
+			// }
 		default:
-			errs = append(errs, kid.String())
+			errs = append(errs, k.String())
 		}
 	}
 	return errs
+}
+
+// This phase rewrites Varspec, (add nodes) into Assign and Decl
+// nodes. I'm not sure if I should name it rewrite01 (to show the
+// order these rewrites should be done in)...
+func rewriteDeclAssign(t *parse.Tree) []string {
+	// stumpyyyyyyyyyy
+	return make([]string, 0)
 }

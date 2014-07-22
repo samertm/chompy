@@ -46,8 +46,21 @@ func collectErrors(t *parse.Tree) []string {
 
 // This phase adds the "up" pointer to every node in the tree.
 func addUp(t *parse.Tree) []string {
-	// stumpyyyyyyyyyy
-	return make([]string, 0)
+	// Preamble.
+	var allFn walkFn
+	allFn = func(n parse.Node) bool {
+		ch := make(chan parse.Node)
+		go n.Children(ch)
+		for kid := range ch {
+			kid.SetUp(n)
+		}
+		return true
+	}
+	all := map[string]walkFn{
+		"all": allFn,
+	}
+	walkAllHooks(t, nil, all)
+	return nil
 }
 
 // This phase rewrites Varspec, (add nodes) into Assign and Decl

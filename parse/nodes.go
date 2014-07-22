@@ -12,6 +12,7 @@ type Node interface {
 	// Added interface to make accessing the parent node more
 	// convenient.
 	Up() Node
+	SetUp(Node)
 	// gets the immediate children (no grandchildren) of the Node
 	// used for walking the tree
 	Children(chan<- Node)
@@ -27,6 +28,10 @@ type Tree struct {
 
 func (t *Tree) Up() Node {
 	return t.Up
+}
+
+func (t *Tree) SetUp(n Node) {
+	t.Up = n
 }
 
 // NOTE do i need this?
@@ -73,6 +78,10 @@ func (p *Pkg) Up() Node {
 	return p.Up
 }
 
+func (p *Pkg) SetUp(n Node) {
+	p.Up = n
+}
+
 func (p *Pkg) Children(c chan<- Node) {
 	defer close(c)
 	return
@@ -93,6 +102,10 @@ type Impts struct {
 
 func (i *Impts) Up() Node {
 	return i.Up
+}
+
+func (i *Impts) SetUp(n Node) {
+	i.Up = n
 }
 
 func (i *Impts) Children(c chan<- Node) {
@@ -132,6 +145,10 @@ func (i *Impt) Up() Node {
 	return i.Up
 }
 
+func (i *Impt) SetUp(n Node) {
+	i.Up = n
+}
+
 func (i *Impt) Children(c chan<- Node) {
 	defer close(c)
 	return
@@ -154,6 +171,10 @@ func (e *Erro) Up() Node {
 	return e.Up
 }
 
+func (e *Erro) SetUp(n Node) {
+	e.Up = n
+}
+
 func (e *Erro) Children(c chan<- Node) {
 	defer close(c)
 	return
@@ -174,6 +195,10 @@ type Consts struct {
 
 func (con *Consts) Up() Node {
 	return con.Up
+}
+
+func (con *Consts) SetUp(n Node) {
+	con.Up = n
 }
 
 func (con *Consts) Children(c chan<- Node) {
@@ -213,6 +238,10 @@ type Cnst struct {
 
 func (con *Cnst) Up() Node {
 	return con.Up
+}
+
+func (con *Cnst) SetUp(n Node) {
+	con.Up = n
 }
 
 func (con *Cnst) Children(c chan<- Node) {
@@ -256,6 +285,10 @@ func (i *Idents) Up() Node {
 	return i.Up
 }
 
+func (i *Idents) SetUp(n Node) {
+	i.Up = n
+}
+
 func (i *Idents) Children(c chan<- Node) {
 	defer close(c)
 	for _, id := range i.Is {
@@ -291,6 +324,10 @@ func (l *Lit) Up() Node {
 	return l.Up
 }
 
+func (l *Lit) SetUp(n Node) {
+	l.Up = n
+}
+
 func (l *Lit) Children(c chan<- Node) {
 	defer close(c)
 	return
@@ -311,6 +348,10 @@ type OpName struct {
 
 func (o *OpName) Up() Node {
 	return o.Up
+}
+
+func (o *OpName) SetUp(n Node) {
+	o.Up = n
 }
 
 func (o *OpName) Children(c chan<- Node) {
@@ -336,6 +377,10 @@ type Exprs struct {
 
 func (e *Exprs) Up() Node {
 	return e.Up
+}
+
+func (e *Exprs) SetUp(n Node) {
+	e.Up = n
 }
 
 func (e *Exprs) Children(c chan<- Node) {
@@ -373,6 +418,10 @@ type Expr struct {
 
 func (e *Expr) Up() Node {
 	return e.Up
+}
+
+func (e *Expr) SetUp(n Node) {
+	e.Up = n
 }
 
 func (e *Expr) Children(c chan<- Node) {
@@ -417,6 +466,10 @@ func (u *UnaryE) Up() Node {
 	return u.Up
 }
 
+func (u *UnaryE) SetUp(n Node) {
+	u.Up = n
+}
+
 func (u *UnaryE) Children(c chan<- Node) {
 	defer close(c)
 	if u.Expr != nil {
@@ -443,6 +496,10 @@ type PrimaryE struct {
 
 func (p *PrimaryE) Up() Node {
 	return p.Up
+}
+
+func (p *PrimaryE) SetUp(n Node) {
+	p.Up = n
 }
 
 func (p *PrimaryE) Children(c chan<- Node) {
@@ -480,6 +537,10 @@ func (t *Typ) Up() Node {
 	return t.Up
 }
 
+func (t *Typ) SetUp(n Node) {
+	t.Up = n
+}
+
 func (t *Typ) Children(c chan<- Node) {
 	defer close(c)
 	if t.T != nil {
@@ -502,6 +563,10 @@ type Ident struct {
 
 func (i *Ident) Up() Node {
 	return i.Up
+}
+
+func (i *Ident) SetUp(n Node) {
+	i.Up = n
 }
 
 func (i *Ident) Children(c chan<- Node) {
@@ -527,6 +592,10 @@ func (q *QualifiedIdent) Up() Node {
 	return q.Up
 }
 
+func (q *QualifiedIdent) SetUp(n Node) {
+	q.Up = n
+}
+
 func (q *QualifiedIdent) Children(c chan<- Node) {
 	defer close(c)
 	return
@@ -547,6 +616,10 @@ type Types struct {
 
 func (t *Types) Up() Node {
 	return t.Up
+}
+
+func (t *Types) SetUp(n Node) {
+	t.Up = n
 }
 
 func (t *Types) Children(c chan<- Node) {
@@ -586,6 +659,10 @@ func (t *Typespec) Up() Node {
 	return t.Up
 }
 
+func (t *Typespec) SetUp(n Node) {
+	t.Up = n
+}
+
 func (t *Typespec) Children(c chan<- Node) {
 	defer close(c)
 	if t.I != nil {
@@ -619,6 +696,10 @@ type Vars struct {
 
 func (v *Vars) Up() Node {
 	return v.Up
+}
+
+func (v *Vars) SetUp(n Node) {
+	v.Up = n
 }
 
 func (v *Vars) Children(c chan<- Node) {
@@ -657,6 +738,10 @@ type Varspec struct {
 
 func (v *Varspec) Up() Node {
 	return v.Up
+}
+
+func (v *Varspec) SetUp(n Node) {
+	v.Up = n
 }
 
 func (v *Varspec) Children(c chan<- Node) {
@@ -707,6 +792,10 @@ func (f *Funcdecl) Up() Node {
 	return f.Up
 }
 
+func (f *Funcdecl) SetUp(n Node) {
+	f.Up = n
+}
+
 func (f *Funcdecl) Children(c chan<- Node) {
 	defer close(c)
 	if f.Name != nil {
@@ -744,6 +833,10 @@ func (f *Func) Up() Node {
 	return f.Up
 }
 
+func (f *Func) SetUp(n Node) {
+	f.Up = n
+}
+
 func (f *Func) Children(c chan<- Node) {
 	defer close(c)
 	if f.Sig != nil {
@@ -777,6 +870,10 @@ type Sig struct {
 
 func (s *Sig) Up() Node {
 	return s.Up
+}
+
+func (s *Sig) SetUp(n Node) {
+	s.Up = n
 }
 
 func (s *Sig) Children(c chan<- Node) {
@@ -819,6 +916,10 @@ func (s *Stmts) Up() Node {
 	return s.Up
 }
 
+func (s *Stmts) SetUp(n Node) {
+	s.Up = n
+}
+
 func (s *Stmts) Children(c chan<- Node) {
 	defer close(c)
 	for _, ss := range s.Stmts {
@@ -853,6 +954,10 @@ func (s *Stmt) Up() Node {
 	return s.Up
 }
 
+func (s *Stmt) SetUp(n Node) {
+	s.Up = n
+}
+
 func (s *Stmt) Children(c chan<- Node) {
 	defer close(c)
 	if s.S != nil {
@@ -878,6 +983,10 @@ type Result struct {
 
 func (r *Result) Up() Node {
 	return r.Up
+}
+
+func (r *Result) SetUp(n Node) {
+	r.Up = n
 }
 
 func (r *Result) Children(c chan<- Node) {
@@ -907,6 +1016,10 @@ type Params struct {
 
 func (p *Params) Up() Node {
 	return p.Up
+}
+
+func (p *Params) SetUp(n Node) {
+	p.Up = n
 }
 
 func (p *Params) Children(c chan<- Node) {
@@ -947,6 +1060,10 @@ func (p *Param) Up() Node {
 	return p.Up
 }
 
+func (p *Param) SetUp(n Node) {
+	p.Up = n
+}
+
 func (p *Param) Children(c chan<- Node) {
 	defer close(c)
 	if p.Idents != nil {
@@ -985,6 +1102,10 @@ func (b *Block) Up() Node {
 	return b.Up
 }
 
+func (b *Block) SetUp(n Node) {
+	b.Up = n
+}
+
 func (b *Block) Children(c chan<- Node) {
 	defer close(c)
 	if b.Stmts != nil {
@@ -1011,6 +1132,10 @@ type LabeledStmt struct {
 
 func (l *LabeledStmt) Up() Node {
 	return l.Up
+}
+
+func (l *LabeledStmt) SetUp(n Node) {
+	l.Up = n
 }
 
 func (l *LabeledStmt) Children(c chan<- Node) {
@@ -1040,6 +1165,10 @@ func (e *ExprStmt) Up() Node {
 	return e.Up
 }
 
+func (e *ExprStmt) SetUp(n Node) {
+	e.Up = n
+}
+
 func (e *ExprStmt) Children(c chan<- Node) {
 	defer close(c)
 	if e.Expr != nil {
@@ -1063,6 +1192,10 @@ type SendStmt struct {
 
 func (s *SendStmt) Up() Node {
 	return s.Up
+}
+
+func (s *SendStmt) SetUp(n Node) {
+	s.Up = n
 }
 
 func (s *SendStmt) Children(c chan<- Node) {
@@ -1093,6 +1226,10 @@ func (i *IncDecStmt) Up() Node {
 	return i.Up
 }
 
+func (i *IncDecStmt) SetUp(n Node) {
+	i.Up = n
+}
+
 func (i *IncDecStmt) Children(c chan<- Node) {
 	defer close(c)
 	if i.Expr != nil {
@@ -1118,6 +1255,10 @@ type Assign struct {
 
 func (a *Assign) Up() Node {
 	return a.Up
+}
+
+func (a *Assign) SetUp(n Node) {
+	a.Up = n
 }
 
 func (a *Assign) Children(c chan<- Node) {
@@ -1152,6 +1293,10 @@ type IfStmt struct {
 
 func (i *IfStmt) Up() Node {
 	return i.Up
+}
+
+func (i *IfStmt) SetUp(n Node) {
+	i.Up = n
 }
 
 func (i *IfStmt) Children(c chan<- Node) {
@@ -1198,6 +1343,10 @@ func (f *ForStmt) Up() Node {
 	return f.Up
 }
 
+func (f *ForStmt) SetUp(n Node) {
+	f.Up = n
+}
+
 func (f *ForStmt) Children(c chan<- Node) {
 	defer close(c)
 	if f.Clause != nil {
@@ -1228,6 +1377,10 @@ type ForClause struct {
 
 func (f *ForClause) Up() Node {
 	return f.Up
+}
+
+func (f *ForClause) SetUp(n Node) {
+	f.Up = n
 }
 
 func (f *ForClause) Children(c chan<- Node) {
@@ -1272,6 +1425,10 @@ func (r *RangeClause) Up() Node {
 	return r.Up
 }
 
+func (r *RangeClause) SetUp(n Node) {
+	r.Up = n
+}
+
 func (r *RangeClause) Children(c chan<- Node) {
 	defer close(c)
 	if r.ExprsOrIdents != nil {
@@ -1303,6 +1460,10 @@ func (g *GoStmt) Up() Node {
 	return g.Up
 }
 
+func (g *GoStmt) SetUp(n Node) {
+	g.Up = n
+}
+
 func (g *GoStmt) Children(c chan<- Node) {
 	defer close(c)
 	if g.Expr != nil {
@@ -1325,6 +1486,10 @@ type ReturnStmt struct {
 
 func (r *ReturnStmt) Up() Node {
 	return r.Up
+}
+
+func (r *ReturnStmt) SetUp(n Node) {
+	r.Up = n
 }
 
 func (r *ReturnStmt) Children(c chan<- Node) {
@@ -1356,6 +1521,10 @@ func (b *BreakStmt) Up() Node {
 	return b.Up
 }
 
+func (b *BreakStmt) SetUp(n Node) {
+	b.Up = n
+}
+
 func (b *BreakStmt) Children(c chan<- Node) {
 	defer close(c)
 	if b.Label != nil {
@@ -1383,6 +1552,10 @@ type ContinueStmt struct {
 
 func (con *ContinueStmt) Up() Node {
 	return con.Up
+}
+
+func (con *ContinueStmt) SetUp(n Node) {
+	con.Up = n
 }
 
 func (con *ContinueStmt) Children(c chan<- Node) {
@@ -1414,6 +1587,10 @@ func (g *GotoStmt) Up() Node {
 	return g.Up
 }
 
+func (g *GotoStmt) SetUp(n Node) {
+	g.Up = n
+}
+
 func (g *GotoStmt) Children(c chan<- Node) {
 	defer close(c)
 	if g.Label != nil {
@@ -1437,6 +1614,10 @@ func (f *Fallthrough) Up() Node {
 	return f.Up
 }
 
+func (f *Fallthrough) SetUp(n Node) {
+	f.Up = n
+}
+
 func (f *Fallthrough) Children(c chan<- Node) {
 	defer close(c)
 	return
@@ -1457,6 +1638,10 @@ type DeferStmt struct {
 
 func (d *DeferStmt) Up() Node {
 	return d.Up
+}
+
+func (d *DeferStmt) SetUp(n Node) {
+	d.Up = n
 }
 
 func (d *DeferStmt) Children(c chan<- Node) {
@@ -1482,6 +1667,10 @@ type ShortVarDecl struct {
 
 func (s *ShortVarDecl) Up() Node {
 	return s.Up
+}
+
+func (s *ShortVarDecl) SetUp(n Node) {
+	s.Up = n
 }
 
 func (s *ShortVarDecl) Children(c chan<- Node) {
@@ -1513,6 +1702,10 @@ func (e *EmptyStmt) Up() Node {
 	return e.Up
 }
 
+func (e *EmptyStmt) SetUp(n Node) {
+	e.Up = n
+}
+
 func (e *EmptyStmt) Children(c chan<- Node) {
 	defer close(c)
 	return
@@ -1534,6 +1727,10 @@ type Conversion struct {
 
 func (con *Conversion) Up() Node {
 	return con.Up
+}
+
+func (con *Conversion) SetUp(n Node) {
+	con.Up = n
 }
 
 func (con *Conversion) Children(c chan<- Node) {
@@ -1567,6 +1764,10 @@ type Builtin struct {
 
 func (b *Builtin) Up() Node {
 	return b.Up
+}
+
+func (b *Builtin) SetUp(n Node) {
+	b.Up = n
 }
 
 func (b *Builtin) Children(c chan<- Node) {
@@ -1609,6 +1810,10 @@ func (s *Selector) Up() Node {
 	return s.Up
 }
 
+func (s *Selector) SetUp(n Node) {
+	s.Up = n
+}
+
 func (s *Selector) Children(c chan<- Node) {
 	defer close(c)
 	if s.Ident != nil {
@@ -1631,6 +1836,10 @@ type Index struct {
 
 func (i *Index) Up() Node {
 	return i.Up
+}
+
+func (i *Index) SetUp(n Node) {
+	i.Up = n
 }
 
 func (i *Index) Children(c chan<- Node) {
@@ -1657,6 +1866,10 @@ type Slice struct {
 
 func (s *Slice) Up() Node {
 	return s.Up
+}
+
+func (s *Slice) SetUp(n Node) {
+	s.Up = n
 }
 
 func (s *Slice) Children(c chan<- Node) {
@@ -1718,6 +1931,10 @@ func (t *TypeAssertion) Up() Node {
 	return t.Up
 }
 
+func (t *TypeAssertion) SetUp(n Node) {
+	t.Up = n
+}
+
 func (t *TypeAssertion) Children(c chan<- Node) {
 	defer close(c)
 	if t.Typ != nil {
@@ -1740,6 +1957,10 @@ type Call struct {
 
 func (con *Call) Up() Node {
 	return con.Up
+}
+
+func (con *Call) SetUp(n Node) {
+	con.Up = n
 }
 
 func (con *Call) Children(c chan<- Node) {
@@ -1773,6 +1994,10 @@ type Args struct {
 
 func (a *Args) Up() Node {
 	return a.Up
+}
+
+func (a *Args) SetUp(n Node) {
+	a.Up = n
 }
 
 func (a *Args) Children(c chan<- Node) {

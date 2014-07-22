@@ -14,6 +14,10 @@ func (d *Decl) Up() Node {
 	return d.Up
 }
 
+func (d *Decl) SetUp(n Node) {
+	d.Up = n
+}
+
 func (d *Decl) Children(c chan<- parse.Node) {
 	defer close(c)
 	if d.I != nil {
@@ -53,6 +57,10 @@ type Assign struct {
 
 func (a *Assign) Up() Node {
 	return a.Up
+}
+
+func (a *Assign) SetUp(n Node) {
+	a.Up = n
 }
 
 func (a *Assign) Children(c chan<- parse.Node) {

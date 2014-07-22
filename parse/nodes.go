@@ -9,6 +9,8 @@ import (
 type Node interface {
 	String() string
 	Valid() bool
+	// Added interface to make accessing the parent node more
+	// convenient.
 	Up() Node
 	// gets the immediate children (no grandchildren) of the Node
 	// used for walking the tree

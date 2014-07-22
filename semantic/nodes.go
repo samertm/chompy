@@ -10,6 +10,10 @@ type Decl struct {
 	Const bool
 }
 
+func (d *Decl) Up() Node {
+	return d.Up
+}
+
 func (d *Decl) Children(c chan<- parse.Node) {
 	defer close(c)
 	if d.I != nil {
@@ -45,6 +49,10 @@ type Assign struct {
 	Up Node
 	I  *parse.Ident
 	E  *parse.Expr
+}
+
+func (a *Assign) Up() Node {
+	return a.Up
 }
 
 func (a *Assign) Children(c chan<- parse.Node) {

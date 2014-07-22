@@ -21,17 +21,17 @@ type Node interface {
 type grammarFn func(*parser) Node
 
 type Tree struct {
-	Up         Node
 	RootStable *stable.Stable
 	Kids       []Node
+	up         Node
 }
 
 func (t *Tree) Up() Node {
-	return t.Up
+	return t.up
 }
 
 func (t *Tree) SetUp(n Node) {
-	t.Up = n
+	t.up = n
 }
 
 // NOTE do i need this?
@@ -70,16 +70,17 @@ func (t *Tree) String() (s string) {
 }
 
 type Pkg struct {
-	Up   Node
 	Name string
+		up   Node
+
 }
 
 func (p *Pkg) Up() Node {
-	return p.Up
+	return p.up
 }
 
 func (p *Pkg) SetUp(n Node) {
-	p.Up = n
+	p.up = n
 }
 
 func (p *Pkg) Children(c chan<- Node) {
@@ -96,16 +97,17 @@ func (p *Pkg) String() string {
 }
 
 type Impts struct {
-	Up      Node
 	Imports []Node
+		up      Node
+
 }
 
 func (i *Impts) Up() Node {
-	return i.Up
+	return i.up
 }
 
 func (i *Impts) SetUp(n Node) {
-	i.Up = n
+	i.up = n
 }
 
 func (i *Impts) Children(c chan<- Node) {
@@ -136,17 +138,18 @@ func (i *Impts) String() (s string) {
 }
 
 type Impt struct {
-	Up       Node
 	PkgName  string
 	ImptName string
+		up       Node
+
 }
 
 func (i *Impt) Up() Node {
-	return i.Up
+	return i.up
 }
 
 func (i *Impt) SetUp(n Node) {
-	i.Up = n
+	i.up = n
 }
 
 func (i *Impt) Children(c chan<- Node) {
@@ -163,16 +166,17 @@ func (i *Impt) String() string {
 }
 
 type Erro struct {
-	Up   Node
 	Desc string
 }
 
+// Up and SetUp are nops for the error type, because they get removed
+// in the first semantic pass, and it breaks too much of the grammar.
 func (e *Erro) Up() Node {
-	return e.Up
+	return nil
 }
 
+// nop
 func (e *Erro) SetUp(n Node) {
-	e.Up = n
 }
 
 func (e *Erro) Children(c chan<- Node) {
@@ -189,16 +193,17 @@ func (e *Erro) String() string {
 }
 
 type Consts struct {
-	Up Node
 	Cs []Node // consts
+		up Node
+
 }
 
 func (con *Consts) Up() Node {
-	return con.Up
+	return con.up
 }
 
 func (con *Consts) SetUp(n Node) {
-	con.Up = n
+	con.up = n
 }
 
 func (con *Consts) Children(c chan<- Node) {
@@ -230,18 +235,19 @@ func (c *Consts) String() (s string) {
 
 // const
 type Cnst struct {
-	Up Node
 	Is Node // idents
 	T  Node
 	Es Node // expressions
+		up Node
+
 }
 
 func (con *Cnst) Up() Node {
-	return con.Up
+	return con.up
 }
 
 func (con *Cnst) SetUp(n Node) {
-	con.Up = n
+	con.up = n
 }
 
 func (con *Cnst) Children(c chan<- Node) {
@@ -277,16 +283,17 @@ func (c *Cnst) String() (s string) {
 }
 
 type Idents struct {
-	Up Node
 	Is []Node
+		up Node
+
 }
 
 func (i *Idents) Up() Node {
-	return i.Up
+	return i.up
 }
 
 func (i *Idents) SetUp(n Node) {
-	i.Up = n
+	i.up = n
 }
 
 func (i *Idents) Children(c chan<- Node) {
@@ -315,17 +322,18 @@ func (i *Idents) String() (s string) {
 }
 
 type Lit struct {
-	Up  Node
 	Typ string
 	Val string
+		up  Node
+
 }
 
 func (l *Lit) Up() Node {
-	return l.Up
+	return l.up
 }
 
 func (l *Lit) SetUp(n Node) {
-	l.Up = n
+	l.up = n
 }
 
 func (l *Lit) Children(c chan<- Node) {
@@ -342,16 +350,17 @@ func (l *Lit) String() string {
 }
 
 type OpName struct {
-	Up Node
 	Id Node
+		up Node
+
 }
 
 func (o *OpName) Up() Node {
-	return o.Up
+	return o.up
 }
 
 func (o *OpName) SetUp(n Node) {
-	o.Up = n
+	o.up = n
 }
 
 func (o *OpName) Children(c chan<- Node) {
@@ -371,16 +380,17 @@ func (o *OpName) String() string {
 
 // expression list
 type Exprs struct {
-	Up Node
 	Es []Node
+		up Node
+
 }
 
 func (e *Exprs) Up() Node {
-	return e.Up
+	return e.up
 }
 
 func (e *Exprs) SetUp(n Node) {
-	e.Up = n
+	e.up = n
 }
 
 func (e *Exprs) Children(c chan<- Node) {
@@ -410,18 +420,19 @@ func (e *Exprs) String() (s string) {
 
 // expression list
 type Expr struct {
-	Up      Node
 	BinOp   string
 	FirstN  Node
 	SecondN Node
+		up      Node
+
 }
 
 func (e *Expr) Up() Node {
-	return e.Up
+	return e.up
 }
 
 func (e *Expr) SetUp(n Node) {
-	e.Up = n
+	e.up = n
 }
 
 func (e *Expr) Children(c chan<- Node) {
@@ -457,17 +468,18 @@ func (e *Expr) String() (s string) {
 }
 
 type UnaryE struct {
-	Up   Node
 	Op   string // Operand
 	Expr Node
+		up   Node
+
 }
 
 func (u *UnaryE) Up() Node {
-	return u.Up
+	return u.up
 }
 
 func (u *UnaryE) SetUp(n Node) {
-	u.Up = n
+	u.up = n
 }
 
 func (u *UnaryE) Children(c chan<- Node) {
@@ -489,17 +501,18 @@ func (u *UnaryE) String() (s string) {
 
 // PrimaryExprPrimes are also PrimaryExprs
 type PrimaryE struct {
-	Up    Node
 	Expr  Node
 	Prime Node
+		up    Node
+
 }
 
 func (p *PrimaryE) Up() Node {
-	return p.Up
+	return p.up
 }
 
 func (p *PrimaryE) SetUp(n Node) {
-	p.Up = n
+	p.up = n
 }
 
 func (p *PrimaryE) Children(c chan<- Node) {
@@ -529,16 +542,17 @@ func (p *PrimaryE) String() (s string) {
 }
 
 type Typ struct {
-	Up Node
 	T  Node
+		up Node
+
 }
 
 func (t *Typ) Up() Node {
-	return t.Up
+	return t.up
 }
 
 func (t *Typ) SetUp(n Node) {
-	t.Up = n
+	t.up = n
 }
 
 func (t *Typ) Children(c chan<- Node) {
@@ -557,16 +571,17 @@ func (t *Typ) String() string {
 }
 
 type Ident struct {
-	Up   Node
 	Name string
+		up   Node
+
 }
 
 func (i *Ident) Up() Node {
-	return i.Up
+	return i.up
 }
 
 func (i *Ident) SetUp(n Node) {
-	i.Up = n
+	i.up = n
 }
 
 func (i *Ident) Children(c chan<- Node) {
@@ -583,17 +598,18 @@ func (i *Ident) String() string {
 }
 
 type QualifiedIdent struct {
-	Up    Node
 	Pkg   string
 	Ident string
+		up    Node
+
 }
 
 func (q *QualifiedIdent) Up() Node {
-	return q.Up
+	return q.up
 }
 
 func (q *QualifiedIdent) SetUp(n Node) {
-	q.Up = n
+	q.up = n
 }
 
 func (q *QualifiedIdent) Children(c chan<- Node) {
@@ -610,16 +626,17 @@ func (q *QualifiedIdent) String() string {
 }
 
 type Types struct {
-	Up       Node
 	Typspecs []Node
+		up       Node
+
 }
 
 func (t *Types) Up() Node {
-	return t.Up
+	return t.up
 }
 
 func (t *Types) SetUp(n Node) {
-	t.Up = n
+	t.up = n
 }
 
 func (t *Types) Children(c chan<- Node) {
@@ -650,17 +667,18 @@ func (t *Types) String() (s string) {
 }
 
 type Typespec struct {
-	Up  Node
 	I   Node //ident
 	Typ Node //type
+		up  Node
+
 }
 
 func (t *Typespec) Up() Node {
-	return t.Up
+	return t.up
 }
 
 func (t *Typespec) SetUp(n Node) {
-	t.Up = n
+	t.up = n
 }
 
 func (t *Typespec) Children(c chan<- Node) {
@@ -690,16 +708,17 @@ func (t *Typespec) String() (s string) {
 }
 
 type Vars struct {
-	Up Node
 	Vs []Node
+		up Node
+
 }
 
 func (v *Vars) Up() Node {
-	return v.Up
+	return v.up
 }
 
 func (v *Vars) SetUp(n Node) {
-	v.Up = n
+	v.up = n
 }
 
 func (v *Vars) Children(c chan<- Node) {
@@ -730,18 +749,19 @@ func (v *Vars) String() (s string) {
 }
 
 type Varspec struct {
-	Up     Node
 	Idents Node
 	T      Node // type
 	Exprs  Node
+		up     Node
+
 }
 
 func (v *Varspec) Up() Node {
-	return v.Up
+	return v.up
 }
 
 func (v *Varspec) SetUp(n Node) {
-	v.Up = n
+	v.up = n
 }
 
 func (v *Varspec) Children(c chan<- Node) {
@@ -783,17 +803,18 @@ func (v *Varspec) String() (s string) {
 }
 
 type Funcdecl struct {
-	Up        Node
 	Name      Node //ident
 	FuncOrSig Node
+		up        Node
+
 }
 
 func (f *Funcdecl) Up() Node {
-	return f.Up
+	return f.up
 }
 
 func (f *Funcdecl) SetUp(n Node) {
-	f.Up = n
+	f.up = n
 }
 
 func (f *Funcdecl) Children(c chan<- Node) {
@@ -824,17 +845,18 @@ func (f *Funcdecl) String() (s string) {
 }
 
 type Func struct {
-	Up   Node
 	Sig  Node
 	Body Node
+		up   Node
+
 }
 
 func (f *Func) Up() Node {
-	return f.Up
+	return f.up
 }
 
 func (f *Func) SetUp(n Node) {
-	f.Up = n
+	f.up = n
 }
 
 func (f *Func) Children(c chan<- Node) {
@@ -863,17 +885,18 @@ func (f *Func) String() (s string) {
 }
 
 type Sig struct {
-	Up     Node
 	Params Node
 	Result Node
+		up     Node
+
 }
 
 func (s *Sig) Up() Node {
-	return s.Up
+	return s.up
 }
 
 func (s *Sig) SetUp(n Node) {
-	s.Up = n
+	s.up = n
 }
 
 func (s *Sig) Children(c chan<- Node) {
@@ -908,16 +931,17 @@ func (sig *Sig) String() (s string) {
 }
 
 type Stmts struct {
-	Up    Node
 	Stmts []Node
+		up    Node
+
 }
 
 func (s *Stmts) Up() Node {
-	return s.Up
+	return s.up
 }
 
 func (s *Stmts) SetUp(n Node) {
-	s.Up = n
+	s.up = n
 }
 
 func (s *Stmts) Children(c chan<- Node) {
@@ -946,16 +970,17 @@ func (ss *Stmts) String() (s string) {
 }
 
 type Stmt struct {
-	Up Node
 	S  Node
+		up Node
+
 }
 
 func (s *Stmt) Up() Node {
-	return s.Up
+	return s.up
 }
 
 func (s *Stmt) SetUp(n Node) {
-	s.Up = n
+	s.up = n
 }
 
 func (s *Stmt) Children(c chan<- Node) {
@@ -977,16 +1002,17 @@ func (s *Stmt) String() string {
 }
 
 type Result struct {
-	Up          Node
 	ParamsOrTyp Node
+		up          Node
+
 }
 
 func (r *Result) Up() Node {
-	return r.Up
+	return r.up
 }
 
 func (r *Result) SetUp(n Node) {
-	r.Up = n
+	r.up = n
 }
 
 func (r *Result) Children(c chan<- Node) {
@@ -1010,16 +1036,17 @@ func (r *Result) String() (s string) {
 }
 
 type Params struct {
-	Up     Node
 	Params []Node
+		up     Node
+
 }
 
 func (p *Params) Up() Node {
-	return p.Up
+	return p.up
 }
 
 func (p *Params) SetUp(n Node) {
-	p.Up = n
+	p.up = n
 }
 
 func (p *Params) Children(c chan<- Node) {
@@ -1050,18 +1077,19 @@ func (ps *Params) String() (s string) {
 }
 
 type Param struct {
-	Up        Node
 	Idents    Node
 	DotDotDot bool // if true, apply "..." to type
 	Typ       Node
+		up        Node
+
 }
 
 func (p *Param) Up() Node {
-	return p.Up
+	return p.up
 }
 
 func (p *Param) SetUp(n Node) {
-	p.Up = n
+	p.up = n
 }
 
 func (p *Param) Children(c chan<- Node) {
@@ -1094,16 +1122,17 @@ func (p *Param) String() (s string) {
 }
 
 type Block struct {
-	Up    Node
 	Stmts Node
+		up    Node
+
 }
 
 func (b *Block) Up() Node {
-	return b.Up
+	return b.up
 }
 
 func (b *Block) SetUp(n Node) {
-	b.Up = n
+	b.up = n
 }
 
 func (b *Block) Children(c chan<- Node) {
@@ -1125,17 +1154,18 @@ func (b *Block) String() (s string) {
 }
 
 type LabeledStmt struct {
-	Up    Node
 	Label Node // identifier
 	Stmt  Node
+		up    Node
+
 }
 
 func (l *LabeledStmt) Up() Node {
-	return l.Up
+	return l.up
 }
 
 func (l *LabeledStmt) SetUp(n Node) {
-	l.Up = n
+	l.up = n
 }
 
 func (l *LabeledStmt) Children(c chan<- Node) {
@@ -1157,16 +1187,17 @@ func (l *LabeledStmt) String() string {
 }
 
 type ExprStmt struct {
-	Up   Node
 	Expr Node
+		up   Node
+
 }
 
 func (e *ExprStmt) Up() Node {
-	return e.Up
+	return e.up
 }
 
 func (e *ExprStmt) SetUp(n Node) {
-	e.Up = n
+	e.up = n
 }
 
 func (e *ExprStmt) Children(c chan<- Node) {
@@ -1185,17 +1216,18 @@ func (e *ExprStmt) String() string {
 }
 
 type SendStmt struct {
-	Up   Node
 	Chan Node
 	Expr Node
+		up   Node
+
 }
 
 func (s *SendStmt) Up() Node {
-	return s.Up
+	return s.up
 }
 
 func (s *SendStmt) SetUp(n Node) {
-	s.Up = n
+	s.up = n
 }
 
 func (s *SendStmt) Children(c chan<- Node) {
@@ -1217,17 +1249,18 @@ func (s *SendStmt) String() string {
 }
 
 type IncDecStmt struct {
-	Up      Node
 	Expr    Node
 	Postfix string // either "++" or "--"
+		up      Node
+
 }
 
 func (i *IncDecStmt) Up() Node {
-	return i.Up
+	return i.up
 }
 
 func (i *IncDecStmt) SetUp(n Node) {
-	i.Up = n
+	i.up = n
 }
 
 func (i *IncDecStmt) Children(c chan<- Node) {
@@ -1247,18 +1280,19 @@ func (i *IncDecStmt) String() string {
 
 // Assignment = ExpressionList assign_op ExpressionList .
 type Assign struct {
-	Up        Node
 	Op        string // add_op, mul_op, or "="
 	LeftExpr  Node
 	RightExpr Node
+		up        Node
+
 }
 
 func (a *Assign) Up() Node {
-	return a.Up
+	return a.up
 }
 
 func (a *Assign) SetUp(n Node) {
-	a.Up = n
+	a.up = n
 }
 
 func (a *Assign) Children(c chan<- Node) {
@@ -1284,19 +1318,20 @@ func (a *Assign) String() (s string) {
 }
 
 type IfStmt struct {
-	Up         Node
 	SimpleStmt Node
 	Expr       Node
 	Block      Node
 	Else       Node
+		up         Node
+
 }
 
 func (i *IfStmt) Up() Node {
-	return i.Up
+	return i.up
 }
 
 func (i *IfStmt) SetUp(n Node) {
-	i.Up = n
+	i.up = n
 }
 
 func (i *IfStmt) Children(c chan<- Node) {
@@ -1334,17 +1369,18 @@ func (i *IfStmt) String() (s string) {
 }
 
 type ForStmt struct {
-	Up     Node
 	Clause Node // ForClause or Condition
 	Block  Node
+		up     Node
+
 }
 
 func (f *ForStmt) Up() Node {
-	return f.Up
+	return f.up
 }
 
 func (f *ForStmt) SetUp(n Node) {
-	f.Up = n
+	f.up = n
 }
 
 func (f *ForStmt) Children(c chan<- Node) {
@@ -1369,18 +1405,19 @@ func (f *ForStmt) String() (s string) {
 }
 
 type ForClause struct {
-	Up        Node
 	InitStmt  Node
 	Condition Node
 	PostStmt  Node
+		up        Node
+
 }
 
 func (f *ForClause) Up() Node {
-	return f.Up
+	return f.up
 }
 
 func (f *ForClause) SetUp(n Node) {
-	f.Up = n
+	f.up = n
 }
 
 func (f *ForClause) Children(c chan<- Node) {
@@ -1415,18 +1452,19 @@ func (f *ForClause) String() (s string) {
 }
 
 type RangeClause struct {
-	Up            Node
 	ExprsOrIdents Node
 	Op            string // "=" or ":="
 	Expr          Node   // that comes after the op... need a better nayme
+		up            Node
+
 }
 
 func (r *RangeClause) Up() Node {
-	return r.Up
+	return r.up
 }
 
 func (r *RangeClause) SetUp(n Node) {
-	r.Up = n
+	r.up = n
 }
 
 func (r *RangeClause) Children(c chan<- Node) {
@@ -1452,16 +1490,17 @@ func (r *RangeClause) String() (s string) {
 }
 
 type GoStmt struct {
-	Up   Node
 	Expr Node
+		up   Node
+
 }
 
 func (g *GoStmt) Up() Node {
-	return g.Up
+	return g.up
 }
 
 func (g *GoStmt) SetUp(n Node) {
-	g.Up = n
+	g.up = n
 }
 
 func (g *GoStmt) Children(c chan<- Node) {
@@ -1480,16 +1519,17 @@ func (g *GoStmt) String() string {
 }
 
 type ReturnStmt struct {
-	Up    Node
 	Exprs Node
+		up    Node
+
 }
 
 func (r *ReturnStmt) Up() Node {
-	return r.Up
+	return r.up
 }
 
 func (r *ReturnStmt) SetUp(n Node) {
-	r.Up = n
+	r.up = n
 }
 
 func (r *ReturnStmt) Children(c chan<- Node) {
@@ -1513,16 +1553,17 @@ func (r *ReturnStmt) String() (s string) {
 }
 
 type BreakStmt struct {
-	Up    Node
 	Label Node
+		up    Node
+
 }
 
 func (b *BreakStmt) Up() Node {
-	return b.Up
+	return b.up
 }
 
 func (b *BreakStmt) SetUp(n Node) {
-	b.Up = n
+	b.up = n
 }
 
 func (b *BreakStmt) Children(c chan<- Node) {
@@ -1546,16 +1587,17 @@ func (b *BreakStmt) String() (s string) {
 }
 
 type ContinueStmt struct {
-	Up    Node
 	Label Node
+		up    Node
+
 }
 
 func (con *ContinueStmt) Up() Node {
-	return con.Up
+	return con.up
 }
 
 func (con *ContinueStmt) SetUp(n Node) {
-	con.Up = n
+	con.up = n
 }
 
 func (con *ContinueStmt) Children(c chan<- Node) {
@@ -1579,16 +1621,17 @@ func (c *ContinueStmt) String() (s string) {
 }
 
 type GotoStmt struct {
-	Up    Node
 	Label Node
+		up    Node
+
 }
 
 func (g *GotoStmt) Up() Node {
-	return g.Up
+	return g.up
 }
 
 func (g *GotoStmt) SetUp(n Node) {
-	g.Up = n
+	g.up = n
 }
 
 func (g *GotoStmt) Children(c chan<- Node) {
@@ -1607,15 +1650,16 @@ func (g *GotoStmt) String() string {
 }
 
 type Fallthrough struct {
-	Up Node
+		up Node
+
 }
 
 func (f *Fallthrough) Up() Node {
-	return f.Up
+	return f.up
 }
 
 func (f *Fallthrough) SetUp(n Node) {
-	f.Up = n
+	f.up = n
 }
 
 func (f *Fallthrough) Children(c chan<- Node) {
@@ -1632,16 +1676,17 @@ func (f *Fallthrough) String() string {
 }
 
 type DeferStmt struct {
-	Up   Node
 	Expr Node
+		up   Node
+
 }
 
 func (d *DeferStmt) Up() Node {
-	return d.Up
+	return d.up
 }
 
 func (d *DeferStmt) SetUp(n Node) {
-	d.Up = n
+	d.up = n
 }
 
 func (d *DeferStmt) Children(c chan<- Node) {
@@ -1660,17 +1705,18 @@ func (d *DeferStmt) String() string {
 }
 
 type ShortVarDecl struct {
-	Up     Node
 	Idents Node // identifier list
 	Exprs  Node // expression list
+		up     Node
+
 }
 
 func (s *ShortVarDecl) Up() Node {
-	return s.Up
+	return s.up
 }
 
 func (s *ShortVarDecl) SetUp(n Node) {
-	s.Up = n
+	s.up = n
 }
 
 func (s *ShortVarDecl) Children(c chan<- Node) {
@@ -1699,11 +1745,10 @@ func (s *ShortVarDecl) String() (str string) {
 type EmptyStmt struct{}
 
 func (e *EmptyStmt) Up() Node {
-	return e.Up
+	return nil
 }
 
 func (e *EmptyStmt) SetUp(n Node) {
-	e.Up = n
 }
 
 func (e *EmptyStmt) Children(c chan<- Node) {
@@ -1720,17 +1765,18 @@ func (e *EmptyStmt) String() string {
 }
 
 type Conversion struct {
-	Up   Node
 	Typ  Node
 	Expr Node
+		up   Node
+
 }
 
 func (con *Conversion) Up() Node {
-	return con.Up
+	return con.up
 }
 
 func (con *Conversion) SetUp(n Node) {
-	con.Up = n
+	con.up = n
 }
 
 func (con *Conversion) Children(c chan<- Node) {
@@ -1756,18 +1802,19 @@ func (c *Conversion) String() (s string) {
 }
 
 type Builtin struct {
-	Up   Node
 	Name Node
 	Typ  Node
 	Args Node
+		up   Node
+
 }
 
 func (b *Builtin) Up() Node {
-	return b.Up
+	return b.up
 }
 
 func (b *Builtin) SetUp(n Node) {
-	b.Up = n
+	b.up = n
 }
 
 func (b *Builtin) Children(c chan<- Node) {
@@ -1802,16 +1849,17 @@ func (b *Builtin) String() (s string) {
 }
 
 type Selector struct {
-	Up    Node
 	Ident Node
+		up    Node
+
 }
 
 func (s *Selector) Up() Node {
-	return s.Up
+	return s.up
 }
 
 func (s *Selector) SetUp(n Node) {
-	s.Up = n
+	s.up = n
 }
 
 func (s *Selector) Children(c chan<- Node) {
@@ -1830,16 +1878,17 @@ func (s *Selector) String() string {
 }
 
 type Index struct {
-	Up   Node
 	Expr Node
+		up   Node
+
 }
 
 func (i *Index) Up() Node {
-	return i.Up
+	return i.up
 }
 
 func (i *Index) SetUp(n Node) {
-	i.Up = n
+	i.up = n
 }
 
 func (i *Index) Children(c chan<- Node) {
@@ -1858,18 +1907,19 @@ func (i *Index) String() string {
 }
 
 type Slice struct {
-	Up    Node
 	Start Node
 	End   Node
 	Cap   Node
+		up    Node
+
 }
 
 func (s *Slice) Up() Node {
-	return s.Up
+	return s.up
 }
 
 func (s *Slice) SetUp(n Node) {
-	s.Up = n
+	s.up = n
 }
 
 func (s *Slice) Children(c chan<- Node) {
@@ -1923,16 +1973,17 @@ func (s *Slice) String() (str string) {
 }
 
 type TypeAssertion struct {
-	Up  Node
 	Typ Node
+		up  Node
+
 }
 
 func (t *TypeAssertion) Up() Node {
-	return t.Up
+	return t.up
 }
 
 func (t *TypeAssertion) SetUp(n Node) {
-	t.Up = n
+	t.up = n
 }
 
 func (t *TypeAssertion) Children(c chan<- Node) {
@@ -1951,16 +2002,17 @@ func (t *TypeAssertion) String() string {
 }
 
 type Call struct {
-	Up   Node
 	Args Node
+		up   Node
+
 }
 
 func (con *Call) Up() Node {
-	return con.Up
+	return con.up
 }
 
 func (con *Call) SetUp(n Node) {
-	con.Up = n
+	con.up = n
 }
 
 func (con *Call) Children(c chan<- Node) {
@@ -1987,17 +2039,18 @@ func (c *Call) String() (s string) {
 }
 
 type Args struct {
-	Up        Node
 	Exprs     Node
 	DotDotDot bool
+		up        Node
+
 }
 
 func (a *Args) Up() Node {
-	return a.Up
+	return a.up
 }
 
 func (a *Args) SetUp(n Node) {
-	a.Up = n
+	a.up = n
 }
 
 func (a *Args) Children(c chan<- Node) {

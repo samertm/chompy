@@ -4,18 +4,19 @@ package semantic
 import "github.com/samertm/chompy/parse"
 
 type Decl struct {
-	Up    Node
 	I     *parse.Ident
 	T     *parse.Typ
 	Const bool
+	up    parse.Node
+
 }
 
-func (d *Decl) Up() Node {
-	return d.Up
+func (d *Decl) Up() parse.Node {
+	return d.up
 }
 
-func (d *Decl) SetUp(n Node) {
-	d.Up = n
+func (d *Decl) SetUp(n parse.Node) {
+	d.up = n
 }
 
 func (d *Decl) Children(c chan<- parse.Node) {
@@ -50,17 +51,18 @@ func (d *Decl) String() string {
 }
 
 type Assign struct {
-	Up Node
 	I  *parse.Ident
 	E  *parse.Expr
+		up parse.Node
+
 }
 
-func (a *Assign) Up() Node {
-	return a.Up
+func (a *Assign) Up() parse.Node {
+	return a.up
 }
 
-func (a *Assign) SetUp(n Node) {
-	a.Up = n
+func (a *Assign) SetUp(n parse.Node) {
+	a.up = n
 }
 
 func (a *Assign) Children(c chan<- parse.Node) {

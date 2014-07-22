@@ -478,16 +478,16 @@ func result(p *parser) Node {
 		if p.accept(tokCloseParen) || p.accept(tokOpenParen) {
 			// saw "()" or "((", assume type
 			p.push(save)
-			return &Result{typeGrammar(p)}
+			return &Result{ParamsOrTyp: typeGrammar(p)}
 		}
 		// saw something other than "(" or ")", assume parameters
 		p.push(save)
-		return &Result{parameters(p)}
+		return &Result{ParamsOrTyp: parameters(p)}
 	}
 	if !p.accept(topType...) {
 		return &Erro{"Expected type or parameters"}
 	}
-	return &Result{typeGrammar(p)}
+	return &Result{ParamsOrTyp: typeGrammar(p)}
 }
 
 // Signature      = Parameters [ Result ] .

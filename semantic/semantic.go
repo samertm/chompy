@@ -63,9 +63,7 @@ func walkAllHooks(node parse.Node, kids chan<- parse.Node, hooks map[string]func
 			chans = chans[:len(chans)-1]
 			continue
 		}
-		if hooks == nil {
-			goto APPEND
-		} else {
+		if hooks != nil {
 			// We need to look inside hooks and dispatch
 			// based on the type of next. I assume that
 			// reflect is expensive, so we don't take
@@ -76,17 +74,13 @@ func walkAllHooks(node parse.Node, kids chan<- parse.Node, hooks map[string]func
 			// variable declarations.
 			typ := reflect.TypeOf(node).String()
 			fn, ok := hooks[typ]
-			if !ok {
-				goto APPEND
-			} else {
+			if ok {
 				val := fn(next)
-				if val {
-					goto APPEND
+				if !val {
+					goto NEXT
 				}
-				goto NEXT
 			}
 		}
-	APPEND:
 		// next is a node. Create a new channel to recieve
 		// its children and push it into the stack.
 		chans = append(chans, make(chan parse.Node))

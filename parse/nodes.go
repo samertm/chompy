@@ -71,8 +71,7 @@ func (t *Tree) String() (s string) {
 
 type Pkg struct {
 	Name string
-		up   Node
-
+	up   Node
 }
 
 func (p *Pkg) Up() Node {
@@ -98,8 +97,7 @@ func (p *Pkg) String() string {
 
 type Impts struct {
 	Imports []Node
-		up      Node
-
+	up      Node
 }
 
 func (i *Impts) Up() Node {
@@ -140,8 +138,7 @@ func (i *Impts) String() (s string) {
 type Impt struct {
 	PkgName  string
 	ImptName string
-		up       Node
-
+	up       Node
 }
 
 func (i *Impt) Up() Node {
@@ -194,8 +191,7 @@ func (e *Erro) String() string {
 
 type Consts struct {
 	Cs []Node // consts
-		up Node
-
+	up Node
 }
 
 func (con *Consts) Up() Node {
@@ -238,8 +234,7 @@ type Cnst struct {
 	Is Node // idents
 	T  Node
 	Es Node // expressions
-		up Node
-
+	up Node
 }
 
 func (con *Cnst) Up() Node {
@@ -284,8 +279,7 @@ func (c *Cnst) String() (s string) {
 
 type Idents struct {
 	Is []Node
-		up Node
-
+	up Node
 }
 
 func (i *Idents) Up() Node {
@@ -324,8 +318,7 @@ func (i *Idents) String() (s string) {
 type Lit struct {
 	Typ string
 	Val string
-		up  Node
-
+	up  Node
 }
 
 func (l *Lit) Up() Node {
@@ -351,8 +344,7 @@ func (l *Lit) String() string {
 
 type OpName struct {
 	Id Node
-		up Node
-
+	up Node
 }
 
 func (o *OpName) Up() Node {
@@ -381,8 +373,7 @@ func (o *OpName) String() string {
 // expression list
 type Exprs struct {
 	Es []Node
-		up Node
-
+	up Node
 }
 
 func (e *Exprs) Up() Node {
@@ -423,8 +414,7 @@ type Expr struct {
 	BinOp   string
 	FirstN  Node
 	SecondN Node
-		up      Node
-
+	up      Node
 }
 
 func (e *Expr) Up() Node {
@@ -470,8 +460,7 @@ func (e *Expr) String() (s string) {
 type UnaryE struct {
 	Op   string // Operand
 	Expr Node
-		up   Node
-
+	up   Node
 }
 
 func (u *UnaryE) Up() Node {
@@ -503,8 +492,7 @@ func (u *UnaryE) String() (s string) {
 type PrimaryE struct {
 	Expr  Node
 	Prime Node
-		up    Node
-
+	up    Node
 }
 
 func (p *PrimaryE) Up() Node {
@@ -543,8 +531,7 @@ func (p *PrimaryE) String() (s string) {
 
 type Typ struct {
 	T  Node
-		up Node
-
+	up Node
 }
 
 func (t *Typ) Up() Node {
@@ -572,8 +559,7 @@ func (t *Typ) String() string {
 
 type Ident struct {
 	Name string
-		up   Node
-
+	up   Node
 }
 
 func (i *Ident) Up() Node {
@@ -600,8 +586,7 @@ func (i *Ident) String() string {
 type QualifiedIdent struct {
 	Pkg   string
 	Ident string
-		up    Node
-
+	up    Node
 }
 
 func (q *QualifiedIdent) Up() Node {
@@ -627,8 +612,7 @@ func (q *QualifiedIdent) String() string {
 
 type Types struct {
 	Typspecs []Node
-		up       Node
-
+	up       Node
 }
 
 func (t *Types) Up() Node {
@@ -669,8 +653,7 @@ func (t *Types) String() (s string) {
 type Typespec struct {
 	I   Node //ident
 	Typ Node //type
-		up  Node
-
+	up  Node
 }
 
 func (t *Typespec) Up() Node {
@@ -709,8 +692,7 @@ func (t *Typespec) String() (s string) {
 
 type Vars struct {
 	Vs []Node
-		up Node
-
+	up Node
 }
 
 func (v *Vars) Up() Node {
@@ -752,8 +734,7 @@ type Varspec struct {
 	Idents Node
 	T      Node // type
 	Exprs  Node
-		up     Node
-
+	up     Node
 }
 
 func (v *Varspec) Up() Node {
@@ -805,8 +786,7 @@ func (v *Varspec) String() (s string) {
 type Funcdecl struct {
 	Name      Node //ident
 	FuncOrSig Node
-		up        Node
-
+	up        Node
 }
 
 func (f *Funcdecl) Up() Node {
@@ -847,8 +827,7 @@ func (f *Funcdecl) String() (s string) {
 type Func struct {
 	Sig  Node
 	Body Node
-		up   Node
-
+	up   Node
 }
 
 func (f *Func) Up() Node {
@@ -887,8 +866,7 @@ func (f *Func) String() (s string) {
 type Sig struct {
 	Params Node
 	Result Node
-		up     Node
-
+	up     Node
 }
 
 func (s *Sig) Up() Node {
@@ -932,8 +910,7 @@ func (sig *Sig) String() (s string) {
 
 type Stmts struct {
 	Stmts []Node
-		up    Node
-
+	up    Node
 }
 
 func (s *Stmts) Up() Node {
@@ -971,8 +948,7 @@ func (ss *Stmts) String() (s string) {
 
 type Stmt struct {
 	S  Node
-		up Node
-
+	up Node
 }
 
 func (s *Stmt) Up() Node {
@@ -1003,8 +979,7 @@ func (s *Stmt) String() string {
 
 type Result struct {
 	ParamsOrTyp Node
-		up          Node
-
+	up          Node
 }
 
 func (r *Result) Up() Node {
@@ -1037,8 +1012,7 @@ func (r *Result) String() (s string) {
 
 type Params struct {
 	Params []Node
-		up     Node
-
+	up     Node
 }
 
 func (p *Params) Up() Node {
@@ -1080,8 +1054,7 @@ type Param struct {
 	Idents    Node
 	DotDotDot bool // if true, apply "..." to type
 	Typ       Node
-		up        Node
-
+	up        Node
 }
 
 func (p *Param) Up() Node {
@@ -1123,8 +1096,7 @@ func (p *Param) String() (s string) {
 
 type Block struct {
 	Stmts Node
-		up    Node
-
+	up    Node
 }
 
 func (b *Block) Up() Node {
@@ -1156,8 +1128,7 @@ func (b *Block) String() (s string) {
 type LabeledStmt struct {
 	Label Node // identifier
 	Stmt  Node
-		up    Node
-
+	up    Node
 }
 
 func (l *LabeledStmt) Up() Node {
@@ -1188,8 +1159,7 @@ func (l *LabeledStmt) String() string {
 
 type ExprStmt struct {
 	Expr Node
-		up   Node
-
+	up   Node
 }
 
 func (e *ExprStmt) Up() Node {
@@ -1218,8 +1188,7 @@ func (e *ExprStmt) String() string {
 type SendStmt struct {
 	Chan Node
 	Expr Node
-		up   Node
-
+	up   Node
 }
 
 func (s *SendStmt) Up() Node {
@@ -1251,8 +1220,7 @@ func (s *SendStmt) String() string {
 type IncDecStmt struct {
 	Expr    Node
 	Postfix string // either "++" or "--"
-		up      Node
-
+	up      Node
 }
 
 func (i *IncDecStmt) Up() Node {
@@ -1283,8 +1251,7 @@ type Assign struct {
 	Op        string // add_op, mul_op, or "="
 	LeftExpr  Node
 	RightExpr Node
-		up        Node
-
+	up        Node
 }
 
 func (a *Assign) Up() Node {
@@ -1322,8 +1289,7 @@ type IfStmt struct {
 	Expr       Node
 	Block      Node
 	Else       Node
-		up         Node
-
+	up         Node
 }
 
 func (i *IfStmt) Up() Node {
@@ -1371,8 +1337,7 @@ func (i *IfStmt) String() (s string) {
 type ForStmt struct {
 	Clause Node // ForClause or Condition
 	Block  Node
-		up     Node
-
+	up     Node
 }
 
 func (f *ForStmt) Up() Node {
@@ -1408,8 +1373,7 @@ type ForClause struct {
 	InitStmt  Node
 	Condition Node
 	PostStmt  Node
-		up        Node
-
+	up        Node
 }
 
 func (f *ForClause) Up() Node {
@@ -1455,8 +1419,7 @@ type RangeClause struct {
 	ExprsOrIdents Node
 	Op            string // "=" or ":="
 	Expr          Node   // that comes after the op... need a better nayme
-		up            Node
-
+	up            Node
 }
 
 func (r *RangeClause) Up() Node {
@@ -1491,8 +1454,7 @@ func (r *RangeClause) String() (s string) {
 
 type GoStmt struct {
 	Expr Node
-		up   Node
-
+	up   Node
 }
 
 func (g *GoStmt) Up() Node {
@@ -1520,8 +1482,7 @@ func (g *GoStmt) String() string {
 
 type ReturnStmt struct {
 	Exprs Node
-		up    Node
-
+	up    Node
 }
 
 func (r *ReturnStmt) Up() Node {
@@ -1554,8 +1515,7 @@ func (r *ReturnStmt) String() (s string) {
 
 type BreakStmt struct {
 	Label Node
-		up    Node
-
+	up    Node
 }
 
 func (b *BreakStmt) Up() Node {
@@ -1588,8 +1548,7 @@ func (b *BreakStmt) String() (s string) {
 
 type ContinueStmt struct {
 	Label Node
-		up    Node
-
+	up    Node
 }
 
 func (con *ContinueStmt) Up() Node {
@@ -1622,8 +1581,7 @@ func (c *ContinueStmt) String() (s string) {
 
 type GotoStmt struct {
 	Label Node
-		up    Node
-
+	up    Node
 }
 
 func (g *GotoStmt) Up() Node {
@@ -1650,8 +1608,7 @@ func (g *GotoStmt) String() string {
 }
 
 type Fallthrough struct {
-		up Node
-
+	up Node
 }
 
 func (f *Fallthrough) Up() Node {
@@ -1677,8 +1634,7 @@ func (f *Fallthrough) String() string {
 
 type DeferStmt struct {
 	Expr Node
-		up   Node
-
+	up   Node
 }
 
 func (d *DeferStmt) Up() Node {
@@ -1707,8 +1663,7 @@ func (d *DeferStmt) String() string {
 type ShortVarDecl struct {
 	Idents Node // identifier list
 	Exprs  Node // expression list
-		up     Node
-
+	up     Node
 }
 
 func (s *ShortVarDecl) Up() Node {
@@ -1767,8 +1722,7 @@ func (e *EmptyStmt) String() string {
 type Conversion struct {
 	Typ  Node
 	Expr Node
-		up   Node
-
+	up   Node
 }
 
 func (con *Conversion) Up() Node {
@@ -1805,8 +1759,7 @@ type Builtin struct {
 	Name Node
 	Typ  Node
 	Args Node
-		up   Node
-
+	up   Node
 }
 
 func (b *Builtin) Up() Node {
@@ -1850,8 +1803,7 @@ func (b *Builtin) String() (s string) {
 
 type Selector struct {
 	Ident Node
-		up    Node
-
+	up    Node
 }
 
 func (s *Selector) Up() Node {
@@ -1879,8 +1831,7 @@ func (s *Selector) String() string {
 
 type Index struct {
 	Expr Node
-		up   Node
-
+	up   Node
 }
 
 func (i *Index) Up() Node {
@@ -1910,8 +1861,7 @@ type Slice struct {
 	Start Node
 	End   Node
 	Cap   Node
-		up    Node
-
+	up    Node
 }
 
 func (s *Slice) Up() Node {
@@ -1974,8 +1924,7 @@ func (s *Slice) String() (str string) {
 
 type TypeAssertion struct {
 	Typ Node
-		up  Node
-
+	up  Node
 }
 
 func (t *TypeAssertion) Up() Node {
@@ -2003,8 +1952,7 @@ func (t *TypeAssertion) String() string {
 
 type Call struct {
 	Args Node
-		up   Node
-
+	up   Node
 }
 
 func (con *Call) Up() Node {
@@ -2041,8 +1989,7 @@ func (c *Call) String() (s string) {
 type Args struct {
 	Exprs     Node
 	DotDotDot bool
-		up        Node
-
+	up        Node
 }
 
 func (a *Args) Up() Node {

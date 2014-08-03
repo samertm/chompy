@@ -13,6 +13,7 @@ type Node interface {
 	// convenient.
 	Up() Node
 	SetUp(Node)
+	Replace(old, new Node)
 	// gets the immediate children (no grandchildren) of the Node
 	// used for walking the tree
 	Children(chan<- Node)
@@ -24,6 +25,15 @@ type Tree struct {
 	RootStable *stable.Stable
 	Kids       []Node
 	up         Node
+}
+
+func (t *Tree) Replace(old, new Node) {
+	for index := range t.Kids {
+		if t.Kids[index] == old {
+			t.Kids[index] = new
+			return
+		}
+	}
 }
 
 func (t *Tree) Up() Node {
@@ -74,6 +84,9 @@ type Pkg struct {
 	up   Node
 }
 
+func (p *Pkg) Replace(old, new Node) {
+}
+
 func (p *Pkg) Up() Node {
 	return p.up
 }
@@ -98,6 +111,15 @@ func (p *Pkg) String() string {
 type Impts struct {
 	Imports []Node
 	up      Node
+}
+
+func (i *Impts) Replace(old, new Node) {
+	for index := range i.Imports {
+		if i.Imports[index] == old {
+			i.Imports[index] = new
+			return
+		}
+	}
 }
 
 func (i *Impts) Up() Node {
@@ -141,6 +163,9 @@ type Impt struct {
 	up       Node
 }
 
+func (i *Impt) Replace(old, new Node) {
+}
+
 func (i *Impt) Up() Node {
 	return i.up
 }
@@ -164,6 +189,9 @@ func (i *Impt) String() string {
 
 type Erro struct {
 	Desc string
+}
+
+func (e *Erro) Replace(old, new Node) {
 }
 
 // Up and SetUp are nops for the error type, because they get removed
@@ -192,6 +220,16 @@ func (e *Erro) String() string {
 type Consts struct {
 	Cs []Node // consts
 	up Node
+}
+
+func (con *Consts) Replace(old, new Node) {
+	for index := range con.Cs {
+		if con.Cs[index] == old {
+			con.Cs[index] = new
+			return
+		}
+	}
+
 }
 
 func (con *Consts) Up() Node {
@@ -235,6 +273,18 @@ type Cnst struct {
 	T  Node
 	Es Node // expressions
 	up Node
+}
+
+func (con *Cnst) Replace(old, new Node) {
+	if con.Is == old {
+		con.Is = new
+	}
+	if con.T == old {
+		con.T = new
+	}
+	if con.Es == old {
+		con.Es = new
+	}
 }
 
 func (con *Cnst) Up() Node {
@@ -282,6 +332,15 @@ type Idents struct {
 	up Node
 }
 
+func (i *Idents) Replace(old, new Node) {
+	for index := range i.Is {
+		if i.Is[index] == old {
+			i.Is[index] = new
+			return
+		}
+	}
+}
+
 func (i *Idents) Up() Node {
 	return i.up
 }
@@ -321,6 +380,9 @@ type Lit struct {
 	up  Node
 }
 
+func (l *Lit) Replace(old, new Node) {
+}
+
 func (l *Lit) Up() Node {
 	return l.up
 }
@@ -345,6 +407,12 @@ func (l *Lit) String() string {
 type OpName struct {
 	Id Node
 	up Node
+}
+
+func (o *OpName) Replace(old, new Node) {
+	if o.Id == old {
+		o.Id = new
+	}
 }
 
 func (o *OpName) Up() Node {
@@ -374,6 +442,15 @@ func (o *OpName) String() string {
 type Exprs struct {
 	Es []Node
 	up Node
+}
+
+func (e *Exprs) Replace(old, new Node) {
+	for index := range e.Es {
+		if e.Es[index] == old {
+			e.Es[index] = new
+			return
+		}
+	}
 }
 
 func (e *Exprs) Up() Node {
@@ -415,6 +492,15 @@ type Expr struct {
 	FirstN  Node
 	SecondN Node
 	up      Node
+}
+
+func (e *Expr) Replace(old, new Node) {
+	if e.FirstN == old {
+		e.FirstN = new
+	}
+	if e.SecondN == old {
+		e.SecondN = new
+	}
 }
 
 func (e *Expr) Up() Node {
@@ -463,6 +549,13 @@ type UnaryE struct {
 	up   Node
 }
 
+func (u *UnaryE) Replace(old, new Node) {
+
+	if u.Expr == old {
+		u.Expr = new
+	}
+}
+
 func (u *UnaryE) Up() Node {
 	return u.up
 }
@@ -493,6 +586,15 @@ type PrimaryE struct {
 	Expr  Node
 	Prime Node
 	up    Node
+}
+
+func (p *PrimaryE) Replace(old, new Node) {
+	if p.Expr == old {
+		p.Expr = new
+	}
+	if p.Prime == old {
+		p.Prime = new
+	}
 }
 
 func (p *PrimaryE) Up() Node {
@@ -534,6 +636,12 @@ type Typ struct {
 	up Node
 }
 
+func (t *Typ) Replace(old, new Node) {
+	if t.T == old {
+		t.T = new
+	}
+}
+
 func (t *Typ) Up() Node {
 	return t.up
 }
@@ -560,6 +668,9 @@ func (t *Typ) String() string {
 type Ident struct {
 	Name string
 	up   Node
+}
+
+func (i *Ident) Replace(old, new Node) {
 }
 
 func (i *Ident) Up() Node {
@@ -589,6 +700,9 @@ type QualifiedIdent struct {
 	up    Node
 }
 
+func (q *QualifiedIdent) Replace(old, new Node) {
+}
+
 func (q *QualifiedIdent) Up() Node {
 	return q.up
 }
@@ -613,6 +727,15 @@ func (q *QualifiedIdent) String() string {
 type Types struct {
 	Typspecs []Node
 	up       Node
+}
+
+func (t *Types) Replace(old, new Node) {
+	for index := range t.Typspecs {
+		if t.Typspecs[index] == old {
+			t.Typspecs[index] = new
+			return
+		}
+	}
 }
 
 func (t *Types) Up() Node {
@@ -656,6 +779,15 @@ type Typespec struct {
 	up  Node
 }
 
+func (t *Typespec) Replace(old, new Node) {
+	if t.I == old {
+		t.I = new
+	}
+	if t.Typ == old {
+		t.Typ = new
+	}
+}
+
 func (t *Typespec) Up() Node {
 	return t.up
 }
@@ -693,6 +825,15 @@ func (t *Typespec) String() (s string) {
 type Vars struct {
 	Vs []Node
 	up Node
+}
+
+func (v *Vars) Replace(old, new Node) {
+	for index := range v.Vs {
+		if v.Vs[index] == old {
+			v.Vs[index] = new
+			return
+		}
+	}
 }
 
 func (v *Vars) Up() Node {
@@ -735,6 +876,18 @@ type Varspec struct {
 	T      Node // type
 	Exprs  Node
 	up     Node
+}
+
+func (v *Varspec) Replace(old, new Node) {
+	if v.Idents == old {
+		v.Idents = new
+	}
+	if v.T == old {
+		v.T = new
+	}
+	if v.Exprs == old {
+		v.Exprs = new
+	}
 }
 
 func (v *Varspec) Up() Node {
@@ -789,6 +942,15 @@ type Funcdecl struct {
 	up        Node
 }
 
+func (f *Funcdecl) Replace(old, new Node) {
+	if f.Name == old {
+		f.Name = new
+	}
+	if f.FuncOrSig == old {
+		f.FuncOrSig = new
+	}
+}
+
 func (f *Funcdecl) Up() Node {
 	return f.up
 }
@@ -830,6 +992,15 @@ type Func struct {
 	up   Node
 }
 
+func (f *Func) Replace(old, new Node) {
+	if f.Sig == old {
+		f.Sig = new
+	}
+	if f.Body == old {
+		f.Body = new
+	}
+}
+
 func (f *Func) Up() Node {
 	return f.up
 }
@@ -867,6 +1038,15 @@ type Sig struct {
 	Params Node
 	Result Node
 	up     Node
+}
+
+func (s *Sig) Replace(old, new Node) {
+	if s.Params == old {
+		s.Params = new
+	}
+	if s.Result == old {
+		s.Result = new
+	}
 }
 
 func (s *Sig) Up() Node {
@@ -913,6 +1093,15 @@ type Stmts struct {
 	up    Node
 }
 
+func (s *Stmts) Replace(old, new Node) {
+	for index := range s.Stmts {
+		if s.Stmts[index] == old {
+			s.Stmts[index] = new
+			return
+		}
+	}
+}
+
 func (s *Stmts) Up() Node {
 	return s.up
 }
@@ -951,6 +1140,12 @@ type Stmt struct {
 	up Node
 }
 
+func (s *Stmt) Replace(old, new Node) {
+	if s.S == old {
+		s.S = new
+	}
+}
+
 func (s *Stmt) Up() Node {
 	return s.up
 }
@@ -980,6 +1175,12 @@ func (s *Stmt) String() string {
 type Result struct {
 	ParamsOrTyp Node
 	up          Node
+}
+
+func (r *Result) Replace(old, new Node) {
+	if r.ParamsOrTyp == old {
+		r.ParamsOrTyp = new
+	}
 }
 
 func (r *Result) Up() Node {
@@ -1013,6 +1214,15 @@ func (r *Result) String() (s string) {
 type Params struct {
 	Params []Node
 	up     Node
+}
+
+func (p *Params) Replace(old, new Node) {
+	for index := range p.Params {
+		if p.Params[index] == old {
+			p.Params[index] = new
+			return
+		}
+	}
 }
 
 func (p *Params) Up() Node {
@@ -1057,6 +1267,15 @@ type Param struct {
 	up        Node
 }
 
+func (p *Param) Replace(old, new Node) {
+	if p.Idents == old {
+		p.Idents = new
+	}
+	if p.Typ == old {
+		p.Typ = new
+	}
+}
+
 func (p *Param) Up() Node {
 	return p.up
 }
@@ -1099,6 +1318,12 @@ type Block struct {
 	up    Node
 }
 
+func (b *Block) Replace(old, new Node) {
+	if b.Stmts == old {
+		b.Stmts = new
+	}
+}
+
 func (b *Block) Up() Node {
 	return b.up
 }
@@ -1129,6 +1354,15 @@ type LabeledStmt struct {
 	Label Node // identifier
 	Stmt  Node
 	up    Node
+}
+
+func (l *LabeledStmt) Replace(old, new Node) {
+	if l.Label == old {
+		l.Label = new
+	}
+	if l.Stmt == old {
+		l.Stmt = new
+	}
 }
 
 func (l *LabeledStmt) Up() Node {
@@ -1162,6 +1396,12 @@ type ExprStmt struct {
 	up   Node
 }
 
+func (e *ExprStmt) Replace(old, new Node) {
+	if e.Expr == old {
+		e.Expr = new
+	}
+}
+
 func (e *ExprStmt) Up() Node {
 	return e.up
 }
@@ -1189,6 +1429,15 @@ type SendStmt struct {
 	Chan Node
 	Expr Node
 	up   Node
+}
+
+func (s *SendStmt) Replace(old, new Node) {
+	if s.Chan == old {
+		s.Chan = new
+	}
+	if s.Expr == old {
+		s.Expr = new
+	}
 }
 
 func (s *SendStmt) Up() Node {
@@ -1223,6 +1472,12 @@ type IncDecStmt struct {
 	up      Node
 }
 
+func (i *IncDecStmt) Replace(old, new Node) {
+	if i.Expr == old {
+		i.Expr = new
+	}
+}
+
 func (i *IncDecStmt) Up() Node {
 	return i.up
 }
@@ -1252,6 +1507,15 @@ type Assign struct {
 	LeftExpr  Node
 	RightExpr Node
 	up        Node
+}
+
+func (a *Assign) Replace(old, new Node) {
+	if a.LeftExpr == old {
+		a.LeftExpr = new
+	}
+	if a.RightExpr == old {
+		a.RightExpr = new
+	}
 }
 
 func (a *Assign) Up() Node {
@@ -1290,6 +1554,21 @@ type IfStmt struct {
 	Block      Node
 	Else       Node
 	up         Node
+}
+
+func (i *IfStmt) Replace(old, new Node) {
+	if i.SimpleStmt == old {
+		i.SimpleStmt = new
+	}
+	if i.Expr == old {
+		i.Expr = new
+	}
+	if i.Block == old {
+		i.Block = new
+	}
+	if i.Else == old {
+		i.Else = new
+	}
 }
 
 func (i *IfStmt) Up() Node {
@@ -1340,6 +1619,15 @@ type ForStmt struct {
 	up     Node
 }
 
+func (f *ForStmt) Replace(old, new Node) {
+	if f.Clause == old {
+		f.Clause = new
+	}
+	if f.Block == old {
+		f.Block = new
+	}
+}
+
 func (f *ForStmt) Up() Node {
 	return f.up
 }
@@ -1374,6 +1662,18 @@ type ForClause struct {
 	Condition Node
 	PostStmt  Node
 	up        Node
+}
+
+func (f *ForClause) Replace(old, new Node) {
+	if f.InitStmt == old {
+		f.InitStmt = new
+	}
+	if f.Condition == old {
+		f.Condition = new
+	}
+	if f.PostStmt == old {
+		f.PostStmt = new
+	}
 }
 
 func (f *ForClause) Up() Node {
@@ -1422,6 +1722,15 @@ type RangeClause struct {
 	up            Node
 }
 
+func (r *RangeClause) Replace(old, new Node) {
+	if r.ExprsOrIdents == old {
+		r.ExprsOrIdents = new
+	}
+	if r.Expr == old {
+		r.Expr = new
+	}
+}
+
 func (r *RangeClause) Up() Node {
 	return r.up
 }
@@ -1457,6 +1766,12 @@ type GoStmt struct {
 	up   Node
 }
 
+func (g *GoStmt) Replace(old, new Node) {
+	if g.Expr == old {
+		g.Expr = new
+	}
+}
+
 func (g *GoStmt) Up() Node {
 	return g.up
 }
@@ -1483,6 +1798,12 @@ func (g *GoStmt) String() string {
 type ReturnStmt struct {
 	Exprs Node
 	up    Node
+}
+
+func (r *ReturnStmt) Replace(old, new Node) {
+	if r.Exprs == old {
+		r.Exprs = new
+	}
 }
 
 func (r *ReturnStmt) Up() Node {
@@ -1518,6 +1839,12 @@ type BreakStmt struct {
 	up    Node
 }
 
+func (b *BreakStmt) Replace(old, new Node) {
+	if b.Label == old {
+		b.Label = new
+	}
+}
+
 func (b *BreakStmt) Up() Node {
 	return b.up
 }
@@ -1549,6 +1876,12 @@ func (b *BreakStmt) String() (s string) {
 type ContinueStmt struct {
 	Label Node
 	up    Node
+}
+
+func (con *ContinueStmt) Replace(old, new Node) {
+	if con.Label == old {
+		con.Label = new
+	}
 }
 
 func (con *ContinueStmt) Up() Node {
@@ -1584,6 +1917,12 @@ type GotoStmt struct {
 	up    Node
 }
 
+func (g *GotoStmt) Replace(old, new Node) {
+	if g.Label == old {
+		g.Label = new
+	}
+}
+
 func (g *GotoStmt) Up() Node {
 	return g.up
 }
@@ -1611,6 +1950,9 @@ type Fallthrough struct {
 	up Node
 }
 
+func (f *Fallthrough) Replace(old, new Node) {
+}
+
 func (f *Fallthrough) Up() Node {
 	return f.up
 }
@@ -1635,6 +1977,12 @@ func (f *Fallthrough) String() string {
 type DeferStmt struct {
 	Expr Node
 	up   Node
+}
+
+func (d *DeferStmt) Replace(old, new Node) {
+	if d.Expr == old {
+		d.Expr = new
+	}
 }
 
 func (d *DeferStmt) Up() Node {
@@ -1664,6 +2012,15 @@ type ShortVarDecl struct {
 	Idents Node // identifier list
 	Exprs  Node // expression list
 	up     Node
+}
+
+func (s *ShortVarDecl) Replace(old, new Node) {
+	if s.Idents == old {
+		s.Idents = new
+	}
+	if s.Exprs == old {
+		s.Exprs = new
+	}
 }
 
 func (s *ShortVarDecl) Up() Node {
@@ -1699,6 +2056,9 @@ func (s *ShortVarDecl) String() (str string) {
 
 type EmptyStmt struct{}
 
+func (e *EmptyStmt) Replace(old, new Node) {
+}
+
 func (e *EmptyStmt) Up() Node {
 	return nil
 }
@@ -1723,6 +2083,15 @@ type Conversion struct {
 	Typ  Node
 	Expr Node
 	up   Node
+}
+
+func (con *Conversion) Replace(old, new Node) {
+	if con.Typ == old {
+		con.Typ = new
+	}
+	if con.Expr == old {
+		con.Expr = new
+	}
 }
 
 func (con *Conversion) Up() Node {
@@ -1760,6 +2129,18 @@ type Builtin struct {
 	Typ  Node
 	Args Node
 	up   Node
+}
+
+func (b *Builtin) Replace(old, new Node) {
+	if b.Name == old {
+		b.Name = new
+	}
+	if b.Typ == old {
+		b.Typ = new
+	}
+	if b.Args == old {
+		b.Args = new
+	}
 }
 
 func (b *Builtin) Up() Node {
@@ -1806,6 +2187,12 @@ type Selector struct {
 	up    Node
 }
 
+func (s *Selector) Replace(old, new Node) {
+	if s.Ident == old {
+		s.Ident = new
+	}
+}
+
 func (s *Selector) Up() Node {
 	return s.up
 }
@@ -1832,6 +2219,12 @@ func (s *Selector) String() string {
 type Index struct {
 	Expr Node
 	up   Node
+}
+
+func (i *Index) Replace(old, new Node) {
+	if i.Expr == old {
+		i.Expr = new
+	}
 }
 
 func (i *Index) Up() Node {
@@ -1862,6 +2255,18 @@ type Slice struct {
 	End   Node
 	Cap   Node
 	up    Node
+}
+
+func (s *Slice) Replace(old, new Node) {
+	if s.Start == old {
+		s.Start = new
+	}
+	if s.End == old {
+		s.End = new
+	}
+	if s.Cap == old {
+		s.Cap = new
+	}
 }
 
 func (s *Slice) Up() Node {
@@ -1927,6 +2332,12 @@ type TypeAssertion struct {
 	up  Node
 }
 
+func (t *TypeAssertion) Replace(old, new Node) {
+	if t.Typ == old {
+		t.Typ = new
+	}
+}
+
 func (t *TypeAssertion) Up() Node {
 	return t.up
 }
@@ -1953,6 +2364,12 @@ func (t *TypeAssertion) String() string {
 type Call struct {
 	Args Node
 	up   Node
+}
+
+func (con *Call) Replace(old, new Node) {
+	if con.Args == old {
+		con.Args = new
+	}
 }
 
 func (con *Call) Up() Node {
@@ -1990,6 +2407,12 @@ type Args struct {
 	Exprs     Node
 	DotDotDot bool
 	up        Node
+}
+
+func (a *Args) Replace(old, new Node) {
+	if a.Exprs == old {
+		a.Exprs = new
+	}
 }
 
 func (a *Args) Up() Node {

@@ -8,7 +8,10 @@ type Decl struct {
 	T     *parse.Typ
 	Const bool
 	up    parse.Node
+}
 
+// TODO: fix these stumps
+func (d *Decl) Replace(old, new Node) {
 }
 
 func (d *Decl) Up() parse.Node {
@@ -53,8 +56,11 @@ func (d *Decl) String() string {
 type Assign struct {
 	I  *parse.Ident
 	E  *parse.Expr
-		up parse.Node
+	up parse.Node
+}
 
+// TODO fix stump
+func (a *Assign) Replace(old, new Node) {
 }
 
 func (a *Assign) Up() parse.Node {

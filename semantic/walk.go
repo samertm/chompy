@@ -18,7 +18,7 @@ func walkAll(node parse.Node, kids chan<- parse.Node) {
 // of the node from "hooks". Does a depth-first search of the tree.
 // Closes kids when done.
 //
-// Will walk as normal if kids is nil.
+// Will walk as normal if kids is
 //
 // hooks is a map from strings (in the form "*parse.TYPE" to match
 // the node types, which are all pointers and mostly from the package
@@ -62,7 +62,7 @@ func walkAllHooks(node parse.Node, kids chan<- parse.Node, hooks map[string]walk
 			// strictly, it needs to be in another block
 			// in general) because goto cannot jump over
 			// variable declarations.
-			typ := reflect.TypeOf(node).String()
+			typ := reflect.TypeOf(next).String()
 			fn, ok := hooks[typ]
 			if ok {
 				// Deep nesting avoids the need for

@@ -11,7 +11,7 @@ type Decl struct {
 }
 
 // TODO: fix these stumps
-func (d *Decl) Replace(old, new Node) {
+func (d *Decl) Replace(old, new parse.Node) {
 }
 
 func (d *Decl) Up() parse.Node {
@@ -60,7 +60,7 @@ type Assign struct {
 }
 
 // TODO fix stump
-func (a *Assign) Replace(old, new Node) {
+func (a *Assign) Replace(old, new parse.Node) {
 }
 
 func (a *Assign) Up() parse.Node {

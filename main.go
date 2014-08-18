@@ -28,5 +28,5 @@ func main() {
 }
 `)
 	tree := parse.Start(tokens)
-	semantic.Check(tree)
+	fmt.Println(string(semantic.Gen(tree)))
 }

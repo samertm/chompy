@@ -65,8 +65,6 @@ func walkAllHooks(node parse.Node, kids chan<- parse.Node, hooks map[string]walk
 			typ := reflect.TypeOf(next).String()
 			fn, ok := hooks[typ]
 			if ok {
-				// Deep nesting avoids the need for
-				// an extra goto.
 				val := fn(next)
 				if !val {
 					goto NEXT

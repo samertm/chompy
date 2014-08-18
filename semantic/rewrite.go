@@ -4,15 +4,14 @@ import (
 	"fmt"
 
 	"github.com/samertm/chompy/parse"
-	"github.com/samertm/chompy/semantic/stable"
 )
 
 // rewriteTree runs all of the rewrite functions in order.
 func treeWalks(t *parse.Tree) []string {
 	rewrites := []func(*parse.Tree) []string{
 		collectErrors,
-		rewriteDeclAssign,
-		createStables,
+		// rewriteDeclAssign,
+		// createStables,
 	}
 	for _, fn := range rewrites {
 		s := fn(t)
@@ -44,59 +43,51 @@ func collectErrors(t *parse.Tree) []string {
 	return errors
 }
 
-// This phase adds the "up" pointer to every node in the tree.
-func addUp(t *parse.Tree) []string {
-	// Preamble.
-	var allFn walkFn
-	allFn = func(n parse.Node) bool {
-		ch := make(chan parse.Node)
-		go n.Children(ch)
-		for kid := range ch {
-			kid.SetUp(n)
-		}
-		return true
-	}
-	all := map[string]walkFn{
-		"all": allFn,
-	}
-	walkAllHooks(t, nil, all)
-	return nil
-}
+// // This phase adds the "up" pointer to every node in the tree.
+// func addUp(t *parse.Tree) []string {
+// 	// Preamble.
+// 	var allFn walkFn = func(n parse.Node) bool {
+// 		ch := make(chan parse.Node)
+// 		go n.Children(ch)
+// 		for kid := range ch {
+// 			kid.SetUp(n)
+// 		}
+// 		return true
+// 	}
+// 	all := map[string]walkFn{
+// 		"all": allFn,
+// 	}
+// 	walkAllHooks(t, nil, all)
+// 	return nil
+// }
 
-// This phase rewrites Varspec, (add nodes) into Assign and Decl
-// nodes. I'm not sure if I should name it rewrite01 (to show the
-// order these rewrites should be done in)...
-func rewriteDeclAssign(t *parse.Tree) []string {
-	// stumpyyyyyyyyyy
-	return make([]string, 0)
-}
+// func createStables(t *parse.Tree) []string {
+// 	// Let's initialize errors so we can report any we see
+// 	errs := make([]string, 0)
+// 	var treeFn walkFn = func(n parse.Node) bool {
+// 		t := n
+// 		t.RootStable = stable.New(nil)
+// 		kids := make(chan parse.Node)
+// 		go t.Children(kids)
+// 		for kid := range kids {
+// 			switch k := kid.(type) {
+// 			case *parse.Pkg:
+// 				break
+// 			case *parse.Impts:
+// 				break
+// 			case *parse.Funcdecl:
+// 				fmt.Println("FOUND", k)
+// 			case *parse.Consts:
 
-func createStables(t *parse.Tree) []string {
-	// Let's initialize errors so we can report any we see
-	errs := make([]string, 0)
-	// First, let's create an Stable to hold the information
-	// about the root tree's children.
-	t.RootStable = stable.New(nil)
-	// We're going to iterate through t's children and add them
-	// to rootStable.
-	kids := make(chan parse.Node)
-	go t.Children(kids)
-	for kid := range kids {
-		switch k := kid.(type) {
-		case *parse.Pkg:
-			break
-		case *parse.Impts:
-			break
-		case *parse.Funcdecl:
-			fmt.Println("FOUND", k)
-		case *parse.Consts:
-			fmt.Println("FOUND", k)
-		case *parse.Vars:
-			// for _, v := range k.Vs {
-			// }
-		default:
-			errs = append(errs, k.String())
-		}
-	}
-	return errs
-}
+// 			case *parse.Vars:
+// 			default:
+// 				errs = append(errs, k.String())
+// 			}
+// 		}
+// 		return true
+// 	}
+// 	hooks := map[string]walkFn {
+// 		"*parse.Tree": treeFn,
+// 	}
+// 	return errs
+// }

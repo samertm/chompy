@@ -1,1 +1,1 @@
-Building a lexer for a subset of go.
+A toy project to build a compiler for a reasonable subset of Go in Go.

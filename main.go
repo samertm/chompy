@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"io/ioutil"
 
 	"github.com/samertm/chompy/lex"
 	"github.com/samertm/chompy/parse"
@@ -10,23 +12,24 @@ import (
 
 var _ = fmt.Print // debugging
 
-func main() {
-	_, tokens := lex.Lex("bro", `
-package main
-
-import (
-	"fmt"
-	"github.com/samertm/chompy/lex"
-	"github.com/samertm/chompy/parse"
-)
-
-var _ = fmt.Print // debugging
 
 func main() {
-	tree := parse.Start(tokens)
-	fmt.Print(tree)
-}
-`)
+	if len(os.Args) < 2 {
+		log.Fatal("Expected filename")
+	}
+
+	filename := os.Args[1]
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	source, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, tokens := lex.Lex("bro", string(source))
 	tree := parse.Start(tokens)
 	fmt.Println(string(semantic.Gen(tree)))
 }

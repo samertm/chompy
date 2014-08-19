@@ -10,6 +10,7 @@ import (
 func treeWalks(t *parse.Tree) []string {
 	rewrites := []func(*parse.Tree) []string{
 		collectErrors,
+		checkMain,
 		// rewriteDeclAssign,
 		// createStables,
 	}
@@ -22,12 +23,50 @@ func treeWalks(t *parse.Tree) []string {
 	return nil
 }
 
+func checkMain(t *parse.Tree) []string {
+	for _, kid := range t.Kids {
+		switch f := kid.(type) {
+		case *parse.Funcdecl:
+			i, ok := f.Name.(*parse.Ident)
+
+			if !ok {
+				log.Fatal("Expected Ident")
+			}
+			
+			if i.Name != "main" {
+				continue
+			}
+			
+			fn, ok := f.FuncOrSig.(*parse.Func)
+			
+			if !ok {
+				log.Fatal("Expected Func");
+			}
+			
+			sig := fn.Sig.(*parse.Sig)
+			
+			params := sig.Params.(*parse.Params)
+			if len(params.Params) != 0 {
+				log.Fatal("Expected no arguments");
+			}
+			
+			if sig.Result != nil {
+				log.Fatal("Expected no result");
+			}
+			
+			return nil
+		}
+	}
+
+	return []string{"Did not find main"}
+}
+
 // Collects all the errors starting at node from Erro nodes.
 func collectErrors(t *parse.Tree) []string {
 	// Preamble.
 	errors := make([]string, 0, 5)
 	nodes := make(chan parse.Node)
-	go walkAll(t, nodes)
+	go walkAll(t, node)
 	// Collect errors.
 	for n := range nodes {
 		switch n.(type) {

@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/samertm/chompy/parse"
 )
@@ -28,36 +29,26 @@ func checkMain(t *parse.Tree) []string {
 		switch f := kid.(type) {
 		case *parse.Funcdecl:
 			i, ok := f.Name.(*parse.Ident)
-
 			if !ok {
 				log.Fatal("Expected Ident")
 			}
-			
 			if i.Name != "main" {
 				continue
 			}
-			
 			fn, ok := f.FuncOrSig.(*parse.Func)
-			
 			if !ok {
-				log.Fatal("Expected Func");
+				log.Fatal("Expected Func")
 			}
-			
 			sig := fn.Sig.(*parse.Sig)
-			
-			params := sig.Params.(*parse.Params)
-			if len(params.Params) != 0 {
-				log.Fatal("Expected no arguments");
+			if sig.Params != nil {
+				log.Fatal("Expected no arguments")
 			}
-			
 			if sig.Result != nil {
-				log.Fatal("Expected no result");
+				log.Fatal("Expected no result")
 			}
-			
 			return nil
 		}
 	}
-
 	return []string{"Did not find main"}
 }
 
@@ -66,7 +57,7 @@ func collectErrors(t *parse.Tree) []string {
 	// Preamble.
 	errors := make([]string, 0, 5)
 	nodes := make(chan parse.Node)
-	go walkAll(t, node)
+	go walkAll(t, nodes)
 	// Collect errors.
 	for n := range nodes {
 		switch n.(type) {

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"io/ioutil"
+	"log"
+	"os"
 
 	"github.com/samertm/chompy/lex"
 	"github.com/samertm/chompy/parse"
@@ -11,7 +12,6 @@ import (
 )
 
 var _ = fmt.Print // debugging
-
 
 func main() {
 	if len(os.Args) < 2 {
@@ -23,7 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	source, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Fatal(err)

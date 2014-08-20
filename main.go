@@ -32,5 +32,5 @@ func main() {
 func compile(src []byte) {
 	_, tokens := lex.Lex("bro", string(src))
 	tree := parse.Start(tokens)
-	fmt.Println(string(semantic.Gen(tree)))
+	fmt.Print(string(semantic.Gen(tree)))
 }

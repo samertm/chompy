@@ -22,6 +22,15 @@ type parser struct {
 	trackerToErrors map[int]int
 }
 
+func newParser(toks chan lex.Token) *parser {
+	return &parser{
+		toks:            toks,
+		oldToks:         make([]*lex.Token, 0),
+		errors:          make([]string, 0),
+		trackerToErrors: make(map[int]int),
+	}
+}
+
 // gets the next token in the stream
 func (p *parser) next() *lex.Token {
 	if len(p.oldToks) != 0 {

@@ -9,11 +9,7 @@ import (
 var _ = fmt.Println // debugging
 
 func Start(toks chan lex.Token) Node {
-	p := &parser{
-		toks:    toks,
-		oldToks: make([]*lex.Token, 0),
-		errors:  make([]string, 0),
-	}
+	p := newParser(toks)
 	t := sourceFile(p)
 	return t
 }

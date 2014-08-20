@@ -1,1 +1,3 @@
 .srclib-cache
+*.o
+*.s

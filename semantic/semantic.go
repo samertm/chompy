@@ -30,18 +30,19 @@ func check(n parse.Node) *parse.Tree {
 // Only deals with main.main right now.
 func genCode(t *parse.Tree) []byte {
 	code := emitStart()
-	hooks := map[string]walkFn{
-		"*parse.Funcdecl": func(n parse.Node) bool {
-			f := n.(*parse.Funcdecl)
-			name := f.Name.(*parse.Ident)
-			code = append(code, emitFuncHeader(name.Name)...)
-			if name.Name == "main" {
-				code = append(code, emitFuncBody()...)
-			}
-			return false
-		},
+	for _, n := range t.Kids {
+		var f *parse.Funcdecl
+		var ok bool
+		if f, ok = n.(*parse.Funcdecl); !ok {
+			continue
+		}
+		
+		name := f.Name.Name
+		code = append(code, emitFuncHeader(name)...)
+		if name == "main" {
+			code = append(code, emitFuncBody()...)
+		}
 	}
-	walkAllHooks(t, nil, hooks)
 	return code
 }
 

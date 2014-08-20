@@ -1,9 +1,10 @@
 package parse
 
 import (
-	"github.com/samertm/chompy/lex"
-
+	"errors"
 	"log"
+
+	"github.com/samertm/chompy/lex"
 )
 
 // parser type keeps track of the state of the parser for the state
@@ -16,6 +17,9 @@ type parser struct {
 	recordedTokens []*lex.Token
 	// index in recorded tokens that each tracker is on
 	trackers []int
+	errors   []string
+	// Maps a tracker index to the earliest errors index.
+	trackerToErrors map[int]int
 }
 
 // gets the next token in the stream
@@ -74,9 +78,11 @@ func (p *parser) unhookTracker() {
 		// erase trackers, recordedTokens
 		p.trackers = make([]int, 0)
 		p.recordedTokens = make([]*lex.Token, 0)
+		p.trackerToErrors = make(map[int]int)
 	} else {
 		// remove tracker, keep recorded tokens intact
 		p.trackers = p.trackers[:len(p.trackers)-1]
+		delete(p.trackerToErrors, len(p.trackers))
 	}
 }
 
@@ -101,6 +107,10 @@ func (p *parser) backtrack() {
 	// remove backtracked tokens from recordedTokens
 	p.recordedTokens = p.recordedTokens[:end]
 	//fmt.Println("BACKTRACKING END")
+	// remove associated errors
+	if erroridx, ok := p.trackerToErrors[len(p.trackers)-1]; ok {
+		p.errors = p.errors[:erroridx]
+	}
 }
 
 // peek looks at the next token without modifying the stream
@@ -126,9 +136,25 @@ func (p *parser) accept(toks ...lex.Token) bool {
 // expect returns an error if it cannot accept the token that is
 // passed in. Use it as a stronger version of accept. expect does
 // not modify the stream.
-func (p *parser) expect(tok lex.Token) *Erro {
+func (p *parser) expect(tok lex.Token) error {
 	if p.accept(tok) {
 		return nil
 	}
-	return &Erro{"expected " + tok.String() + " recieved " + p.peek().String()}
+	return errors.New("expected " + tok.String() + " recieved " + p.peek().String())
+}
+
+func (p *parser) addError(e string) {
+	p.errors = append(p.errors, e)
+	if len(p.trackers) != 0 {
+		i := len(p.trackers) - 1
+		if _, ok := p.trackerToErrors[i]; !ok {
+			p.trackerToErrors[i] = len(p.errors) - 1
+		}
+	}
+}
+
+// returns true if the current tracker has not hit any errors
+func (p *parser) valid() bool {
+	_, ok := p.trackerToErrors[len(p.trackers)-1]
+	return !ok
 }

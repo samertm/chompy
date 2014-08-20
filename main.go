@@ -29,7 +29,7 @@ func main() {
 	compile(source)
 }
 
-func compile(src string) {
+func compile(src []byte) {
 	_, tokens := lex.Lex("bro", string(src))
 	tree := parse.Start(tokens)
 	fmt.Println(string(semantic.Gen(tree)))

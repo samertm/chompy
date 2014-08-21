@@ -7,6 +7,7 @@ func treeWalks(t *parse.Tree) sErrors {
 		checkPackage,
 		checkImports,
 		checkMain,
+		// rewriteShorVar,
 	}
 	for _, fn := range walks {
 		s := fn(t)
@@ -16,6 +17,25 @@ func treeWalks(t *parse.Tree) sErrors {
 	}
 	return nil
 }
+
+// // TODO finish this function
+// func rewriteShorVar(t *parse.Tree) sErrors {
+// 	var rewriteBlocks func(*parse.Block)
+// 	rewriteBlocks = func(b *parse.Block) {
+// 		for _, s := range b.Stmts {
+// 			// TODO fill this out
+// 		}
+// 	}
+// 	for _, k := range t.Kids {
+// 		var fn *parse.Funcdecl
+// 		var ok bool
+// 		if fn, ok := k.(*parse.Funcdecl); !ok {
+// 			continue
+// 		}
+// 		rewriteBlocks(fn.Func.Body)
+// 	}
+// 	return nil
+// }
 
 func checkPackage(t *parse.Tree) sErrors {
 	if len(t.Kids) == 0 {

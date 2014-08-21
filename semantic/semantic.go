@@ -2,12 +2,16 @@ package semantic
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/samertm/chompy/parse"
+	"github.com/samertm/chompy/semantic/stable"
 )
 
-var _ = log.Fatal // debugging
+var _ = log.Fatal   // debugging
+var _ = fmt.Println // debugging
 
 type sErrors []string
 
@@ -50,17 +54,13 @@ func check(n parse.Node) (*parse.Tree, error) {
 // Only deals with main.main right now.
 func genCode(t *parse.Tree) []byte {
 	code := emitStart()
-	for _, n := range t.Kids {
-		var f *parse.Funcdecl
-		var ok bool
-		if f, ok = n.(*parse.Funcdecl); !ok {
-			continue
-		}
-
-		name := f.Name.Name
-		code = append(code, emitFuncHeader(name)...)
-		if name == "main" {
-			code = append(code, emitFuncBody()...)
+	for _, node := range t.Kids {
+		switch n := node.(type) {
+		case *parse.Funcdecl:
+			name := n.Name.Name
+			code = append(code, emitFuncHeader(name)...)
+			code = append(code, emitFuncBody(n.Func.Body.Stmts)...)
+			code = append(code, emitFuncReturn()...)
 		}
 	}
 	return code
@@ -75,14 +75,44 @@ func emitStart() []byte {
 	return code
 }
 
-func emitFuncBody() []byte {
-	return []byte("\tbx\tlr\n")
+func emitFuncBody(stmts []parse.Node) []byte {
+	table := stable.New(nil)
+	var stackOffset int
+	for _, stmt := range stmts {
+		switch s := stmt.(type) {
+		case *parse.Vars:
+			for _, v := range s.Vs {
+				for _, id := range v.Idents {
+					// Assume the type is an int
+					stackOffset += 4
+					t := &stable.Basic{Name: "int", Size: 4}
+					table.Insert(id.Name, &stable.NodeInfo{T: t, Offset: stackOffset})
+				}
+			}
+	}
+	code := emitFuncStackSetup(stackOffset)
+	for _, stmt := range stmts {
+		
+	}
+	return code
+}
+
+func emitFuncStackSetup(offset int) []byte {
+	return []byte("\tpush\t{r7}\n" +
+		"\tsub\tsp, sp, #" + strconv.Itoa(offset) + "\n" +
+		"\tadd\tr7, sp, #0\n")
+}
+
+func emitFuncReturn() []byte {
+	return []byte("\tpop\t{r7}\n" +
+		"\tbx\tlr\n")
 }
 
 func emitFuncHeader(name string) []byte {
 	return []byte("\t.align\t2\n" +
 		"\t.global\t" + name + "\n" +
 		name + ":\n")
+		
 }
 
 //func emitMov(dest int, src int)

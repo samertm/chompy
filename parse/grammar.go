@@ -8,10 +8,10 @@ import (
 
 var _ = fmt.Println // debugging
 
-func Start(toks chan lex.Token) Node {
+func Start(toks chan lex.Token) (Node, error) {
 	p := newParser(toks)
 	t := sourceFile(p)
-	return t
+	return t, p.errs
 }
 
 // SourceFile = PackageClause ";" { ImportDecl ";" } { TopLevelDecl ";" } .

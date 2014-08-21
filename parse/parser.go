@@ -17,16 +17,32 @@ type parser struct {
 	recordedTokens []*lex.Token
 	// index in recorded tokens that each tracker is on
 	trackers []int
-	errors   []string
+	errs     pErrors
 	// Maps a tracker index to the earliest errors index.
 	trackerToErrors map[int]int
+}
+
+type pErrors []string
+
+func (e pErrors) Error() string {
+	if len(e) == 0 {
+		return "No errors."
+	}
+	str := make([]byte, 0)
+	for i, err := range e {
+		if i != 0 {
+			str = append(str, '\n')
+		}
+		str = append(str, err...)
+	}
+	return string(str)
 }
 
 func newParser(toks chan lex.Token) *parser {
 	return &parser{
 		toks:            toks,
 		oldToks:         make([]*lex.Token, 0),
-		errors:          make([]string, 0),
+		errs:            make([]string, 0),
 		trackerToErrors: make(map[int]int),
 	}
 }
@@ -118,7 +134,7 @@ func (p *parser) backtrack() {
 	//fmt.Println("BACKTRACKING END")
 	// remove associated errors
 	if erroridx, ok := p.trackerToErrors[len(p.trackers)-1]; ok {
-		p.errors = p.errors[:erroridx]
+		p.errs = p.errs[:erroridx]
 	}
 }
 
@@ -153,11 +169,11 @@ func (p *parser) expect(tok lex.Token) error {
 }
 
 func (p *parser) addError(e string) {
-	p.errors = append(p.errors, e)
+	p.errs = append(p.errs, e)
 	if len(p.trackers) != 0 {
 		i := len(p.trackers) - 1
 		if _, ok := p.trackerToErrors[i]; !ok {
-			p.trackerToErrors[i] = len(p.errors) - 1
+			p.trackerToErrors[i] = len(p.errs) - 1
 		}
 	}
 }

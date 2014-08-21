@@ -1,12 +1,11 @@
 package main
 
-import (
-        "fmt"
-        "github.com/samertm/chompy/lex"
-        "github.com/samertm/chompy/parse"
-)
 
 var _ = fmt.Print // debugging
+
+import (
+       "HI"
+)
 
 func main() {
         var tree int

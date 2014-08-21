@@ -49,6 +49,9 @@ func sourceFile(p *parser) *Tree {
 		}
 		p.next() // eat semicolon
 	}
+	if err := p.expect(tokEOF); err != nil {
+		p.addError(err.Error())
+	}
 	return tr
 }
 

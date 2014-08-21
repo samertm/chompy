@@ -7,35 +7,36 @@ import (
 
 // all tokens start with "tok"
 var (
-	tokString            = lex.Token{Typ: lex.String}
-	tokIdentifier        = lex.Token{Typ: lex.Identifier}
-	tokInt               = lex.Token{Typ: lex.Int}
-	tokIf                = lex.Token{Typ: lex.Keyword, Val: "if"}
-	tokElse              = lex.Token{Typ: lex.Keyword, Val: "else"}
-	tokFor               = lex.Token{Typ: lex.Keyword, Val: "for"}
-	tokGo                = lex.Token{Typ: lex.Keyword, Val: "go"}
-	tokReturn            = lex.Token{Typ: lex.Keyword, Val: "return"}
-	tokBreak             = lex.Token{Typ: lex.Keyword, Val: "break"}
-	tokContinue          = lex.Token{Typ: lex.Keyword, Val: "continue"}
-	tokGoto              = lex.Token{Typ: lex.Keyword, Val: "goto"}
-	tokFallthrough       = lex.Token{Typ: lex.Keyword, Val: "fallthrough"}
-	tokDefer             = lex.Token{Typ: lex.Keyword, Val: "defer"}
-	tokRange             = lex.Token{Typ: lex.Keyword, Val: "range"}
-	tokSemicolon         = lex.Token{Typ: lex.OpOrDelim, Val: ";"}
-	tokDot               = lex.Token{Typ: lex.OpOrDelim, Val: "."}
-	tokOpenParen         = lex.Token{Typ: lex.OpOrDelim, Val: "("}
-	tokCloseParen        = lex.Token{Typ: lex.OpOrDelim, Val: ")"}
-	tokOpenSquiggly      = lex.Token{Typ: lex.OpOrDelim, Val: "{"}
-	tokCloseSquiggly     = lex.Token{Typ: lex.OpOrDelim, Val: "}"}
-	tokComma             = lex.Token{Typ: lex.OpOrDelim, Val: ","}
-	tokEqual             = lex.Token{Typ: lex.OpOrDelim, Val: "="}
-	tokColonEqual        = lex.Token{Typ: lex.OpOrDelim, Val: ":="}
-	tokDotDotDot         = lex.Token{Typ: lex.OpOrDelim, Val: "..."}
-	tokLeftArrow         = lex.Token{Typ: lex.OpOrDelim, Val: "<-"}
-	tokColon             = lex.Token{Typ: lex.OpOrDelim, Val: ":"}
-	tokOpenSquareBrace   = lex.Token{Typ: lex.OpOrDelim, Val: "["}
+	tokString           = lex.Token{Typ: lex.String}
+	tokIdentifier       = lex.Token{Typ: lex.Identifier}
+	tokInt              = lex.Token{Typ: lex.Int}
+	tokEOF              = lex.Token{Typ: lex.EOF}
+	tokIf               = lex.Token{Typ: lex.Keyword, Val: "if"}
+	tokElse             = lex.Token{Typ: lex.Keyword, Val: "else"}
+	tokFor              = lex.Token{Typ: lex.Keyword, Val: "for"}
+	tokGo               = lex.Token{Typ: lex.Keyword, Val: "go"}
+	tokReturn           = lex.Token{Typ: lex.Keyword, Val: "return"}
+	tokBreak            = lex.Token{Typ: lex.Keyword, Val: "break"}
+	tokContinue         = lex.Token{Typ: lex.Keyword, Val: "continue"}
+	tokGoto             = lex.Token{Typ: lex.Keyword, Val: "goto"}
+	tokFallthrough      = lex.Token{Typ: lex.Keyword, Val: "fallthrough"}
+	tokDefer            = lex.Token{Typ: lex.Keyword, Val: "defer"}
+	tokRange            = lex.Token{Typ: lex.Keyword, Val: "range"}
+	tokSemicolon        = lex.Token{Typ: lex.OpOrDelim, Val: ";"}
+	tokDot              = lex.Token{Typ: lex.OpOrDelim, Val: "."}
+	tokOpenParen        = lex.Token{Typ: lex.OpOrDelim, Val: "("}
+	tokCloseParen       = lex.Token{Typ: lex.OpOrDelim, Val: ")"}
+	tokOpenSquiggly     = lex.Token{Typ: lex.OpOrDelim, Val: "{"}
+	tokCloseSquiggly    = lex.Token{Typ: lex.OpOrDelim, Val: "}"}
+	tokComma            = lex.Token{Typ: lex.OpOrDelim, Val: ","}
+	tokEqual            = lex.Token{Typ: lex.OpOrDelim, Val: "="}
+	tokColonEqual       = lex.Token{Typ: lex.OpOrDelim, Val: ":="}
+	tokDotDotDot        = lex.Token{Typ: lex.OpOrDelim, Val: "..."}
+	tokLeftArrow        = lex.Token{Typ: lex.OpOrDelim, Val: "<-"}
+	tokColon            = lex.Token{Typ: lex.OpOrDelim, Val: ":"}
+	tokOpenSquareBrace  = lex.Token{Typ: lex.OpOrDelim, Val: "["}
 	tokCloseSquareBrace = lex.Token{Typ: lex.OpOrDelim, Val: "]"}
-	tokIncDec            = []lex.Token{
+	tokIncDec           = []lex.Token{
 		lex.Token{Typ: lex.OpOrDelim, Val: "++"},
 		lex.Token{Typ: lex.OpOrDelim, Val: "--"},
 	}
@@ -105,13 +106,13 @@ var (
 	topExpression     = append([]lex.Token{}, topUnaryExpr...)
 	topUnaryExpr      = append(append([]lex.Token{},
 		topPrimaryExpr...), tokUnaryOp...)
-	topPrimaryExpr = append(append([]lex.Token{topBuiltinCall}, topOperand...), topConversion...)
+	topPrimaryExpr      = append(append([]lex.Token{topBuiltinCall}, topOperand...), topConversion...)
 	topPrimaryExprPrime = []lex.Token{
 		topSelector, topIndex, topSlice, topTypeAssertion, topCall,
 	}
-	topOperand     = append([]lex.Token{topOperandName}, topLiteral...)
-	topLiteral     = topBasicLit
-	topBasicLit    = []lex.Token{
+	topOperand  = append([]lex.Token{topOperandName}, topLiteral...)
+	topLiteral  = topBasicLit
+	topBasicLit = []lex.Token{
 		tokInt,
 		tokString,
 	}

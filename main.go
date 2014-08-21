@@ -38,5 +38,10 @@ func compile(src []byte) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Print(string(semantic.Gen(tree)))
+	code, err := semantic.Gen(tree)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Print(string(code))
 }

@@ -136,6 +136,7 @@ func (p *parser) backtrack() {
 	if erroridx, ok := p.trackerToErrors[len(p.trackers)-1]; ok {
 		p.errs = p.errs[:erroridx]
 	}
+	delete(p.trackerToErrors, len(p.trackers)-1)
 }
 
 // peek looks at the next token without modifying the stream

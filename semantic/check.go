@@ -2,8 +2,8 @@ package semantic
 
 import "github.com/samertm/chompy/parse"
 
-func treeWalks(t *parse.Tree) []string {
-	walks := []func(*parse.Tree) []string{
+func treeWalks(t *parse.Tree) sErrors {
+	walks := []func(*parse.Tree) sErrors {
 		checkPackage,
 		checkImports,
 		checkMain,
@@ -17,18 +17,18 @@ func treeWalks(t *parse.Tree) []string {
 	return nil
 }
 
-func checkPackage(t *parse.Tree) []string {
+func checkPackage(t *parse.Tree) sErrors {
 	if len(t.Kids) == 0 {
 		return nil
 	}
 	_, ok := t.Kids[0].(*parse.Pkg)
 	if !ok {
-		return []string{"First statement must be package statement"}
+		return sErrors{"First statement must be package statement"}
 	}
 	return nil
 }
 
-func checkImports(t *parse.Tree) []string {
+func checkImports(t *parse.Tree) sErrors {
 	if len(t.Kids) < 2 {
 		return nil
 	}
@@ -38,7 +38,7 @@ func checkImports(t *parse.Tree) []string {
 		_, imptOk := t.Kids[i].(*parse.Impt)
 		if imptsOk || imptOk {
 			if i > lastImport + 1 {
-				return []string{"Cannot have imports after other statements"}
+				return sErrors{"Cannot have imports after other statements"}
 			}
 			lastImport = i
 		}
@@ -46,7 +46,7 @@ func checkImports(t *parse.Tree) []string {
 	return nil
 }
 
-func checkMain(t *parse.Tree) []string {
+func checkMain(t *parse.Tree) sErrors {
 	for _, kid := range t.Kids {
 		switch f := kid.(type) {
 		case *parse.Funcdecl:
@@ -58,5 +58,5 @@ func checkMain(t *parse.Tree) []string {
 			}
 		}
 	}
-	return []string{"Did not find main"}
+	return sErrors{"Did not find main"}
 }

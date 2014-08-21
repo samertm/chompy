@@ -1,4 +1,4 @@
-
+package main
 
 import (
         "fmt"
@@ -9,6 +9,7 @@ import (
 var _ = fmt.Print // debugging
 
 func main() {
-        tree := parse.Start(tokens)
+        var tree int
+        tree = 1
         fmt.Print(tree)
 }

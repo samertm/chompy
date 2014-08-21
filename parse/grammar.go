@@ -11,7 +11,10 @@ var _ = fmt.Println // debugging
 func Start(toks chan lex.Token) (Node, error) {
 	p := newParser(toks)
 	t := sourceFile(p)
-	return t, p.errs
+	if len(p.errs) != 0 {
+		return nil, p.errs
+	}
+	return t, nil
 }
 
 // SourceFile = PackageClause ";" { ImportDecl ";" } { TopLevelDecl ";" } .
@@ -556,7 +559,7 @@ func block(p *parser) *Block {
 	b := &Block{}
 	// I don't think I need this check, because I need to allow empty statements
 	// if !p.accept(topStatementList...) {
-	p.addError("Expected statement list, found " + p.peek().String())
+	// p.addError("Expected statement list, found " + p.peek().String())
 	// }
 	b.Stmts = statementList(p)
 	if err := p.expect(tokCloseSquiggly); err != nil {
@@ -952,7 +955,7 @@ func labeledStmt(p *parser) *LabeledStmt {
 	}
 	p.next() // eat ":"
 	if !p.accept(topStatement...) {
-		p.addError("Expected statement")
+		p.addError("Expected statement at: " + p.peek().String())
 		return nil
 	}
 	s := statement(p)
@@ -1006,7 +1009,6 @@ func simpleStmt(p *parser) Node {
 		// fmt.Println("BEFORE BACKTRACK: ", p.peek())
 		p.backtrack()
 		// fmt.Println("AFTER BACKTRACK: ", p.peek())
-		// ... my backtracking might not be working...
 	}
 	// Assignment, IncDecStmt, SendStmt, ExpressionStmt all start with expressions
 	if p.accept(topExpression...) {
@@ -1039,7 +1041,7 @@ func simpleStmt(p *parser) Node {
 		p.backtrack()
 
 		// none were valid, return error
-		p.addError("Expected statement meow")
+		p.addError("Expected statement at: " + p.peek().String())
 		return nil
 	}
 	// nothing accepted, return empty statement i.e. nil

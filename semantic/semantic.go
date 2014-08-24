@@ -77,6 +77,7 @@ func emitStart() []byte {
 
 func emitFuncBody(stmts []parse.Node) []byte {
 	table := stable.New(nil)
+	var code []byte
 	var stackOffset int
 	for _, stmt := range stmts {
 		switch s := stmt.(type) {
@@ -89,12 +90,47 @@ func emitFuncBody(stmts []parse.Node) []byte {
 					table.Insert(id.Name, &stable.NodeInfo{T: t, Offset: stackOffset})
 				}
 			}
+		case *parse.Assign:
+			if len(s.LeftExpr) != len(s.RightExpr) {
+				log.Fatal("args must match, and you can only have one argument on each side.")
+			}
+			// Hack: closure turns switch statement into an expression
+			code = append(code, func(s *parse.Assign) []byte {
+				switch s.Op {
+				case "=":
+					return emitFuncAssignment(table, s)
+				}
+				return []byte("")
+			}(s)...)
+		}
 	}
-	code := emitFuncStackSetup(stackOffset)
-	for _, stmt := range stmts {
-		
-	}
+	// Add stack setup to the beginning
+	code = append(emitFuncStackSetup(stackOffset), code...)
 	return code
+}
+
+func bprintf(format string, a ...interface{}) []byte {
+	return []byte(fmt.Sprintf(format, a...))
+}
+
+func emitFuncAssignment(t *stable.Stable, a *parse.Assign) []byte {
+	// First, we need to check to see that the expressions on the left are all idents
+	// TODO: Make this work for more than one variable.
+	if len(a.LeftExpr) == 0 {
+		log.Fatal("Expected idents on the left of the assignment")
+	}
+	id, ok := a.LeftExpr[0].FirstN.(*parse.UnaryE).Expr.(*parse.PrimaryE).Expr.(*parse.Ident)
+	if !ok {
+		log.Fatalf("Expected left of assignment to be ident: %s", a)
+	}
+	n, ok := t.Get(id.Name)
+	if !ok {
+		log.Fatalf("Ident %s not in scope", id)
+	}
+	// TODO: Evaluate the expression on the right. For now, we will assume that it
+	// is 5.
+	return bprintf("\tmovs\tr3, #%d\n"+
+		"\tstr\tr3, [r7, #%d]\n", 5, n.Offset)
 }
 
 func emitFuncStackSetup(offset int) []byte {
@@ -112,7 +148,7 @@ func emitFuncHeader(name string) []byte {
 	return []byte("\t.align\t2\n" +
 		"\t.global\t" + name + "\n" +
 		name + ":\n")
-		
+
 }
 
 //func emitMov(dest int, src int)

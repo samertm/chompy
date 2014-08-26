@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"errors"
+	"fmt"
 	"log"
 
 	"github.com/samertm/chompy/lex"
@@ -166,7 +166,7 @@ func (p *parser) expect(tok lex.Token) error {
 	if p.accept(tok) {
 		return nil
 	}
-	return errors.New("expected " + tok.String() + " recieved " + p.peek().String())
+	return fmt.Errorf("expected %s recieved %s", tok.String(), p.peek().String())
 }
 
 func (p *parser) addError(e string) {

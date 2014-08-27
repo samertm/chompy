@@ -115,7 +115,7 @@ func bprintf(format string, a ...interface{}) []byte {
 
 func emitFuncAssignment(t *stable.Stable, a *parse.Assign) []byte {
 	// First, we need to check to see that the expressions on the left are all idents
-	// TODO: Make this work for more than one variable.
+	// TODO: Make this work for more than one variable. [Issue: https://github.com/samertm/chompy/issues/3]
 	if len(a.LeftExpr) == 0 {
 		log.Fatal("Expected idents on the left of the assignment")
 	}
@@ -127,8 +127,9 @@ func emitFuncAssignment(t *stable.Stable, a *parse.Assign) []byte {
 	if !ok {
 		log.Fatalf("Ident %s not in scope", id)
 	}
-	// TODO: Evaluate the expression on the right. For now, we will assume that it
+	// TODO: Evaluate the expression on the right. For now, we will assume that it [Issue: https://github.com/samertm/chompy/issues/2]
 	// is 5.
+	// added to tests todos.
 	return bprintf("\tmovs\tr3, #%d\n"+
 		"\tstr\tr3, [r7, #%d]\n", 5, n.Offset)
 }

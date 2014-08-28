@@ -8,7 +8,8 @@ func main() {
         var apple int
         apple = 6
         tree = 2 + apple + 3
-        if apple == 6 {
+        if tree == 11 {
         	apple = 2
         }
+        return apple
 }

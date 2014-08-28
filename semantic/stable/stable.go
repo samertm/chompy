@@ -5,12 +5,17 @@ package stable
 type NodeInfo struct {
 	// What variables do we need? Probably a pointer to a type
 	T      *Basic // TODO: change to Type [Issue: https://github.com/samertm/chompy/issues/15]
-	Offset int
+	StackOffset int
+	scopeOffset int
 	// What else? We don't need the identifier name because
 	// that's stored in the symbol table. There may be other
 	// things but I'm not sure what they are.
 	// We need to store the thing above it
 	up *NodeInfo
+}
+
+func (n NodeInfo) Offset() int {
+	return n.StackOffset + n.scopeOffset
 }
 
 // Okay, let's create our Type type. Type will hold all the
@@ -138,11 +143,14 @@ func (s *Stable) Insert(name string, value *NodeInfo) {
 }
 
 func (s *Stable) Get(name string) (*NodeInfo, bool) {
+	var scopeOffset int
 	for tab := s; tab != nil; tab = tab.up {
 		n, ok := tab.table[name]
 		if ok {
+			n.scopeOffset = scopeOffset
 			return n, true
 		}
+		scopeOffset += 4
 	}
 	return nil, false
 }

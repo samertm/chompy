@@ -107,7 +107,7 @@ func emitEvalStmt(t *stable.Stable, stmt parse.Node, stackOffset *int) []byte {
 				// Assume the type is an int
 				*stackOffset += 4
 				typ := &stable.Basic{Name: "int", Size: 4}
-				t.Insert(id.Name, &stable.NodeInfo{T: typ, Offset: *stackOffset})
+				t.Insert(id.Name, &stable.NodeInfo{T: typ, StackOffset: *stackOffset})
 			}
 		}
 	case *parse.Assign:
@@ -142,7 +142,6 @@ func emitEvalStmt(t *stable.Stable, stmt parse.Node, stackOffset *int) []byte {
 			// TODO: handle else statements [Issue: https://github.com/samertm/chompy/issues/14]
 			log.Fatal("I don't handle else statements yet")
 		}
-		
 		code = append(code, emitBlock(t, s.Body)...)
 		code = append(code, bprintf("%s:\n", l)...)
 	default:
@@ -176,7 +175,7 @@ func emitFuncAssignment(t *stable.Stable, a *parse.Assign) []byte {
 	code := emitEvalExpr(t, a.RightExpr[0])
 	// TODO: Evaluate the expression on the right. For now, we will assume that it [Issue: https://github.com/samertm/chompy/issues/2]
 	// is 5.
-	return append(code, bprintf("\tstr\tr6, [r7, #%d]\n", n.Offset)...)
+	return append(code, bprintf("\tstr\tr6, [r7, #%d]\n", n.Offset())...)
 }
 
 func emitEvalExpr(t *stable.Stable, ex *parse.Expr) []byte {
@@ -198,7 +197,7 @@ func emitEvalExpr(t *stable.Stable, ex *parse.Expr) []byte {
 				if !ok {
 					log.Fatalf("Ident %s not in scope", n)
 				}
-				result = append(result, bprintf("\tldr\tr5, [r7, #%d]\n", ni.Offset)...)
+				result = append(result, bprintf("\tldr\tr5, [r7, #%d]\n", ni.Offset())...)
 			case *parse.Lit:
 				if n.Typ != "Int" {
 					log.Fatal("The only type available are ints")
@@ -229,7 +228,7 @@ func emitEvalExpr(t *stable.Stable, ex *parse.Expr) []byte {
 func emitFuncStackSetup(offset int) []byte {
 	return []byte("\tpush\t{r7}\n" +
 		"\tsub\tsp, sp, #" + strconv.Itoa(offset) + "\n" +
-		"\tadd\tr7, sp, #0\n")
+		"\tmov\tr7, sp\n")
 }
 
 func emitFuncReturn() []byte {

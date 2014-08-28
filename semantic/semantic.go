@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 
 	"github.com/samertm/chompy/parse"
@@ -127,11 +128,42 @@ func emitFuncAssignment(t *stable.Stable, a *parse.Assign) []byte {
 	if !ok {
 		log.Fatalf("Ident %s not in scope", id)
 	}
+	// TODO: handle more than one expression [Issue: https://github.com/samertm/chompy/issues/5]
+	if len(a.RightExpr) != 1 {
+		log.Fatal("Expected one expression to the right of the assignment")
+	}
+	code := emitEvalExpr(a.RightExpr[0])
 	// TODO: Evaluate the expression on the right. For now, we will assume that it [Issue: https://github.com/samertm/chompy/issues/2]
 	// is 5.
-	// added to tests todos.
-	return bprintf("\tmovs\tr3, #%d\n"+
-		"\tstr\tr3, [r7, #%d]\n", 5, n.Offset)
+	return append(code, bprintf("\tstr\tr3, [r7, #%d]\n", n.Offset)...)
+}
+
+func emitEvalExpr(ex *parse.Expr) []byte {
+	var result []byte
+	switch e := ex.FirstN.(type) {
+	case *parse.UnaryE:
+		// TODO: do something with e.Op [Issue: https://github.com/samertm/chompy/issues/4]
+		ee, ok := e.Expr.(*parse.PrimaryE)
+		// TODO: handle more cases [Issue: https://github.com/samertm/chompy/issues/6]
+		if !ok {
+			log.Fatalf("poo %s", reflect.TypeOf(e))
+		}
+		switch n := ee.Expr.(type) {
+		case *parse.Lit:
+			if n.Typ != "Int" {
+				log.Fatal("The only type available are ints")
+			}
+			result = bprintf("\tmovs\tr3, #%s\n", n.Val)
+		default:
+			log.Fatalf("I don't handle %s yet\n", reflect.TypeOf(ee.Expr))
+		}
+		
+	case *parse.PrimaryE:
+		log.Fatalf("got primary expr %s", e)
+	default:
+		log.Fatal("expected PrimaryE or UnaryE")
+	}
+	return result
 }
 
 func emitFuncStackSetup(offset int) []byte {

@@ -627,7 +627,7 @@ func functionDecl(p *parser) *Funcdecl {
 func deferStmt(p *parser) *DeferStmt {
 	p.next() // eat "defer"
 	if !p.accept(topExpression...) {
-		p.addError("Expected expression")
+		p.addError("deferStmt: Expected expression, recieved " + p.peek().String())
 		return nil
 	}
 	return &DeferStmt{Expr: expression(p)}
@@ -680,7 +680,7 @@ func goStmt(p *parser) *GoStmt {
 	p.next() // eat "go"
 	g := &GoStmt{}
 	if !p.accept(topExpression...) {
-		p.addError("Expected expression")
+		p.addError("goStmt: Expected expression, recieved " + p.peek().String())
 		return nil
 	}
 	g.Expr = expression(p)
@@ -806,12 +806,12 @@ func forStmt(p *parser) *ForStmt {
 		!p.accept(topForClause...) &&
 		!p.accept(topRangeClause...) {
 		if !p.accept(topBlock) {
-			p.addError("Expected block")
+			p.addError("forStmt: Expected block, recieved " + p.peek().String())
 			return nil
 		}
 		return &ForStmt{Clause: nil, Body: block(p)}
 	}
-	// TODO set up tracker, dumb stupid face >:O
+	// TODO: set up tracker, dumb stupid face >:O [Issue: https://github.com/samertm/chompy/issues/7]
 	var clause Node
 	if p.accept(topCondition...) {
 		clause = condition(p)
@@ -828,7 +828,7 @@ func forStmt(p *parser) *ForStmt {
 		return nil
 	}
 	if !p.accept(topBlock) {
-		p.addError("Expected block")
+		p.addError("forStmt: Expected block, recieved " + p.peek().String())
 		return nil
 	}
 	return &ForStmt{Clause: clause, Body: block(p)}
@@ -847,20 +847,24 @@ func ifStmt(p *parser) *IfStmt {
 	// if we don't see a semicolon, we'll assume that
 	// they meant to use an expression and backtrack
 	if p.accept(topSimpleStmt...) {
+		//fmt.Println(p.peek())
 		s := simpleStmt(p)
+		//fmt.Println(p.peek())
 		if !p.accept(tokSemicolon) {
 			// we ate an expression
 			p.backtrack()
+			goto out
 		}
 		p.next() // eat ";"
 		ifstmt.SimpleStmt = s
 	}
+out:
 	// stop backtracking
 	p.unhookTracker()
 
 	// Expression
 	if !p.accept(topExpression...) {
-		p.addError("Expected expression")
+		p.addError("ifStmt: Expected expression, recieved " + p.peek().String())
 		return nil
 	}
 	ifstmt.Expr = expression(p)
@@ -928,7 +932,7 @@ func sendStmt(p *parser) *SendStmt {
 	}
 	p.next() // eat "<-"
 	if !p.accept(topExpression...) {
-		p.addError("Expected expression")
+		p.addError("sendStmt: Expected expression, recieved " + p.peek().String())
 		return nil
 	}
 	e := expression(p)
@@ -984,7 +988,7 @@ func shortVarDecl(p *parser) *ShortVarDecl {
 	}
 	p.next() // eat ":="
 	if !p.accept(topExpressionList...) {
-		p.addError("Expected expression")
+		p.addError("shortVarDecl: Expected expression, recieved " + p.peek().String())
 		return nil
 	}
 	e := expressionList(p)
@@ -1183,7 +1187,7 @@ func slice(p *parser) *Slice {
 		// fmt.Println("IN CAP")
 		if !p.accept(topExpression...) {
 			// fmt.Println("OH NOOOO")
-			p.addError("Expected expression")
+			p.addError("slice: Expected expression, recieved " + p.peek().String())
 			return nil
 		}
 		// fmt.Println("BEFORE CAP")
@@ -1203,7 +1207,7 @@ func slice(p *parser) *Slice {
 func index(p *parser) *Index {
 	p.next() // eat "["
 	if !p.accept(topExpression...) {
-		p.addError("Expected expression")
+		p.addError("index: Expected expression, recieved " + p.peek().String())
 		return nil
 	}
 	i := &Index{}
@@ -1406,7 +1410,7 @@ func conversion(p *parser) *Conversion {
 	}
 	p.next() // eat "("
 	if !p.accept(topExpression...) {
-		p.addError("Expected expression")
+		p.addError("conversion: Expected expression, recieved " + p.peek().String())
 		return nil
 	}
 	c.Expr = expression(p)

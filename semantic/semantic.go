@@ -137,13 +137,41 @@ func emitEvalStmt(t *stable.Stable, stmt parse.Node, stackOffset *int) []byte {
 		// TODO: check that the Expr is a comparison expression [Issue: https://github.com/samertm/chompy/issues/13]
 		code = append(code, emitEvalExpr(t, s.Expr)...)
 		l := nextLabel()
-		code = append(code, bprintf("\tbne\t%s\n", l)...)
+		switch s.Expr.BinOp {
+		case "==":
+			code = append(code, bprintf("\tbne\t%s\n", l)...)
+		case "<":
+			code = append(code, bprintf("\tblt\t%s\n", l)...)
+		default:
+			log.Fatal("I don't handle that comparator")
+		}
 		if s.Else != nil {
 			// TODO: handle else statements [Issue: https://github.com/samertm/chompy/issues/14]
 			log.Fatal("I don't handle else statements yet")
 		}
 		code = append(code, emitBlock(t, s.Body)...)
 		code = append(code, bprintf("%s:\n", l)...)
+	case *parse.ForStmt:
+		lClause := nextLabel()
+		lBody := nextLabel()
+		code = append(code, bprintf("\tb\t%s\n" +
+			"%s:\n", lClause, lBody)...)
+		// emit body code
+		if _, ok := s.Clause.(*parse.Expr); !ok {
+			log.Fatal("clause was not an expression")
+		}
+		code = append(code, emitBlock(t, s.Body)...)
+		code = append(code, bprintf("%s:\n", lClause)...)
+		// emit comparator code
+		code = append(code, emitEvalExpr(t, s.Clause.(*parse.Expr))...)
+		switch s.Clause.(*parse.Expr).BinOp {
+		case "==":
+			code = append(code, bprintf("\tbne\t%s\n", lBody)...)
+		case "<":
+			code = append(code, bprintf("\tblt\t%s\n", lBody)...)
+		default:
+			log.Fatal("I don't handle that comparator")
+		}
 	default:
 		log.Fatalf("I don't handle %s yet\n", reflect.TypeOf(s))
 	}
@@ -211,6 +239,8 @@ func emitEvalExpr(t *stable.Stable, ex *parse.Expr) []byte {
 				result = append(result, "\tadd\tr6, r6, r5\n"...)
 			case "==":
 				result = append(result, "\tcmp\tr6, r5\n"...)
+			case "<":
+				result = append(result, "\tcmp\tr5, r6\n"...)
 			case "":
 				result = append(result, "\tmovs\tr6, r5\n"...)
 			default:

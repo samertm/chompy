@@ -5,6 +5,7 @@ var _ = fmt.Print // debugging
 
 func main() {
         var tree int
-        tree = 1
-        fmt.Print(tree)
+        var apple int
+        apple = 6
+        tree = 2 + apple + 3
 }

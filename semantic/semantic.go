@@ -69,8 +69,8 @@ func genCode(t *parse.Tree) []byte {
 
 func emitStart() []byte {
 	code := emitFuncHeader("_start")
-	code = append(code, "\tbl\tmain\n"+
-		"\tmov\tr0, #0\n"+
+	code = append(code, "\tmov\tr0, #0\n"+
+		"\tbl\tmain\n"+
 		"\tmov\tr7, #1\n"+
 		"\tswi\t#0\n"...)
 	return code
@@ -103,6 +103,21 @@ func emitFuncBody(stmts []parse.Node) []byte {
 				}
 				return []byte("")
 			}(s)...)
+		case *parse.ReturnStmt:
+			if len(s.Exprs) == 0 {
+				code = append(code, "\tmov\tr0, #0\n"...)
+				code = append(code, emitFuncReturn()...)
+				continue
+			} else if len(s.Exprs) > 1 {
+				log.Fatalf("I don't handle more than one return value: %s\n", s)
+			}
+			code = append(code, emitEvalExpr(table, s.Exprs[0])...)
+			code = append(code, "\tmov\tr0, r6\n"...)
+			code = append(code, emitFuncReturn()...)
+		case *parse.Expr:
+			log.Fatalf("here: %s", s)
+		default:
+			log.Fatalf("I don't handle %s yet\n", reflect.TypeOf(s))
 		}
 	}
 	// Add stack setup to the beginning
@@ -120,7 +135,7 @@ func emitFuncAssignment(t *stable.Stable, a *parse.Assign) []byte {
 	if len(a.LeftExpr) == 0 {
 		log.Fatal("Expected idents on the left of the assignment")
 	}
-	id, ok := a.LeftExpr[0].FirstN.(*parse.UnaryE).Expr.(*parse.PrimaryE).Expr.(*parse.Ident)
+	id, ok := a.LeftExpr[0].FirstN.Expr.(*parse.PrimaryE).Expr.(*parse.Ident)
 	if !ok {
 		log.Fatalf("Expected left of assignment to be ident: %s", a)
 	}
@@ -132,36 +147,53 @@ func emitFuncAssignment(t *stable.Stable, a *parse.Assign) []byte {
 	if len(a.RightExpr) != 1 {
 		log.Fatal("Expected one expression to the right of the assignment")
 	}
-	code := emitEvalExpr(a.RightExpr[0])
+	code := emitEvalExpr(t, a.RightExpr[0])
 	// TODO: Evaluate the expression on the right. For now, we will assume that it [Issue: https://github.com/samertm/chompy/issues/2]
 	// is 5.
-	return append(code, bprintf("\tstr\tr3, [r7, #%d]\n", n.Offset)...)
+	return append(code, bprintf("\tstr\tr6, [r7, #%d]\n", n.Offset)...)
 }
 
-func emitEvalExpr(ex *parse.Expr) []byte {
+func emitEvalExpr(t *stable.Stable, ex *parse.Expr) []byte {
+	// TODO: do something with e.Op [Issue: https://github.com/samertm/chompy/issues/4]
+	if ex.FirstN == nil {
+		log.Fatalf("failed on %s", ex)
+	}
+	var exprs []*parse.Expr
+	for e := ex; e != nil; e = e.SecondN {
+		exprs = append([]*parse.Expr{e}, exprs...)
+	}
 	var result []byte
-	switch e := ex.FirstN.(type) {
-	case *parse.UnaryE:
-		// TODO: do something with e.Op [Issue: https://github.com/samertm/chompy/issues/4]
-		ee, ok := e.Expr.(*parse.PrimaryE)
-		// TODO: handle more cases [Issue: https://github.com/samertm/chompy/issues/6]
-		if !ok {
-			log.Fatalf("poo %s", reflect.TypeOf(e))
-		}
-		switch n := ee.Expr.(type) {
-		case *parse.Lit:
-			if n.Typ != "Int" {
-				log.Fatal("The only type available are ints")
+	for _, exp := range exprs {
+		switch e := exp.FirstN.Expr.(type) {
+		case *parse.PrimaryE:
+			switch n := e.Expr.(type) {
+			case *parse.Ident:
+				ni, ok := t.Get(n.Name)
+				if !ok {
+					log.Fatalf("Ident %s not in scope", n)
+				}
+				result = append(result, bprintf("\tldr\tr5, [r7, #%d]\n", ni.Offset)...)
+			case *parse.Lit:
+				if n.Typ != "Int" {
+					log.Fatal("The only type available are ints")
+				}
+				result = append(result, bprintf("\tmovs\tr5, #%s\n", n.Val)...)
+			default:
+				log.Fatalf("I don't handle %s yet\n", reflect.TypeOf(e.Expr))
 			}
-			result = bprintf("\tmovs\tr3, #%s\n", n.Val)
+			switch exp.BinOp {
+			case "+":
+				result = append(result, "\tadd\tr6, r6, r5\n"...)
+			case "":
+				result = append(result, "\tmovs\tr6, r5\n"...)
+			default:
+				log.Fatalf("Unknown binop: %s", exp)
+			}
+		case *parse.UnaryE:
+			log.Fatalf("Found unarye: %s", exp)
 		default:
-			log.Fatalf("I don't handle %s yet\n", reflect.TypeOf(ee.Expr))
+			log.Fatalf("Only deals with primary and unary errors: %s", exp)
 		}
-		
-	case *parse.PrimaryE:
-		log.Fatalf("got primary expr %s", e)
-	default:
-		log.Fatal("expected PrimaryE or UnaryE")
 	}
 	return result
 }

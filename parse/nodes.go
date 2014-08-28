@@ -196,8 +196,8 @@ func (l *Lit) String() string {
 // expression
 type Expr struct {
 	BinOp   string
-	FirstN  Node
-	SecondN Node
+	FirstN  *UnaryE
+	SecondN *Expr
 	up      Node
 }
 

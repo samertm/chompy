@@ -324,7 +324,7 @@ func operandName(p *parser) *Ident {
 	return &Ident{Name: id.Val}
 }
 
-// TODO add more types
+// TODO: add more types [Issue: https://github.com/samertm/chompy/issues/9]
 // Type      = TypeName | "(" Type ")" .
 func typeGrammar(p *parser) *Typ {
 	if p.accept(topTypeName) {
@@ -738,7 +738,7 @@ func rangeClause(p *parser) *RangeClause {
 		return nil
 	}
 	expr := expression(p)
-	// TODO refactor this terrible, terrible function
+	// TODO: refactor this terrible, terrible function [Issue: https://github.com/samertm/chompy/issues/11]
 	if isIdentList {
 		return &RangeClause{
 			Idents: idents,
@@ -973,7 +973,7 @@ func labeledStmt(p *parser) *LabeledStmt {
 }
 
 // EmptyStmt = .
-// TODO ...do I need this function?
+// TODO: ...do I need this function? [Issue: https://github.com/samertm/chompy/issues/8]
 func emptyStmt(p *parser) *EmptyStmt {
 	return &EmptyStmt{}
 }
@@ -1114,7 +1114,7 @@ func argumentList(p *parser) *Args {
 }
 
 // Call           = "(" [ ArgumentList [ "," ] ] ")" .
-// TODO right now, conversions are processed as calls
+// TODO: right now, conversions are processed as calls [Issue: https://github.com/samertm/chompy/issues/10]
 // which means we don't accept the full conversion grammar
 // I'm not sure how to fix this yet... because we would need
 // to know if something is a type, and right now we only see

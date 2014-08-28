@@ -16,6 +16,14 @@ var _ = fmt.Println // debugging
 
 type sErrors []string
 
+var currentLabel int = 2
+
+func nextLabel() []byte {
+	l := bprintf(".L%d", currentLabel)
+	currentLabel++
+	return l
+}
+
 func (e sErrors) Error() string {
 	if len(e) == 0 {
 		return "No errors."
@@ -60,7 +68,7 @@ func genCode(t *parse.Tree) []byte {
 		case *parse.Funcdecl:
 			name := n.Name.Name
 			code = append(code, emitFuncHeader(name)...)
-			code = append(code, emitFuncBody(n.Func.Body.Stmts)...)
+			code = append(code, emitBlock(nil, n.Func.Body)...)
 			code = append(code, emitFuncReturn()...)
 		}
 	}
@@ -76,52 +84,70 @@ func emitStart() []byte {
 	return code
 }
 
-func emitFuncBody(stmts []parse.Node) []byte {
-	table := stable.New(nil)
+func emitBlock(table *stable.Stable, b *parse.Block) []byte {
+	t := stable.New(table)
 	var code []byte
 	var stackOffset int
-	for _, stmt := range stmts {
-		switch s := stmt.(type) {
-		case *parse.Vars:
-			for _, v := range s.Vs {
-				for _, id := range v.Idents {
-					// Assume the type is an int
-					stackOffset += 4
-					t := &stable.Basic{Name: "int", Size: 4}
-					table.Insert(id.Name, &stable.NodeInfo{T: t, Offset: stackOffset})
-				}
-			}
-		case *parse.Assign:
-			if len(s.LeftExpr) != len(s.RightExpr) {
-				log.Fatal("args must match, and you can only have one argument on each side.")
-			}
-			// Hack: closure turns switch statement into an expression
-			code = append(code, func(s *parse.Assign) []byte {
-				switch s.Op {
-				case "=":
-					return emitFuncAssignment(table, s)
-				}
-				return []byte("")
-			}(s)...)
-		case *parse.ReturnStmt:
-			if len(s.Exprs) == 0 {
-				code = append(code, "\tmov\tr0, #0\n"...)
-				code = append(code, emitFuncReturn()...)
-				continue
-			} else if len(s.Exprs) > 1 {
-				log.Fatalf("I don't handle more than one return value: %s\n", s)
-			}
-			code = append(code, emitEvalExpr(table, s.Exprs[0])...)
-			code = append(code, "\tmov\tr0, r6\n"...)
-			code = append(code, emitFuncReturn()...)
-		case *parse.Expr:
-			log.Fatalf("here: %s", s)
-		default:
-			log.Fatalf("I don't handle %s yet\n", reflect.TypeOf(s))
-		}
+	for _, stmt := range b.Stmts {
+		code = append(code, emitEvalStmt(t, stmt, &stackOffset)...)
 	}
 	// Add stack setup to the beginning
 	code = append(emitFuncStackSetup(stackOffset), code...)
+	code = append(code, "\tpop\t{r7}\n"...)
+	return code
+}
+
+// TODO: clean up use of stackOffset (move it into stable?) [Issue: https://github.com/samertm/chompy/issues/12]
+func emitEvalStmt(t *stable.Stable, stmt parse.Node, stackOffset *int) []byte {
+	var code []byte
+	switch s := stmt.(type) {
+	case *parse.Vars:
+		for _, v := range s.Vs {
+			for _, id := range v.Idents {
+				// Assume the type is an int
+				*stackOffset += 4
+				typ := &stable.Basic{Name: "int", Size: 4}
+				t.Insert(id.Name, &stable.NodeInfo{T: typ, Offset: *stackOffset})
+			}
+		}
+	case *parse.Assign:
+		if len(s.LeftExpr) != len(s.RightExpr) {
+			log.Fatal("args must match, and you can only have one argument on each side.")
+		}
+		switch s.Op {
+		case "=":
+			return emitFuncAssignment(t, s)
+		}
+		return []byte("")
+	case *parse.ReturnStmt:
+		if len(s.Exprs) == 0 {
+			code = append(code, "\tmov\tr0, #0\n"...)
+			code = append(code, emitFuncReturn()...)
+			return code
+		} else if len(s.Exprs) > 1 {
+			log.Fatalf("I don't handle more than one return value: %s\n", s)
+		}
+		code = append(code, emitEvalExpr(t, s.Exprs[0])...)
+		code = append(code, "\tmov\tr0, r6\n"...)
+		code = append(code, emitFuncReturn()...)
+	case *parse.IfStmt:
+		if s.SimpleStmt != nil {
+			code = append(code, emitEvalStmt(t, s.SimpleStmt, stackOffset)...)
+		}
+		// TODO: check that the Expr is a comparison expression [Issue: https://github.com/samertm/chompy/issues/13]
+		code = append(code, emitEvalExpr(t, s.Expr)...)
+		l := nextLabel()
+		code = append(code, bprintf("\tbne\t%s\n", l)...)
+		if s.Else != nil {
+			// TODO: handle else statements [Issue: https://github.com/samertm/chompy/issues/14]
+			log.Fatal("I don't handle else statements yet")
+		}
+		
+		code = append(code, emitBlock(t, s.Body)...)
+		code = append(code, bprintf("%s:\n", l)...)
+	default:
+		log.Fatalf("I don't handle %s yet\n", reflect.TypeOf(s))
+	}
 	return code
 }
 
@@ -184,6 +210,8 @@ func emitEvalExpr(t *stable.Stable, ex *parse.Expr) []byte {
 			switch exp.BinOp {
 			case "+":
 				result = append(result, "\tadd\tr6, r6, r5\n"...)
+			case "==":
+				result = append(result, "\tcmp\tr6, r5\n"...)
 			case "":
 				result = append(result, "\tmovs\tr6, r5\n"...)
 			default:
@@ -205,8 +233,8 @@ func emitFuncStackSetup(offset int) []byte {
 }
 
 func emitFuncReturn() []byte {
-	return []byte("\tpop\t{r7}\n" +
-		"\tbx\tlr\n")
+	return []byte("\tbx\tlr\n")
+		
 }
 
 func emitFuncHeader(name string) []byte {

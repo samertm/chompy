@@ -4,7 +4,7 @@ package stable
 // our program.
 type NodeInfo struct {
 	// What variables do we need? Probably a pointer to a type
-	T *Basic // TODO: change to Type
+	T      *Basic // TODO: change to Type [Issue: https://github.com/samertm/chompy/issues/15]
 	Offset int
 	// What else? We don't need the identifier name because
 	// that's stored in the symbol table. There may be other
@@ -62,7 +62,7 @@ func typesEqual(types0, types1 []Type) bool {
 
 // Represents all types that are not functions
 type Basic struct {
-	Pkg string
+	Pkg  string
 	Name string
 	Size int
 	// this is a pointer type if true
@@ -116,6 +116,7 @@ func (b *Basic) String() string {
 // 	return str
 // }
 
+// TODO: add offset to symbol table [Issue: https://github.com/samertm/chompy/issues/16]
 type Stable struct {
 	table  map[string]*NodeInfo
 	latest *NodeInfo
@@ -126,6 +127,7 @@ type Stable struct {
 func New(old *Stable) *Stable {
 	return &Stable{
 		table: make(map[string]*NodeInfo),
+		up:    old,
 	}
 }
 
@@ -136,7 +138,7 @@ func (s *Stable) Insert(name string, value *NodeInfo) {
 }
 
 func (s *Stable) Get(name string) (*NodeInfo, bool) {
-	for tab := s; tab != nil; tab = s.up {
+	for tab := s; tab != nil; tab = tab.up {
 		n, ok := tab.table[name]
 		if ok {
 			return n, true

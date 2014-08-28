@@ -8,7 +8,7 @@ func main() {
         var apple int
         apple = 6
         tree = 2 + apple + 3
-        for i := 3; apple == 6; i++ {
-        	var thingy int
+        if apple == 6 {
+        	apple = 2
         }
 }

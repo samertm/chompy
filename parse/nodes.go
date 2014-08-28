@@ -698,7 +698,7 @@ func (a *Assign) String() (s string) {
 
 type IfStmt struct {
 	SimpleStmt Node
-	Expr       Node
+	Expr       *Expr
 	Body       *Block
 	Else       Node
 	up         Node

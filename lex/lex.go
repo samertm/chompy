@@ -22,6 +22,8 @@ type Token struct {
 	Val string
 }
 
+var thingy string = "the thingy"
+
 // for debugging purposes
 func (t Token) String() string {
 	return fmt.Sprintf("(%s %s)", t.Typ.String(), t.Val)

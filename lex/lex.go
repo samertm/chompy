@@ -22,7 +22,7 @@ type Token struct {
 	Val string
 }
 
-var thingy string = "the thingy"
+var Thingy string = "the thingy"
 
 // for debugging purposes
 func (t Token) String() string {

@@ -12,6 +12,8 @@ import (
 
 var _ = fmt.Print // debugging
 
+var SuperImportantThing string
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Expected filename")

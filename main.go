@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/samertm/chompy/lex"
-	"github.com/samertm/chompy/parse"
-	"github.com/samertm/chompy/semantic"
 )
 
 var _ = fmt.Print // debugging
@@ -32,16 +30,5 @@ func main() {
 }
 
 func compile(src []byte) {
-	_, tokens := lex.Lex("bro", string(src))
-	tree, err := parse.Start(tokens)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	code, err := semantic.Gen(tree)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Print(string(code))
+	lex.Lex("bro", string(src))
 }

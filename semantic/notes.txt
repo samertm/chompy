@@ -1,6 +1,0 @@
-how to use symbol table:
-
-* enter new scope
-* add all variable decls to scope
-* process body
-* exit scope

@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 )
 
+var OTHERthigny string
 type state int
 
 type TokenType int

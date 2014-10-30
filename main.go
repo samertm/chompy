@@ -10,6 +10,7 @@ import (
 	"github.com/samertm/chompy/semantic"
 )
 
+var JFLKDSJKL string
 var _ = fmt.Print // debugging
 
 func main() {

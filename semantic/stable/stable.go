@@ -67,6 +67,7 @@ func typesEqual(types0, types1 []Type) bool {
 
 // Represents all types that are not functions
 type Basic struct {
+	Somethingelse string
 	Pkg  string
 	Name string
 	Size int
@@ -74,21 +75,21 @@ type Basic struct {
 	Pointer bool
 }
 
-func (b *Basic) Equal(t Type) bool {
-	ba, ok := t.(*Basic)
-	if !ok {
-		return false
-	}
-	return b.Pkg == ba.Pkg && b.Name == ba.Name && b.Pointer == ba.Pointer
-}
+//func (b *Basic) Equal(t Type) bool {
+//	ba, ok := t.(*Basic)
+//	if !ok {
+//		return false
+//	}
+//	return b.Pkg == ba.Pkg && b.Name == ba.Name && b.Pointer == ba.Pointer
+//}
 
-func (b *Basic) String() string {
-	s := "pkg: " + b.Pkg + " name: " + b.Name
-	if b.Pointer {
-		s += " *"
-	}
-	return s
-}
+//func (b *Basic) String() string {
+//	s := "pkg: " + b.Pkg + " name: " + b.Name
+//	if b.Pointer {
+//		s += " *"
+//	}
+//	return s
+//}
 
 // type Struct struct {
 // 	Name   *Basic

@@ -4,7 +4,7 @@ package stable
 // our program.
 type NodeInfo struct {
 	// What variables do we need? Probably a pointer to a type
-	T      *Basic // TODO: change to Type [Issue: https://github.com/samertm/chompy/issues/15]
+	T           *Basic // TODO: change to Type [Issue: https://github.com/samertm/chompy/issues/15]
 	StackOffset int
 	scopeOffset int
 	// What else? We don't need the identifier name because
@@ -67,28 +67,29 @@ func typesEqual(types0, types1 []Type) bool {
 
 // Represents all types that are not functions
 type Basic struct {
-	Pkg  string
-	Name string
-	Size int
+	Somethingelse string
+	Pkg           string
+	Name          string
+	Size          int
 	// this is a pointer type if true
 	Pointer bool
 }
 
-func (b *Basic) Equal(t Type) bool {
-	ba, ok := t.(*Basic)
-	if !ok {
-		return false
-	}
-	return b.Pkg == ba.Pkg && b.Name == ba.Name && b.Pointer == ba.Pointer
-}
+// func (b *Basic) Equal(t Type) bool {
+// 	ba, ok := t.(*Basic)
+// 	if !ok {
+// 		return false
+// 	}
+// 	return b.Pkg == ba.Pkg && b.Name == ba.Name && b.Pointer == ba.Pointer
+// }
 
-func (b *Basic) String() string {
-	s := "pkg: " + b.Pkg + " name: " + b.Name
-	if b.Pointer {
-		s += " *"
-	}
-	return s
-}
+// func (b *Basic) String() string {
+// 	s := "pkg: " + b.Pkg + " name: " + b.Name
+// 	if b.Pointer {
+// 		s += " *"
+// 	}
+// 	return s
+// }
 
 // type Struct struct {
 // 	Name   *Basic

@@ -22,6 +22,8 @@ type Token struct {
 	Val string
 }
 
+var Thingy string = "the thingy"
+
 // for debugging purposes
 func (t Token) String() string {
 	return fmt.Sprintf("(%s %s)", t.Typ.String(), t.Val)
@@ -40,13 +42,20 @@ func TokenEquiv(t1 Token, t2 Token) bool {
 
 func (i TokenType) String() string {
 	switch i {
-	case Error: return     "Error"
-	case EOF:       return "EOF"
-	case Keyword:    return "Keyword"
-	case OpOrDelim: return "OpOrDelim"
-	case Identifier: return "Identifier"
-	case String:    return "String"
-	case Int:       return  "Int"
+	case Error:
+		return "Error"
+	case EOF:
+		return "EOF"
+	case Keyword:
+		return "Keyword"
+	case OpOrDelim:
+		return "OpOrDelim"
+	case Identifier:
+		return "Identifier"
+	case String:
+		return "String"
+	case Int:
+		return "Int"
 	}
 	return "Whoops"
 }
